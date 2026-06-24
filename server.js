@@ -56,7 +56,7 @@ try {
 }
 
 app.use(cors());
-app.use(express.json({ limit: '1mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
 
 // Request logging middleware
@@ -127,21 +127,29 @@ app.get('/api/config', (req, res) => {
 
 app.post('/api/scan', async (req, res) => {
   const { image } = req.body;
+  
+  console.log(`[LensPro /api/scan] Request received. Image present: ${!!image}, Image length: ${image ? image.length : 0} chars`);
+  
   if (!image) {
+    console.log('[LensPro /api/scan] REJECTED: No image data in request body');
     return res.status(400).json({ error: 'Image data is required' });
   }
 
   if (!genAI) {
+    console.log('[LensPro /api/scan] FALLBACK: genAI is null — GEMINI_API_KEY not configured. Client will use pixel heuristics.');
     return res.json({ fallback: true, message: 'Gemini API key not configured' });
   }
 
   try {
     const matches = image.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
     if (!matches || matches.length < 3) {
+      console.log('[LensPro /api/scan] REJECTED: Could not parse base64 data URI. Image starts with:', image.substring(0, 80));
       return res.status(400).json({ error: 'Invalid base64 image format' });
     }
     const mimeType = `image/${matches[1]}`;
     const base64Data = matches[2];
+
+    console.log(`[LensPro /api/scan] Image parsed OK. MimeType: ${mimeType}, Base64 payload size: ${base64Data.length} chars (~${Math.round(base64Data.length * 0.75 / 1024)} KB)`);
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
     
@@ -156,6 +164,9 @@ If food is present, identify the food item and match it to the single closest it
 Return the result strictly as a raw JSON object (no markdown, no quotes around the json block, no backticks) with format:
 { "match": "Matched Food Name", "confidence": percentage }`;
 
+    console.log('[LensPro /api/scan] Sending image to Gemini 1.5 Flash...');
+    const startTime = Date.now();
+
     const result = await model.generateContent([
       prompt,
       {
@@ -166,14 +177,17 @@ Return the result strictly as a raw JSON object (no markdown, no quotes around t
       }
     ]);
 
+    const elapsed = Date.now() - startTime;
     let text = result.response.text();
+    console.log(`[LensPro /api/scan] Gemini responded in ${elapsed}ms. Raw response text: "${text}"`);
+
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
     let parsed;
     try {
       parsed = JSON.parse(text);
     } catch (parseErr) {
-      console.error('Failed to parse Gemini response text:', text);
+      console.error('[LensPro /api/scan] JSON.parse failed on cleaned text:', text);
       const matchRegex = text.match(/"match"\s*:\s*"([^"]+)"/);
       const confRegex = text.match(/"confidence"\s*:\s*(\d+)/);
       if (matchRegex) {
@@ -181,16 +195,19 @@ Return the result strictly as a raw JSON object (no markdown, no quotes around t
           match: matchRegex[1],
           confidence: confRegex ? parseInt(confRegex[1], 10) : 85
         };
+        console.log('[LensPro /api/scan] Regex fallback parsed:', JSON.stringify(parsed));
       } else {
         throw new Error('Could not parse visual match from AI output');
       }
     }
 
+    console.log(`[LensPro /api/scan] RESULT: match="${parsed.match}", confidence=${parsed.confidence}`);
     res.json(parsed);
 
   } catch (error) {
-    console.error('[LensPro AI Error] Failed to scan image:', error);
-    res.status(500).json({ error: 'AI visual scanning failed' });
+    console.error('[LensPro /api/scan] FATAL ERROR:', error.message);
+    console.error('[LensPro /api/scan] Stack:', error.stack);
+    res.status(500).json({ error: 'AI visual scanning failed', detail: error.message });
   }
 });
 

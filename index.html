@@ -1557,26 +1557,39 @@
       const canvas = document.getElementById('lensProCanvas');
       const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
+      console.log(`[LensPro Client] Image captured. DataURL length: ${dataUrl.length} chars (~${Math.round(dataUrl.length * 0.75 / 1024)} KB)`);
+
       try {
+        console.log('[LensPro Client] Sending POST to /api/scan...');
         const res = await fetch(`${API_BASE}/scan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: dataUrl })
         });
         
-        if (!res.ok) throw new Error('API Scan request failed');
+        console.log(`[LensPro Client] API response status: ${res.status}`);
+        
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error(`[LensPro Client] API returned error ${res.status}:`, errBody);
+          throw new Error(`API Scan request failed with status ${res.status}`);
+        }
         const data = await res.json();
+        console.log('[LensPro Client] API response body:', JSON.stringify(data));
         
         if (data.fallback) {
-          console.log('[LensPro] Fallback mode active: ' + data.message);
+          console.warn('[LensPro Client] ⚠️ SERVER RETURNED FALLBACK — Gemini API key NOT configured on server. Using client-side pixel heuristics instead.');
           const localResult = analyzeCanvasPixels(canvas);
+          console.log('[LensPro Client] Pixel heuristic result:', JSON.stringify(localResult));
           processScanResult(localResult);
         } else {
+          console.log(`[LensPro Client] ✅ GEMINI RESULT: match="${data.match}", confidence=${data.confidence}`);
           processScanResult(data);
         }
       } catch (err) {
-        console.warn('[LensPro] Backend scan failed, using client fallback:', err);
+        console.error('[LensPro Client] ❌ FETCH FAILED, falling back to pixel heuristics:', err.message);
         const localResult = analyzeCanvasPixels(canvas);
+        console.log('[LensPro Client] Pixel heuristic fallback result:', JSON.stringify(localResult));
         processScanResult(localResult);
       }
     }
