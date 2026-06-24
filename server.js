@@ -136,8 +136,8 @@ app.post('/api/scan', async (req, res) => {
   }
 
   if (!genAI) {
-    console.log('[LensPro /api/scan] FALLBACK: genAI is null — GEMINI_API_KEY not configured. Client will use pixel heuristics.');
-    return res.json({ fallback: true, message: 'Gemini API key not configured' });
+    console.log('[LensPro /api/scan] NO API KEY — returning scanner_unavailable (no pixel fallback).');
+    return res.json({ scanner_unavailable: true, message: 'Gemini API key not configured on server' });
   }
 
   try {
@@ -152,19 +152,46 @@ app.post('/api/scan', async (req, res) => {
     console.log(`[LensPro /api/scan] Image parsed OK. MimeType: ${mimeType}, Base64 payload size: ${base64Data.length} chars (~${Math.round(base64Data.length * 0.75 / 1024)} KB)`);
 
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    
-    const prompt = `You are a strict food classification model. Analyze the provided image.
-First, determine if the image actually contains any edible food item.
-If the image shows no food (e.g. it shows a keyboard, computer, laptop, screen, hand, document, background wall, metal surface, empty table, animal, or general object that is NOT edible food), you MUST return JSON:
-{ "match": "not_food", "confidence": 0 }
 
-If food is present, identify the food item and match it to the single closest item in this database of Indian foods and fruits:
-["Daal Chawal", "Paneer Butter Masala", "Butter Chicken", "Chana Masala", "Chicken Biryani", "Veg Biryani", "Choole Bhature", "Dal Makhani", "Palak Paneer", "Rajma Chawal", "Khichdi", "Muttar Paneer", "Aloo Gobi", "Bhindi Masala", "Basmati Rice Cooked", "Brown Rice Cooked", "Roti / Chapati", "Tandoori Roti", "Plain Paratha", "Aloo Paratha", "Butter Naan", "Garlic Naan", "Puri", "Bhatura", "Poha", "Upma", "Idli with Sambar", "Masala Dosa", "Moong Dal Cooked", "Masoor Dal Cooked", "Soya Chunks Cooked", "Paneer Bhurji", "Tandoori Chicken", "Fish Tikka", "Chicken Tikka", "Egg Bhurji", "Boiled Egg", "Chicken Breast", "Mutton Curry", "Paneer raw", "Whole Milk Curd / Dahi", "Cow Milk", "Buffalo Milk", "Ghee", "Sweet Lassi", "Chaas / Buttermilk", "Samosa", "Dhokla", "Medu Vada", "Pani Puri", "Bhel Puri", "Pav Bhaji", "Vada Pav", "Roasted Chana", "Roasted Makhana", "Gulab Jamun", "Rasgulla", "Gajar ka Halwa", "Jalebi", "Besan Ladoo", "Kheer", "Masala Chai", "Filter Coffee", "Tender Coconut Water", "Sugarcane Juice", "Nimbu Pani", "Banana", "Apple", "Mango", "Orange", "Papaya"]
+    // TWO-PHASE PROMPT — Phase 1: free-form visual ID + Phase 2: database match
+    // Bundled in one call for speed, structured as explicit steps in the prompt.
+    const prompt = `You are a world-class food recognition AI with the visual accuracy of Google Lens. Analyze this image with maximum precision.
 
-Return the result strictly as a raw JSON object (no markdown, no quotes around the json block, no backticks) with format:
-{ "match": "Matched Food Name", "confidence": percentage }`;
+STEP 1 — VISUAL IDENTIFICATION (look carefully, use your full visual knowledge):
+Examine every detail in the image — color, texture, shape, context, plating, ingredients visible.
+Freely identify what you see. Do NOT be constrained by any list yet.
 
-    console.log('[LensPro /api/scan] Sending image to Gemini 1.5 Flash...');
+STEP 2 — FOOD vs NON-FOOD DECISION:
+Is there actual VISIBLE, OPEN food in the image? Apply these strict rules:
+- SEALED container, jar, tin, bottle, or packet where food is NOT visible → NOT FOOD
+- Non-food object (furniture, electronics, body parts, fabric, floor, wall, hands, feet, screen) → NOT FOOD
+- Food partially visible but too blurry/dark to confidently identify → NOT FOOD
+- Clearly visible prepared or raw food in a bowl, plate, hand, or surface → FOOD
+
+STEP 3 — MATCH TO DATABASE (only if food identified with high confidence):
+Match the identified food to the single closest item from this list. Choose the MOST VISUALLY ACCURATE match:
+["Daal Chawal","Paneer Butter Masala","Butter Chicken","Chana Masala","Chicken Biryani","Veg Biryani","Choole Bhature","Dal Makhani","Palak Paneer","Rajma Chawal","Khichdi","Muttar Paneer","Aloo Gobi","Bhindi Masala","Basmati Rice Cooked","Brown Rice Cooked","Roti / Chapati","Tandoori Roti","Plain Paratha","Aloo Paratha","Butter Naan","Garlic Naan","Puri","Bhatura","Poha","Upma","Idli with Sambar","Masala Dosa","Moong Dal Cooked","Masoor Dal Cooked","Soya Chunks Cooked","Paneer Bhurji","Tandoori Chicken","Fish Tikka","Chicken Tikka","Egg Bhurji","Boiled Egg","Chicken Breast","Mutton Curry","Paneer raw","Whole Milk Curd / Dahi","Cow Milk","Buffalo Milk","Ghee","Sweet Lassi","Chaas / Buttermilk","Samosa","Dhokla","Medu Vada","Pani Puri","Bhel Puri","Pav Bhaji","Vada Pav","Roasted Chana","Roasted Makhana","Gulab Jamun","Rasgulla","Gajar ka Halwa","Jalebi","Besan Ladoo","Kheer","Masala Chai","Filter Coffee","Tender Coconut Water","Sugarcane Juice","Nimbu Pani","Banana","Apple","Mango","Orange","Papaya"]
+
+STEP 4 — CONFIDENCE RATING:
+Rate your visual match confidence 0-100. Be honest. If you are not >70% sure, set match to "not_food".
+
+STEP 5 — REJECTION MESSAGE (only if not food):
+Write a short, friendly 1-sentence message describing what you actually see.
+Example: "Looks like a sealed spice jar — point the camera at your open meal instead."
+Example: "That looks like a laptop screen, not food. Try scanning your plate."
+Example: "Looks like a floral bedsheet. Capture your actual meal to log it."
+
+Return ONLY a raw JSON object (no markdown, no backticks):
+{
+  "is_food": true or false,
+  "visual_description": "brief free-form description of what you see",
+  "identified_as": "the food name you identified before matching (e.g. 'white basmati rice in a steel bowl')",
+  "match": "Closest database item name, or not_food",
+  "confidence": 0-100,
+  "rejection_message": "friendly message only when is_food is false, otherwise empty string"
+}`;
+
+    console.log('[LensPro /api/scan] Sending image to Gemini 1.5 Flash (two-phase mode)...');
     const startTime = Date.now();
 
     const result = await model.generateContent([
@@ -179,29 +206,44 @@ Return the result strictly as a raw JSON object (no markdown, no quotes around t
 
     const elapsed = Date.now() - startTime;
     let text = result.response.text();
-    console.log(`[LensPro /api/scan] Gemini responded in ${elapsed}ms. Raw response text: "${text}"`);
+    console.log(`[LensPro /api/scan] Gemini responded in ${elapsed}ms. Raw response: "${text}"`);
 
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
+    // Clean markdown wrappers if Gemini adds them despite instructions
+    text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
     let parsed;
     try {
       parsed = JSON.parse(text);
     } catch (parseErr) {
-      console.error('[LensPro /api/scan] JSON.parse failed on cleaned text:', text);
+      console.error('[LensPro /api/scan] JSON.parse failed. Attempting regex extraction on:', text);
+      // Fallback: regex-extract fields
+      const isFood = /\"is_food\"\s*:\s*true/i.test(text);
       const matchRegex = text.match(/"match"\s*:\s*"([^"]+)"/);
       const confRegex = text.match(/"confidence"\s*:\s*(\d+)/);
-      if (matchRegex) {
-        parsed = {
-          match: matchRegex[1],
-          confidence: confRegex ? parseInt(confRegex[1], 10) : 85
-        };
-        console.log('[LensPro /api/scan] Regex fallback parsed:', JSON.stringify(parsed));
-      } else {
-        throw new Error('Could not parse visual match from AI output');
-      }
+      const descRegex = text.match(/"visual_description"\s*:\s*"([^"]+)"/);
+      const identRegex = text.match(/"identified_as"\s*:\s*"([^"]+)"/);
+      const rejRegex = text.match(/"rejection_message"\s*:\s*"([^"]*)"/);
+      parsed = {
+        is_food: isFood,
+        visual_description: descRegex ? descRegex[1] : '',
+        identified_as: identRegex ? identRegex[1] : '',
+        match: matchRegex ? matchRegex[1] : 'not_food',
+        confidence: confRegex ? parseInt(confRegex[1], 10) : 0,
+        rejection_message: rejRegex ? rejRegex[1] : ''
+      };
+      console.log('[LensPro /api/scan] Regex fallback parsed:', JSON.stringify(parsed));
     }
 
-    console.log(`[LensPro /api/scan] RESULT: match="${parsed.match}", confidence=${parsed.confidence}`);
+    // Confidence gate — below 70 is treated as not_food regardless
+    if (parsed.confidence < 70 && parsed.match !== 'not_food') {
+      console.log(`[LensPro /api/scan] Confidence ${parsed.confidence} < 70 — downgrading to not_food`);
+      parsed.is_food = false;
+      parsed.match = 'not_food';
+      parsed.rejection_message = parsed.rejection_message || 
+        `I can see ${parsed.visual_description || 'something'} but I'm not confident enough to identify it as a specific food. Try a clearer, closer photo.`;
+    }
+
+    console.log(`[LensPro /api/scan] FINAL RESULT: is_food=${parsed.is_food}, match="${parsed.match}", confidence=${parsed.confidence}, identified_as="${parsed.identified_as}"`);
     res.json(parsed);
 
   } catch (error) {
