@@ -51,6 +51,16 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(__dirname));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
 // Middleware to check DB availability
 function requireDb(req, res, next) {
   if (!dbAvailable || !pool) {
@@ -109,6 +119,7 @@ app.get('/api/config', (req, res) => {
 
 app.get('/api/daily/:userId/:date', requireDb, async (req, res) => {
   const { userId, date } = req.params;
+  console.log(`[Database] Fetching daily log for User: ${userId}, Date: ${date}`);
   const client = await pool.connect();
   try {
     const profileResult = await client.query('SELECT profile FROM fittrack_profiles WHERE user_id = $1', [userId]);
@@ -138,6 +149,8 @@ app.get('/api/daily/:userId/:date', requireDb, async (req, res) => {
 
 app.get('/api/history/:userId', requireDb, async (req, res) => {
   const limit = Math.min(Number(req.query.limit || 30), 365);
+  const { userId } = req.params;
+  console.log(`[Database] Fetching history for User: ${userId} (Limit: ${limit} days)`);
   const result = await pool.query(
     `SELECT log_date, food_log, water_intake, totals, updated_at
      FROM fittrack_daily_logs
@@ -152,6 +165,7 @@ app.get('/api/history/:userId', requireDb, async (req, res) => {
 app.put('/api/daily/:userId/:date', requireDb, async (req, res) => {
   const { userId, date } = req.params;
   const { profile, log = [], waterIntake = 0, totals = {} } = req.body;
+  console.log(`[Database] Updating daily stats for User: ${userId}, Date: ${date}. Log size: ${log.length} items, Water: ${waterIntake} cups`);
   if (!profile) {
     res.status(400).json({ error: 'profile is required' });
     return;
@@ -188,7 +202,9 @@ app.put('/api/daily/:userId/:date', requireDb, async (req, res) => {
 });
 
 app.delete('/api/users/:userId', requireDb, async (req, res) => {
-  await pool.query('DELETE FROM fittrack_profiles WHERE user_id = $1', [req.params.userId]);
+  const { userId } = req.params;
+  console.log(`[Database] Deleting account and all logs for User: ${userId}`);
+  await pool.query('DELETE FROM fittrack_profiles WHERE user_id = $1', [userId]);
   res.json({ ok: true });
 });
 
@@ -197,7 +213,7 @@ app.get('*', (req, res) => {
 });
 
 app.use((error, req, res, next) => {
-  console.error(error);
+  console.error(`[Error] Unhandled error during request ${req.method} ${req.originalUrl}:`, error);
   res.status(500).json({ error: 'Internal server error' });
 });
 
