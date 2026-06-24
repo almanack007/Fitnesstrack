@@ -589,7 +589,7 @@
       user: 'fittrack_user'
     };
     const todayKey = new Date().toISOString().slice(0, 10);
-    const API_BASE = localStorage.getItem(store.apiBase) || 'http://localhost:3000/api';
+    const API_BASE = localStorage.getItem(store.apiBase) || `${window.location.origin}/api`;
     let currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
     let USER_ID = currentUser ? currentUser.id : getOrCreateUserId();
     let userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
