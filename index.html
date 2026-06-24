@@ -1656,7 +1656,25 @@
       validPanel.classList.remove('hidden');
       invalidPanel.classList.add('hidden');
 
-      const foodName = result.match;
+      let foodName = result.match;
+      if (!foodName || !foodDatabase[foodName]) {
+        foodName = result.identified_as || 'Scanned Food';
+        // Capitalize words nicely
+        foodName = foodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+        
+        if (!foodDatabase[foodName] && result.estimated_macros) {
+          foodDatabase[foodName] = {
+            category: 'Meals',
+            cal: parseInt(result.estimated_macros.cal, 10) || 0,
+            protein: parseFloat(result.estimated_macros.protein) || 0,
+            carbs: parseFloat(result.estimated_macros.carbs) || 0,
+            fat: parseFloat(result.estimated_macros.fat) || 0,
+            unit: result.estimated_macros.unit || 'g',
+            per: parseInt(result.estimated_macros.per, 10) || 100
+          };
+        }
+      }
+
       const foodData = foodDatabase[foodName] || foodDatabase['Khichdi'];
 
       lensProSelectedFood = { name: foodName, data: foodData };
@@ -1667,7 +1685,7 @@
       // Show what the AI actually identified (free-form)
       const identifiedAs = result.identified_as || '';
       const identEl = document.getElementById('lensProIdentifiedAs');
-      identEl.textContent = identifiedAs ? `AI saw: "${identifiedAs}"` : '';
+      identEl.textContent = identifiedAs ? `AI identified: "${identifiedAs}"` : '';
 
       const confidence = result.confidence || 88;
       document.getElementById('lensProConfidence').textContent = confidence + '%';

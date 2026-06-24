@@ -3,7 +3,6 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { Pool } = require('pg');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Manually load .env variables if present
 if (fs.existsSync(path.join(__dirname, '.env'))) {
@@ -16,7 +15,6 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
       if (index !== -1) {
         const key = trimmed.substring(0, index).trim();
         let value = trimmed.substring(index + 1).trim();
-        // Remove surrounding quotes if they exist
         if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
           value = value.substring(1, value.length - 1);
         }
@@ -34,11 +32,15 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/fittrack';
 
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-if (genAI) {
-  console.log('Gemini AI integration enabled successfully.');
+// Use Gemini REST API directly via fetch — avoids SDK network layer issues on some hosts
+const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || '').trim();
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const geminiEnabled = !!GEMINI_API_KEY;
+
+if (geminiEnabled) {
+  console.log(`[Gemini] REST API enabled. Key prefix: ${GEMINI_API_KEY.substring(0, 8)}...`);
 } else {
-  console.log('Gemini AI integration running in fallback (no GEMINI_API_KEY configured).');
+  console.log('[Gemini] No GEMINI_API_KEY configured — scanner will be unavailable.');
 }
 
 const app = express();
@@ -120,138 +122,175 @@ app.get('/api/health', async (req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
-  const key = process.env.GEMINI_API_KEY || '';
   res.json({
     googleClientId: process.env.GOOGLE_CLIENT_ID || null,
-    scanner_enabled: !!genAI,
-    gemini_key_hint: key ? key.substring(0, 6) + '...' : 'NOT SET'
+    scanner_enabled: geminiEnabled,
+    gemini_key_hint: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 6) + '...' : 'NOT SET'
   });
 });
 
 app.post('/api/scan', async (req, res) => {
   const { image } = req.body;
-  
-  console.log(`[LensPro /api/scan] Request received. Image present: ${!!image}, Image length: ${image ? image.length : 0} chars`);
-  
+
+  console.log(`[LensPro /api/scan] Request received. Image present: ${!!image}, length: ${image ? image.length : 0} chars`);
+
   if (!image) {
-    console.log('[LensPro /api/scan] REJECTED: No image data in request body');
     return res.status(400).json({ error: 'Image data is required' });
   }
 
-  if (!genAI) {
-    console.log('[LensPro /api/scan] NO API KEY — returning scanner_unavailable (no pixel fallback).');
-    return res.json({ scanner_unavailable: true, message: 'Gemini API key not configured on server' });
+  if (!geminiEnabled) {
+    console.log('[LensPro /api/scan] No API key — returning scanner_unavailable.');
+    return res.json({ scanner_unavailable: true, message: 'Gemini API key not configured on server.' });
   }
 
   try {
-    const matches = image.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
-    if (!matches || matches.length < 3) {
-      console.log('[LensPro /api/scan] REJECTED: Could not parse base64 data URI. Image starts with:', image.substring(0, 80));
+    const imgMatch = image.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+    if (!imgMatch) {
       return res.status(400).json({ error: 'Invalid base64 image format' });
     }
-    const mimeType = `image/${matches[1]}`;
-    const base64Data = matches[2];
+    const mimeType = `image/${imgMatch[1]}`;
+    const base64Data = imgMatch[2];
 
-    console.log(`[LensPro /api/scan] Image parsed OK. MimeType: ${mimeType}, Base64 payload size: ${base64Data.length} chars (~${Math.round(base64Data.length * 0.75 / 1024)} KB)`);
+    console.log(`[LensPro /api/scan] Image OK — mime: ${mimeType}, size: ~${Math.round(base64Data.length * 0.75 / 1024)}KB`);
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Google Lens-style prompt: free identification + database mapping + dynamic macro estimation
+    const prompt = `You are a world-class food recognition AI with the same visual accuracy as Google Lens.
+Analyze this image carefully and thoroughly.
 
-    // TWO-PHASE PROMPT — Phase 1: free-form visual ID + Phase 2: database match
-    // Bundled in one call for speed, structured as explicit steps in the prompt.
-    const prompt = `You are a world-class food recognition AI with the visual accuracy of Google Lens. Analyze this image with maximum precision.
+STEP 1 — IDENTIFY: Identify the food name as specifically and accurately as possible using your complete visual and internet knowledge (colors, textures, ingredients, cooking style, plating context).
+Examples of good answers: "white basmati rice", "banana", "butter chicken curry", "scrambled eggs", "aloo paratha", "masala dosa".
 
-STEP 1 — VISUAL IDENTIFICATION (look carefully, use your full visual knowledge):
-Examine every detail in the image — color, texture, shape, context, plating, ingredients visible.
-Freely identify what you see. Do NOT be constrained by any list yet.
+STEP 2 — DECIDE: Is there actual VISIBLE, OPEN food in the image?
+Rules:
+- Sealed/closed container, jar, tin, bottle, or packet = NOT FOOD (you cannot see the food)
+- Non-food object (electronics, furniture, fabric, body parts, hands, feet, floor, wall, screen, paper) = NOT FOOD
+- Blurry, dark, or unidentifiable content = NOT FOOD
+- Clearly visible prepared, raw, or plated food = FOOD
 
-STEP 2 — FOOD vs NON-FOOD DECISION:
-Is there actual VISIBLE, OPEN food in the image? Apply these strict rules:
-- SEALED container, jar, tin, bottle, or packet where food is NOT visible → NOT FOOD
-- Non-food object (furniture, electronics, body parts, fabric, floor, wall, hands, feet, screen) → NOT FOOD
-- Food partially visible but too blurry/dark to confidently identify → NOT FOOD
-- Clearly visible prepared or raw food in a bowl, plate, hand, or surface → FOOD
-
-STEP 3 — MATCH TO DATABASE (only if food identified with high confidence):
-Match the identified food to the single closest item from this list. Choose the MOST VISUALLY ACCURATE match:
+STEP 3 — MATCH: If FOOD, check if it matches any item in our database of tracked foods:
 ["Daal Chawal","Paneer Butter Masala","Butter Chicken","Chana Masala","Chicken Biryani","Veg Biryani","Choole Bhature","Dal Makhani","Palak Paneer","Rajma Chawal","Khichdi","Muttar Paneer","Aloo Gobi","Bhindi Masala","Basmati Rice Cooked","Brown Rice Cooked","Roti / Chapati","Tandoori Roti","Plain Paratha","Aloo Paratha","Butter Naan","Garlic Naan","Puri","Bhatura","Poha","Upma","Idli with Sambar","Masala Dosa","Moong Dal Cooked","Masoor Dal Cooked","Soya Chunks Cooked","Paneer Bhurji","Tandoori Chicken","Fish Tikka","Chicken Tikka","Egg Bhurji","Boiled Egg","Chicken Breast","Mutton Curry","Paneer raw","Whole Milk Curd / Dahi","Cow Milk","Buffalo Milk","Ghee","Sweet Lassi","Chaas / Buttermilk","Samosa","Dhokla","Medu Vada","Pani Puri","Bhel Puri","Pav Bhaji","Vada Pav","Roasted Chana","Roasted Makhana","Gulab Jamun","Rasgulla","Gajar ka Halwa","Jalebi","Besan Ladoo","Kheer","Masala Chai","Filter Coffee","Tender Coconut Water","Sugarcane Juice","Nimbu Pani","Banana","Apple","Mango","Orange","Papaya"]
 
-STEP 4 — CONFIDENCE RATING:
-Rate your visual match confidence 0-100. Be honest. If you are not >70% sure, set match to "not_food".
+If it is a close visual match, set "match" to the exact string from the list above. If it does not match any item closely, set "match" to "" (empty string) and we will use the estimated macros.
 
-STEP 5 — REJECTION MESSAGE (only if not food):
-Write a short, friendly 1-sentence message describing what you actually see.
-Example: "Looks like a sealed spice jar — point the camera at your open meal instead."
-Example: "That looks like a laptop screen, not food. Try scanning your plate."
-Example: "Looks like a floral bedsheet. Capture your actual meal to log it."
+STEP 4 — MACROS: If FOOD, estimate the macronutrient profile per 100g (or per piece/cup if more natural for fruits/eggs/beverages) based on standard USDA/nutritional databases.
+Fields in estimated_macros:
+- cal: calories (kcal)
+- protein: protein in grams
+- carbs: total carbohydrates in grams
+- fat: fat in grams
+- unit: serving unit, either "g" (default), "cup" (for beverages/liquids), or "piece" (for fruits, boiled eggs, etc.)
+- per: serving size value (100 for "g", 1 for "piece" or "cup")
 
-Return ONLY a raw JSON object (no markdown, no backticks):
+STEP 5 — CONFIDENCE: Rate 0-100 how confident you are that this is food and that your identification is correct. Be honest.
+
+STEP 6 — REJECTION MESSAGE: If NOT FOOD, write one short friendly sentence saying what you actually see (e.g. "Looks like a laptop screen — point the camera at your meal instead.").
+
+Return ONLY raw JSON (no markdown, no backticks, no extra text):
 {
   "is_food": true or false,
-  "visual_description": "brief free-form description of what you see",
-  "identified_as": "the food name you identified before matching (e.g. 'white basmati rice in a steel bowl')",
-  "match": "Closest database item name, or not_food",
+  "identified_as": "specific food name if food, otherwise empty string",
+  "match": "exact name from database list if matched, otherwise empty string",
   "confidence": 0-100,
-  "rejection_message": "friendly message only when is_food is false, otherwise empty string"
+  "rejection_message": "friendly message if not food, otherwise empty string",
+  "estimated_macros": {
+    "cal": 0,
+    "protein": 0.0,
+    "carbs": 0.0,
+    "fat": 0.0,
+    "unit": "g",
+    "per": 100
+  }
 }`;
 
-    console.log('[LensPro /api/scan] Sending image to Gemini 1.5 Flash (two-phase mode)...');
+    const body = {
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: mimeType, data: base64Data } }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.1,
+        maxOutputTokens: 600,
+        responseMimeType: 'application/json'
+      }
+    };
+
+    console.log('[LensPro /api/scan] Calling Gemini REST API via fetch...');
     const startTime = Date.now();
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: base64Data,
-          mimeType: mimeType
-        }
-      }
-    ]);
+    const geminiRes = await fetch(GEMINI_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
 
     const elapsed = Date.now() - startTime;
-    let text = result.response.text();
-    console.log(`[LensPro /api/scan] Gemini responded in ${elapsed}ms. Raw response: "${text}"`);
+    console.log(`[LensPro /api/scan] Gemini responded in ${elapsed}ms. HTTP status: ${geminiRes.status}`);
 
-    // Clean markdown wrappers if Gemini adds them despite instructions
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error('[LensPro /api/scan] Gemini API error response:', errText);
+      return res.status(502).json({ error: 'Gemini API returned an error', detail: errText.substring(0, 200) });
+    }
+
+    const geminiJson = await geminiRes.json();
+    let text = geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    console.log(`[LensPro /api/scan] Raw Gemini text: "${text}"`);
+
+    // Clean any accidental markdown
     text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
 
     let parsed;
     try {
       parsed = JSON.parse(text);
-    } catch (parseErr) {
-      console.error('[LensPro /api/scan] JSON.parse failed. Attempting regex extraction on:', text);
-      // Fallback: regex-extract fields
-      const isFood = /\"is_food\"\s*:\s*true/i.test(text);
-      const matchRegex = text.match(/"match"\s*:\s*"([^"]+)"/);
-      const confRegex = text.match(/"confidence"\s*:\s*(\d+)/);
-      const descRegex = text.match(/"visual_description"\s*:\s*"([^"]+)"/);
-      const identRegex = text.match(/"identified_as"\s*:\s*"([^"]+)"/);
-      const rejRegex = text.match(/"rejection_message"\s*:\s*"([^"]*)"/);
+    } catch (e) {
+      console.error('[LensPro /api/scan] JSON parse failed, using regex extraction. Text was:', text);
+      const isFoodMatch = /"is_food"\s*:\s*true/i.test(text);
+      const identMatch = text.match(/"identified_as"\s*:\s*"([^"]*)"/); 
+      const matchMatch = text.match(/"match"\s*:\s*"([^"]*)"/); 
+      const confMatch = text.match(/"confidence"\s*:\s*(\d+)/);
+      const rejMatch = text.match(/"rejection_message"\s*:\s*"([^"]*)"/); 
+      
+      const calMatch = text.match(/"cal"\s*:\s*(\d+)/);
+      const protMatch = text.match(/"protein"\s*:\s*([\d.]+)/);
+      const carbMatch = text.match(/"carbs"\s*:\s*([\d.]+)/);
+      const fatMatch = text.match(/"fat"\s*:\s*([\d.]+)/);
+      const unitMatch = text.match(/"unit"\s*:\s*"([^"]*)"/);
+      const perMatch = text.match(/"per"\s*:\s*(\d+)/);
+      
       parsed = {
-        is_food: isFood,
-        visual_description: descRegex ? descRegex[1] : '',
-        identified_as: identRegex ? identRegex[1] : '',
-        match: matchRegex ? matchRegex[1] : 'not_food',
-        confidence: confRegex ? parseInt(confRegex[1], 10) : 0,
-        rejection_message: rejRegex ? rejRegex[1] : ''
+        is_food: isFoodMatch,
+        identified_as: identMatch ? identMatch[1] : '',
+        match: matchMatch ? matchMatch[1] : '',
+        confidence: confMatch ? parseInt(confMatch[1], 10) : 0,
+        rejection_message: rejMatch ? rejMatch[1] : '',
+        estimated_macros: isFoodMatch ? {
+          cal: calMatch ? parseInt(calMatch[1], 10) : 0,
+          protein: protMatch ? parseFloat(protMatch[1]) : 0,
+          carbs: carbMatch ? parseFloat(carbMatch[1]) : 0,
+          fat: fatMatch ? parseFloat(fatMatch[1]) : 0,
+          unit: unitMatch ? unitMatch[1] : 'g',
+          per: perMatch ? parseInt(perMatch[1], 10) : 100
+        } : null
       };
-      console.log('[LensPro /api/scan] Regex fallback parsed:', JSON.stringify(parsed));
     }
 
-    // Confidence gate — below 70 is treated as not_food regardless
-    if (parsed.confidence < 70 && parsed.match !== 'not_food') {
+    // Confidence gate: < 70 → treat as not_food
+    if (parsed.is_food && parsed.confidence < 70) {
       console.log(`[LensPro /api/scan] Confidence ${parsed.confidence} < 70 — downgrading to not_food`);
       parsed.is_food = false;
-      parsed.match = 'not_food';
-      parsed.rejection_message = parsed.rejection_message || 
-        `I can see ${parsed.visual_description || 'something'} but I'm not confident enough to identify it as a specific food. Try a clearer, closer photo.`;
+      parsed.rejection_message = `I can see something but I'm only ${parsed.confidence}% sure it's "${parsed.identified_as || 'food'}". Try a clearer, closer photo with better lighting.`;
+      parsed.identified_as = '';
+      parsed.match = '';
+      parsed.estimated_macros = null;
     }
 
-    console.log(`[LensPro /api/scan] FINAL RESULT: is_food=${parsed.is_food}, match="${parsed.match}", confidence=${parsed.confidence}, identified_as="${parsed.identified_as}"`);
+    console.log(`[LensPro /api/scan] RESULT: is_food=${parsed.is_food}, identified_as="${parsed.identified_as}", match="${parsed.match}", confidence=${parsed.confidence}`);
     res.json(parsed);
 
   } catch (error) {
     console.error('[LensPro /api/scan] FATAL ERROR:', error.message);
-    console.error('[LensPro /api/scan] Stack:', error.stack);
     res.status(500).json({ error: 'AI visual scanning failed', detail: error.message });
   }
 });
