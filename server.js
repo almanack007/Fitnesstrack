@@ -34,7 +34,7 @@ const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@l
 
 // Use Gemini REST API directly via fetch — avoids SDK network layer issues on some hosts
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || '').trim();
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 const geminiEnabled = !!GEMINI_API_KEY;
 
 if (geminiEnabled) {
@@ -130,7 +130,7 @@ app.get('/api/config', (req, res) => {
 });
 
 app.get('/api/test-gemini', async (req, res) => {
-  const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+  const models = ['gemini-3.5-flash', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
   const versions = ['v1beta', 'v1'];
   const results = [];
 
