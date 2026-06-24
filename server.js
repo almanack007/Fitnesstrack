@@ -120,8 +120,11 @@ app.get('/api/health', async (req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
+  const key = process.env.GEMINI_API_KEY || '';
   res.json({
-    googleClientId: process.env.GOOGLE_CLIENT_ID || null
+    googleClientId: process.env.GOOGLE_CLIENT_ID || null,
+    scanner_enabled: !!genAI,
+    gemini_key_hint: key ? key.substring(0, 6) + '...' : 'NOT SET'
   });
 });
 

@@ -1565,6 +1565,25 @@
 
       console.log(`[LensPro Client] Image captured. DataURL length: ${dataUrl.length} chars (~${Math.round(dataUrl.length * 0.75 / 1024)} KB)`);
 
+      // Pre-flight: check server config to know scanner state before sending image
+      try {
+        const configRes = await fetch(`${API_BASE}/config`);
+        if (configRes.ok) {
+          const cfg = await configRes.json();
+          console.log(`[LensPro Client] Server config → scanner_enabled: ${cfg.scanner_enabled}, gemini_key_hint: "${cfg.gemini_key_hint}"`);
+          if (!cfg.scanner_enabled) {
+            console.error('[LensPro Client] ❌ scanner_enabled=false — GEMINI_API_KEY is not loaded on server. Key hint:', cfg.gemini_key_hint);
+            processScanResult({
+              scanner_unavailable: true,
+              message: `Gemini API key not active on server (key hint: ${cfg.gemini_key_hint}). Please verify the GEMINI_API_KEY env var on Render.`
+            });
+            return;
+          }
+        }
+      } catch (cfgErr) {
+        console.warn('[LensPro Client] Could not fetch /api/config (non-fatal):', cfgErr.message);
+      }
+
       try {
         console.log('[LensPro Client] Sending POST to /api/scan...');
         const res = await fetch(`${API_BASE}/scan`, {
@@ -1578,7 +1597,7 @@
         if (!res.ok) {
           const errBody = await res.text();
           console.error(`[LensPro Client] API returned error ${res.status}:`, errBody);
-          processScanResult({ scanner_unavailable: true, message: `Server error ${res.status}` });
+          processScanResult({ scanner_unavailable: true, message: `Server error ${res.status} — ${errBody.substring(0, 100)}` });
           return;
         }
         const data = await res.json();
@@ -1593,7 +1612,7 @@
         }
       } catch (err) {
         console.error('[LensPro Client] ❌ FETCH FAILED (network error):', err.message);
-        processScanResult({ scanner_unavailable: true, message: 'Network error — check your connection.' });
+        processScanResult({ scanner_unavailable: true, message: 'Network error — check your connection and try again.' });
       }
     }
 
