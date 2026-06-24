@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitTrack Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 6%, rgba(16, 185, 129, 0.12), transparent 30rem),
+        radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.1), transparent 28rem),
+        #030712;
+      min-height: 100vh;
+      color: #f3f4f6;
+    }
+    .glass {
+      background: rgba(17, 24, 39, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .neon { box-shadow: 0 0 25px rgba(16, 185, 129, 0.35); }
+    .slide-up { animation: slideUp .45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .goal-card.selected, .tab-active, .serving-active {
+      border-color: #10b981 !important;
+      background: rgba(16, 185, 129, 0.12) !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      color: #a7f3d0;
+    }
+    .ring {
+      stroke-dasharray: 226;
+      stroke-dashoffset: 226;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ring-glow {
+      filter: drop-shadow(0 0 4px var(--ring-glow-color, rgba(16, 185, 129, 0.5)));
+    }
+    .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.6); border-radius: 999px; }
+    .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+    input, select { outline: none; }
+    .avatar-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .btn-qty {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(31, 41, 55, 0.8);
+      border: 1px solid rgba(156, 163, 175, 0.25);
+      color: #f3f4f6;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+    }
+    .btn-qty:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    .account-row {
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      transition: all 0.25s ease;
+    }
+    .account-row:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(17, 24, 39, 0.85);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+    }
+    /* Mobile-first tab layout hidden helper */
+    @media (max-width: 767.98px) {
+      .hidden-mobile {
+        display: none !important;
+      }
+    }
+    /* Water Cup Animation & Shapes */
+    .water-cup {
+      position: relative;
+      border-radius: 0.75rem;
+      border: 2px solid rgba(75, 85, 99, 0.4);
+      background: rgba(17, 24, 39, 0.6);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .water-cup::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(59, 130, 246, 0.15) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .water-cup:hover::after {
+      opacity: 1;
+    }
+    .water-cup.filled {
+      border-color: #60a5fa;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+    }
+    .water-cup.filled .wave-fill {
+      transform: translateY(0);
+    }
+    .water-cup .wave-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .water-cup .cup-handle {
+      position: absolute;
+      right: 4px;
+      top: 25%;
+      width: 6px;
+      height: 50%;
+      border: 2px solid rgba(75, 85, 99, 0.4);
+      border-left: none;
+      border-radius: 0 4px 4px 0;
+      transition: border-color 0.3s ease;
+    }
+    .water-cup.filled .cup-handle {
+      border-color: #60a5fa;
+    }
+  </style>
+</head>
+<body class="text-slate-100">
+  <!-- Login Page -->
+  <section id="loginPage" class="min-h-screen flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-md glass rounded-2xl p-6 sm:p-8 slide-up text-center">
+      <p class="text-emerald-400 font-bold tracking-[.25em] text-xs uppercase">muscle building nutrition</p>
+      <h1 class="text-3xl sm:text-4xl font-black mt-3 mb-4">FitTrack Pro</h1>
+      
+      <!-- Login Page Tabs -->
+      <div class="flex bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 mb-6">
+        <button id="tabBtnSignIn" onclick="switchLoginTab('signin')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 bg-emerald-500 text-slate-950 neon">Sign In</button>
+        <button id="tabBtnSignUp" onclick="switchLoginTab('signup')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-300">Sign Up</button>
+      </div>
+
+      <!-- Sign In Content Panel -->
+      <div id="panelSignIn" class="space-y-4">
+        <p class="text-slate-400 text-sm mb-4">Track your macros, hit your goals</p>
+        <!-- Google Sign In Button Container (real Google SDK renders here) -->
+        <div id="googleSignInBtn" class="flex justify-center min-h-[44px] mb-4"></div>
+        
+        <!-- Fallback Google Login (visible when SDK not configured) -->
+        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="hidden w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span class="font-medium text-sm text-slate-200">Sign in with Google</span>
+        </button>
+
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-4 text-slate-500 text-xs">or sign in with email</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+        
+        <!-- Email Login Form -->
+        <form id="loginForm" onsubmit="handleCredentialsLogin(event)" class="space-y-3 text-left">
+          <label class="block">
+            <span class="text-sm text-slate-300">Email</span>
+            <input id="loginEmail" type="email" required placeholder="you@example.com" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Password</span>
+            <input id="loginPassword" type="password" required placeholder="Any password works" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
+          </label>
+          <p class="text-[10px] text-slate-500 text-center">Your email becomes your user ID. Data is stored locally and synced to the cloud.</p>
+          <button type="submit" class="w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Sign In</button>
+        </form>
+      </div>
+
+      <!-- Sign Up Content Panel (hidden by default) -->
+      <div id="panelSignUp" class="hidden space-y-4">
+        <p class="text-slate-400 text-sm mb-4">Create a new account to start tracking</p>
+        <!-- Google Sign Up Button Container (real Google SDK renders here) -->
+        <div id="googleSignUpBtn" class="flex justify-center min-h-[44px] mb-4"></div>
+        
+        <!-- Fallback Google Sign Up (visible when SDK not configured) -->
+        <button id="googleSimSignUpBtn" onclick="openGoogleSimModal()" class="w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span class="font-medium text-sm text-slate-200">Sign up with Google</span>
+        </button>
+
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-4 text-slate-500 text-xs">or create an email account</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+        
+        <!-- Email Sign Up Form -->
+        <form id="signUpForm" onsubmit="handleSignUpCredentials(event)" class="space-y-3 text-left">
+          <label class="block">
+            <span class="text-sm text-slate-300">Email</span>
+            <input id="signUpEmail" type="email" required placeholder="you@example.com" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Password</span>
+            <input id="signUpPassword" type="password" required placeholder="Create a password" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
+          </label>
+          <p class="text-[10px] text-slate-500 text-center">Your email becomes your user ID. Your progress will be saved automatically.</p>
+          <button type="submit" class="w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Create Account & Onboard</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Google Account Picker Modal (Demo Mode when no Client ID configured) -->
+  <div id="googleSimModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-6 w-full max-w-md slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4 mb-3">
+        <div class="text-left">
+          <h2 class="text-xl font-bold text-slate-200">Choose an Account</h2>
+          <p class="text-slate-400 text-sm mt-1">to continue to <span class="text-emerald-400 font-semibold">FitTrack Pro</span></p>
+        </div>
+        <button onclick="closeGoogleSimModal()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Cancel</button>
+      </div>
+      
+      <!-- Info banner explaining demo mode -->
+      <div id="googleSimInfo" class="hidden rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 mb-4">
+        <p class="text-xs text-amber-200"><strong>Demo Mode:</strong> No Google Client ID is configured. These are sample accounts for testing. To enable real Google Sign-In, add your <code class="bg-slate-800 px-1 rounded">GOOGLE_CLIENT_ID</code> to <code class="bg-slate-800 px-1 rounded">.env</code>.</p>
+      </div>
+      
+      <!-- Account list -->
+      <div class="space-y-2.5" id="simulatedAccountsList"></div>
+      
+      <div class="relative flex py-4 items-center">
+        <div class="flex-grow border-t border-slate-800"></div>
+        <span class="flex-shrink mx-3 text-slate-500 text-xs">or create a custom profile</span>
+        <div class="flex-grow border-t border-slate-800"></div>
+      </div>
+      
+      <!-- Custom User Login -->
+      <form onsubmit="handleCustomSimLogin(event)" class="space-y-3 text-left">
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block">
+            <span class="text-xs text-slate-400">Name</span>
+            <input id="simName" type="text" required placeholder="John Doe" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          </label>
+          <label class="block">
+            <span class="text-xs text-slate-400">Email</span>
+            <input id="simEmail" type="email" required placeholder="john@gmail.com" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          </label>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block">
+            <span class="text-xs text-slate-400">Phone</span>
+            <input id="simPhone" type="text" placeholder="+1 (555) 012-3456" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          </label>
+          <label class="block">
+            <span class="text-xs text-slate-400">Avatar Color</span>
+            <select id="simColor" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2">
+              <option value="emerald">Emerald Green</option>
+              <option value="blue">Royal Blue</option>
+              <option value="purple">Vibrant Purple</option>
+              <option value="rose">Rose Red</option>
+              <option value="amber">Amber Orange</option>
+            </select>
+          </label>
+        </div>
+        <button type="submit" class="w-full text-sm rounded-xl bg-emerald-500/15 border border-emerald-500/40 py-2.5 font-bold hover:bg-emerald-500/25 transition text-emerald-200">Create & Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Onboarding Section (hidden by default) -->
+  <section id="onboarding" class="hidden min-h-screen flex items-center justify-center px-4 py-8">
+    <div class="w-full max-w-5xl">
+      <div class="mb-8 text-center">
+        <p class="text-emerald-400 font-bold tracking-[.25em] text-xs uppercase">muscle building nutrition</p>
+        <h1 class="text-4xl sm:text-6xl font-black mt-3">FitTrack Pro</h1>
+      </div>
+
+      <div id="step1" class="glass rounded-2xl p-5 sm:p-8 slide-up">
+        <div class="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold">Build Your Profile</h2>
+            <p class="text-slate-400 mt-1">Step 1 of 2</p>
+          </div>
+          <div class="h-2 w-28 rounded-full bg-slate-700 overflow-hidden"><div class="h-full w-1/2 bg-emerald-500"></div></div>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <label class="block">
+            <span class="text-sm text-slate-300">Gender</span>
+            <select id="gender" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Age</span>
+            <input id="age" type="number" min="13" max="100" value="28" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Height (cm)</span>
+            <input id="height" type="number" min="120" max="230" value="178" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-slate-300">Weight (kg)</span>
+            <input id="weight" type="number" min="35" max="220" value="78" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+          </label>
+          <label class="block sm:col-span-2">
+            <span class="text-sm text-slate-300">Activity Level</span>
+            <select id="activity" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3">
+              <option value="1.2">Sedentary</option>
+              <option value="1.375">Lightly active</option>
+              <option value="1.55" selected>Moderately active</option>
+              <option value="1.725">Very active</option>
+              <option value="1.9">Extreme</option>
+            </select>
+          </label>
+        </div>
+        <button onclick="goToStep2()" class="mt-7 w-full sm:w-auto rounded-xl bg-emerald-500 px-7 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Continue</button>
+      </div>
+
+      <div id="step2" class="glass rounded-2xl p-5 sm:p-8 hidden">
+        <div class="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold">Choose Your Goal</h2>
+            <p class="text-slate-400 mt-1">Step 2 of 2</p>
+          </div>
+          <div class="h-2 w-28 rounded-full bg-slate-700 overflow-hidden"><div class="h-full w-full bg-emerald-500"></div></div>
+        </div>
+        <div id="goalGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <label class="block mt-6">
+          <span class="text-sm text-slate-300">Dietary Preference</span>
+          <select id="dietType" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3">
+            <option value="Vegetarian">Vegetarian (Pure Veg)</option>
+            <option value="Non-Vegetarian">Non-Vegetarian</option>
+            <option value="Eggetarian">Eggetarian (Ovo-Vegetarian)</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Jain">Jain Diet</option>
+            <option value="Keto">Indian Keto</option>
+            <option value="Balanced">Balanced Diet</option>
+          </select>
+        </label>
+        <button id="finishBtn" onclick="finishOnboarding()" disabled class="mt-7 w-full sm:w-auto rounded-xl bg-slate-700 px-7 py-3 font-bold text-slate-400 transition disabled:cursor-not-allowed">Start Tracking</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="mainApp" class="hidden min-h-screen px-4 py-5 sm:px-6 lg:px-8 pb-24 md:pb-6">
+    <header class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <p class="text-emerald-400 font-bold tracking-[.22em] text-xs uppercase">FitTrack Pro</p>
+        <h1 class="text-3xl sm:text-4xl font-black">Today’s Muscle Fuel</h1>
+        <p class="text-slate-400 mt-1">Goal: <span id="userGoalDisplay" class="text-slate-200"></span></p>
+        <p id="syncStatus" class="text-xs text-slate-500 mt-1">Database sync ready</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="showProfile()" class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/55 p-2 hover:border-emerald-400/50 transition">
+          <div id="headerUserAvatar" class="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center font-bold text-slate-100 overflow-hidden bg-emerald-500 flex-shrink-0">
+            U
+          </div>
+          <div class="text-left hidden sm:block">
+            <p id="headerUserName" class="font-semibold text-sm text-slate-200">User</p>
+            <p id="headerUserEmail" class="text-xs text-slate-400">user@domain.com</p>
+          </div>
+        </button>
+        <!-- Quick Sign Out Icon Button -->
+        <button onclick="signOut()" title="Sign Out" class="rounded-xl border border-slate-700 bg-slate-900/55 p-3 hover:border-red-500/50 text-slate-400 hover:text-red-400 transition flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile Navigation Switcher (Only visible on screens < 768px) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 flex justify-around py-3 z-40">
+      <button id="navBtnDashboard" onclick="switchMobileTab('dashboard')" class="flex flex-col items-center gap-1 text-emerald-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+        </svg>
+        <span class="text-[10px] font-semibold">Dashboard</span>
+      </button>
+      <button id="navBtnTracker" onclick="switchMobileTab('tracker')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span class="text-[10px] font-semibold">Add Food</span>
+      </button>
+    </div>
+
+    <!-- Responsive Grid -->
+    <div class="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+      
+      <!-- Panel A: Dashboard & Log (dashboardPanel) -->
+      <!-- Spans 8 columns on desktop (lg), 6 columns on tablet (md), full width on mobile -->
+      <div id="dashboardPanel" class="md:col-span-6 lg:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Dashboard Left: Stats, Macros, Water -->
+        <div class="space-y-6">
+          <!-- Stats Dashboard -->
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <h2 class="text-xl font-bold">Dashboard</h2>
+              <span class="text-xs text-slate-400">Targets update from your profile</span>
+            </div>
+            <div id="motivationalSummary" class="text-emerald-400 font-medium text-xs sm:text-sm mb-4 border-l-2 border-emerald-500/50 pl-3 py-1.5 italic bg-emerald-500/5 rounded-r-lg text-left">
+              Start your engine! Add your first meal to fuel your muscles today. 🚀
+            </div>
+            <div class="grid grid-cols-2 gap-4" id="ringGrid"></div>
+            <div class="grid grid-cols-2 gap-3 mt-5 text-center">
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">BMI</p><p id="bmiValue" class="text-xl font-bold"></p><p id="bmiCategory" class="text-xs text-slate-500"></p></div>
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">BMR</p><p id="bmrValue" class="text-xl font-bold"></p><p class="text-xs text-slate-500">cal/day</p></div>
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">TDEE</p><p id="tdeeValue" class="text-xl font-bold"></p><p class="text-xs text-slate-500">cal/day</p></div>
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">Protein/kg</p><p id="proteinPerKg" class="text-xl font-bold"></p><p class="text-xs text-slate-500">g/kg</p></div>
+            </div>
+          </div>
+
+          <!-- Macro Breakdown -->
+          <div class="glass rounded-2xl p-5">
+            <h2 class="text-xl font-bold mb-4">Macro Breakdown</h2>
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-2"><span class="text-blue-300 font-medium">Protein</span><span id="proteinBarText" class="text-slate-400 text-xs"></span></div>
+                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="proteinBar" class="h-full rounded-full bg-blue-500 transition-all"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-2"><span class="text-amber-300 font-medium font-medium">Carbs</span><span id="carbBarText" class="text-slate-400 text-xs"></span></div>
+                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="carbBar" class="h-full rounded-full bg-amber-400 transition-all"></div></div>
+              </div>
+              <div>
+                <div class="flex justify-between text-sm mb-2"><span class="text-red-300 font-medium font-medium">Fats</span><span id="fatBarText" class="text-slate-400 text-xs"></span></div>
+                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="fatBar" class="h-full rounded-full bg-red-500 transition-all"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Water Tracker -->
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold">Water Tracker</h2>
+              <span class="text-blue-300 font-bold"><span id="waterCount">0</span>/8 glasses</span>
+            </div>
+            <div id="waterGlasses" class="grid grid-cols-4 sm:grid-cols-8 gap-3"></div>
+          </div>
+        </div>
+
+        <!-- Dashboard Right: Weekly Chart, Today's Log -->
+        <div class="space-y-6">
+          <!-- Weekly Chart -->
+          <div class="glass rounded-2xl p-5">
+            <h2 class="text-xl font-bold mb-4">Weekly Protein Progress</h2>
+            <div class="h-64"><canvas id="weeklyChart"></canvas></div>
+          </div>
+
+          <!-- Food Log -->
+          <div class="glass rounded-2xl p-5 flex flex-col min-h-[350px]">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold">Food Log</h2>
+              <button onclick="clearLog()" class="rounded-lg border border-red-400/30 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/10 transition">Clear all</button>
+            </div>
+            <div id="foodLog" class="space-y-3 flex-grow overflow-auto max-h-[320px] thin-scroll"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel B: Search & Add Food (trackerPanel) -->
+      <!-- Spans 4 columns on desktop (lg), 6 columns on tablet (md), full width on mobile -->
+      <div id="trackerPanel" class="md:col-span-6 lg:col-span-4 space-y-6">
+        <div class="glass rounded-2xl p-5">
+          <div class="flex flex-col gap-4 mb-4">
+            <h2 class="text-xl font-bold">Food Tracking</h2>
+            <div class="relative">
+              <input id="foodSearch" oninput="renderFoodGrid()" type="search" placeholder="Search roti, paneer, dal, chai..." class="w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 pl-10 text-slate-100" />
+              <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          <div id="categoryTabs" class="flex gap-2 overflow-x-auto thin-scroll pb-3 mb-4"></div>
+          <div id="foodGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto thin-scroll pr-1"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="addFoodModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-lg slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4">
+        <div><h2 id="modalFoodName" class="text-2xl font-bold"></h2><p id="modalFoodMacros" class="text-slate-400 mt-1"></p></div>
+        <button onclick="closeModal()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Close</button>
+      </div>
+      <label class="block mt-5">
+        <span class="text-sm text-slate-300">Serving size</span>
+        <input id="servingAmount" type="number" min="0" step="1" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+      </label>
+      <div id="servingButtons" class="grid grid-cols-4 gap-2 mt-4"></div>
+      <div class="grid grid-cols-4 gap-2 mt-5 text-center">
+        <div class="rounded-xl bg-slate-900/60 p-3"><p id="previewCals" class="font-bold text-lg"></p><p class="text-xs text-slate-500">cal</p></div>
+        <div class="rounded-xl bg-blue-500/10 p-3"><p id="previewProtein" class="font-bold text-lg text-blue-300"></p><p class="text-xs text-slate-500">protein</p></div>
+        <div class="rounded-xl bg-amber-500/10 p-3"><p id="previewCarbs" class="font-bold text-lg text-amber-300"></p><p class="text-xs text-slate-500">carbs</p></div>
+        <div class="rounded-xl bg-red-500/10 p-3"><p id="previewFats" class="font-bold text-lg text-red-300"></p><p class="text-xs text-slate-500">fats</p></div>
+      </div>
+      <button onclick="confirmAddFood()" class="mt-5 w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Add to Log</button>
+    </div>
+  </div>
+
+  <div id="profileModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-xl slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div><h2 class="text-2xl font-bold">Profile</h2><p class="text-slate-400">Your current nutrition setup</p></div>
+        <button onclick="closeProfile()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Close</button>
+      </div>
+      
+      <!-- User Profile Header Card -->
+      <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/40 border border-slate-800 rounded-xl p-4 mb-5">
+        <div id="modalUserAvatar" class="w-16 h-16 rounded-full border-2 border-emerald-500 flex items-center justify-center font-bold text-2xl text-slate-100 overflow-hidden bg-emerald-500">
+          U
+        </div>
+        <div class="text-center sm:text-left">
+          <h3 id="modalUserName" class="text-lg font-bold text-slate-100">User</h3>
+          <p id="modalUserEmail" class="text-sm text-slate-400">user@domain.com</p>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Height</p><p id="profileHeight" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Weight</p><p id="profileWeight" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Goal</p><p id="profileGoal" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Diet</p><p id="profileDiet" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4 sm:col-span-2"><p class="text-xs text-slate-400">Targets</p><p id="profileTarget" class="font-bold"></p></div>
+        <!-- Phone Number Input -->
+        <div class="rounded-xl bg-slate-900/60 p-4 sm:col-span-2">
+          <label class="block">
+            <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Phone Number</span>
+            <input id="profilePhone" type="text" oninput="savePhone()" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2 text-slate-200 text-sm" placeholder="Not set" />
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-5">
+        <button onclick="signOut()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">Sign Out</button>
+        <button onclick="resetProfile()" class="flex-1 rounded-xl bg-red-500/15 border border-red-400/35 py-3 font-bold text-red-200 hover:bg-red-500/25 transition text-slate-200">Reset Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const store = {
+      profile: 'fittrack_profile',
+      logDate: 'fittrack_log_date',
+      log: 'fittrack_log',
+      waterDate: 'fittrack_water_date',
+      water: 'fittrack_water',
+      weekly: 'fittrack_weekly',
+      userId: 'fittrack_user_id',
+      apiBase: 'fittrack_api_base',
+      user: 'fittrack_user'
+    };
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const API_BASE = localStorage.getItem(store.apiBase) || 'http://localhost:3000/api';
+    let currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
+    let USER_ID = currentUser ? currentUser.id : getOrCreateUserId();
+    let userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
+    let todayLog = localStorage.getItem(store.logDate) === todayKey ? JSON.parse(localStorage.getItem(store.log) || '[]') : [];
+    let waterIntake = localStorage.getItem(store.waterDate) === todayKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
+    let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
+    let selectedGoal = null;
+    let selectedFood = null;
+    let currentCategory = 'all';
+    let servingType = 'g';
+    let weeklyChart = null;
+
+    const goalConfigs = {
+      lean_muscle: { name: 'Lean & Toned', note: '-10% deficit', multiplier: 0.9, proteinFactor: 2.0, carbPct: 0.35, fatPct: 0.25 },
+      bulk: { name: 'Muscle Bulk', note: '+20% surplus', multiplier: 1.2, proteinFactor: 2.2, carbPct: 0.45, fatPct: 0.25 },
+      athletic: { name: 'Athletic Performance', note: 'maintenance', multiplier: 1.0, proteinFactor: 1.8, carbPct: 0.40, fatPct: 0.25 },
+      shred: { name: 'Shredded Cut', note: '-20% deficit', multiplier: 0.8, proteinFactor: 2.2, carbPct: 0.25, fatPct: 0.25 },
+      power: { name: 'Power Building', note: '+15% surplus', multiplier: 1.15, proteinFactor: 2.0, carbPct: 0.40, fatPct: 0.30 },
+      recomp: { name: 'Body Recomposition', note: '-5% deficit, high protein', multiplier: 0.95, proteinFactor: 2.0, carbPct: 0.30, fatPct: 0.25 }
+    };
+    const categories = ['All','Meals','Breads & Rice','Proteins & Dals','Dairy','Snacks','Sweets','Beverages'];
+    const conversions = { g: 1, oz: 28.35, cup: 240, piece: 1 };
+    const baseFoods = [
+      // Meals category
+      ['Daal Chawal', 'meals', 120, 3.6, 21.6, 2.0],
+      ['Paneer Butter Masala', 'meals', 240, 8.0, 6.7, 20.0],
+      ['Butter Chicken', 'meals', 253, 18.7, 5.3, 17.3],
+      ['Chana Masala', 'meals', 120, 4.7, 18.7, 2.7],
+      ['Chicken Biryani', 'meals', 180, 9.6, 22.4, 5.6],
+      ['Veg Biryani', 'meals', 140, 3.2, 23.2, 4.0],
+      ['Choole Bhature', 'meals', 275, 6.0, 37.5, 11.0],
+      ['Dal Makhani', 'meals', 167, 5.3, 14.7, 10.0],
+      ['Palak Paneer', 'meals', 147, 6.7, 5.3, 10.7],
+      ['Rajma Chawal', 'meals', 124, 4.0, 22.4, 2.0],
+      ['Khichdi', 'meals', 105, 3.0, 19.0, 2.0],
+      ['Muttar Paneer', 'meals', 160, 6.7, 8.0, 10.7],
+      ['Aloo Gobi', 'meals', 93, 2.0, 10.7, 4.7],
+      ['Bhindi Masala', 'meals', 80, 2.0, 9.3, 4.0],
+
+      // Breads & Rice category
+      ['Basmati Rice Cooked', 'breads & rice', 130, 2.7, 28.0, 0.3],
+      ['Brown Rice Cooked', 'breads & rice', 112, 2.6, 24.0, 0.9],
+      ['Roti / Chapati', 'breads & rice', 70, 2.5, 15.0, 0.5, 'piece'],
+      ['Tandoori Roti', 'breads & rice', 110, 4.0, 22.0, 1.0, 'piece'],
+      ['Plain Paratha', 'breads & rice', 220, 4.0, 35.0, 7.0, 'piece'],
+      ['Aloo Paratha', 'breads & rice', 290, 6.0, 45.0, 10.0, 'piece'],
+      ['Butter Naan', 'breads & rice', 310, 9.0, 50.0, 8.0, 'piece'],
+      ['Garlic Naan', 'breads & rice', 320, 9.0, 52.0, 8.5, 'piece'],
+      ['Puri', 'breads & rice', 100, 2.0, 15.0, 5.0, 'piece'],
+      ['Bhatura', 'breads & rice', 210, 4.0, 30.0, 8.0, 'piece'],
+      ['Poha', 'breads & rice', 180, 3.0, 36.0, 3.0],
+      ['Upma', 'breads & rice', 190, 4.0, 34.0, 4.5],
+      ['Idli with Sambar', 'breads & rice', 180, 6.0, 34.0, 2.0, 'piece'],
+      ['Masala Dosa', 'breads & rice', 320, 6.0, 50.0, 11.0, 'piece'],
+
+      // Proteins & Dals category
+      ['Moong Dal Cooked', 'proteins & dals', 105, 7.0, 19.0, 0.3],
+      ['Masoor Dal Cooked', 'proteins & dals', 116, 9.0, 20.0, 0.4],
+      ['Soya Chunks Cooked', 'proteins & dals', 120, 15.0, 8.0, 0.5],
+      ['Paneer Bhurji', 'proteins & dals', 210, 12.0, 6.0, 15.0],
+      ['Tandoori Chicken', 'proteins & dals', 173, 20.0, 1.3, 9.3],
+      ['Fish Tikka', 'proteins & dals', 140, 16.0, 1.3, 8.0],
+      ['Chicken Tikka', 'proteins & dals', 150, 18.0, 1.5, 8.0],
+      ['Egg Bhurji', 'proteins & dals', 147, 8.7, 2.7, 10.7],
+      ['Boiled Egg', 'proteins & dals', 78, 6.3, 0.6, 5.3, 'piece'],
+      ['Chicken Breast', 'proteins & dals', 165, 31.0, 0.0, 3.6],
+      ['Mutton Curry', 'proteins & dals', 213, 17.3, 4.0, 14.7],
+
+      // Dairy category
+      ['Paneer raw', 'dairy', 265, 18.0, 1.2, 20.0],
+      ['Whole Milk Curd / Dahi', 'dairy', 60, 3.2, 4.3, 3.4],
+      ['Cow Milk', 'dairy', 65, 3.2, 4.7, 3.6, 'cup'],
+      ['Buffalo Milk', 'dairy', 100, 3.8, 5.2, 6.9, 'cup'],
+      ['Ghee', 'dairy', 900, 0.0, 0.0, 100.0],
+      ['Sweet Lassi', 'dairy', 100, 2.5, 15.0, 3.0, 'cup'],
+      ['Chaas / Buttermilk', 'dairy', 22, 1.0, 2.0, 0.75, 'cup'],
+
+      // Snacks category
+      ['Samosa', 'snacks', 250, 4.0, 32.0, 12.0, 'piece'],
+      ['Dhokla', 'snacks', 75, 3.0, 12.0, 1.5, 'piece'],
+      ['Medu Vada', 'snacks', 140, 3.0, 16.0, 7.5, 'piece'],
+      ['Pani Puri', 'snacks', 30, 0.5, 4.6, 1.0, 'piece'],
+      ['Bhel Puri', 'snacks', 185, 4.0, 32.0, 4.5],
+      ['Pav Bhaji', 'snacks', 400, 8.0, 60.0, 14.0, 'piece'],
+      ['Vada Pav', 'snacks', 300, 6.0, 44.0, 11.0, 'piece'],
+      ['Roasted Chana', 'snacks', 360, 19.0, 58.0, 6.0],
+      ['Roasted Makhana', 'snacks', 367, 10.0, 73.3, 6.7],
+
+      // Sweets category
+      ['Gulab Jamun', 'sweets', 150, 2.0, 24.0, 6.0, 'piece'],
+      ['Rasgulla', 'sweets', 125, 2.5, 26.0, 1.0, 'piece'],
+      ['Gajar ka Halwa', 'sweets', 200, 3.3, 28.0, 8.0],
+      ['Jalebi', 'sweets', 150, 1.0, 30.0, 3.0, 'piece'],
+      ['Besan Ladoo', 'sweets', 180, 3.0, 24.0, 8.0, 'piece'],
+      ['Kheer', 'sweets', 160, 4.0, 24.0, 5.3],
+
+      // Beverages category
+      ['Masala Chai', 'beverages', 75, 2.0, 12.0, 2.0, 'cup'],
+      ['Filter Coffee', 'beverages', 80, 2.5, 12.0, 2.5, 'cup'],
+      ['Tender Coconut Water', 'beverages', 19, 0.7, 3.7, 0.2, 'cup'],
+      ['Sugarcane Juice', 'beverages', 90, 0.25, 22.5, 0.0, 'cup'],
+      ['Nimbu Pani', 'beverages', 30, 0.0, 7.5, 0.0, 'cup']
+    ];
+    const generatedNames = ['Homemade','Spicy','Butter','Masala','Tandoori','Healthy','Low Calorie','High Protein','Dhaba Style','Classic','Less Oil','Special'];
+    const foodDatabase = {};
+    baseFoods.forEach((f) => foodDatabase[f[0]] = toFood(f));
+    baseFoods.slice(0, 59).forEach((f, index) => {
+      const label = generatedNames[index % generatedNames.length] + ' ' + f[0];
+      if (!foodDatabase[label]) foodDatabase[label] = toFood([label, f[1], Math.round(f[2] * (0.92 + (index % 5) * .035)), +(f[3] * (0.95 + (index % 4) * .03)).toFixed(1), +(f[4] * (0.9 + (index % 6) * .035)).toFixed(1), +(f[5] * (0.9 + (index % 5) * .04)).toFixed(1), f[6]]);
+    });
+    function toFood(f) { return { category: f[1], cal: f[2], protein: f[3], carbs: f[4], fat: f[5], unit: f[6] || 'g', per: f[6] ? 1 : 100 }; }
+
+    function getOrCreateUserId() {
+      const existing = localStorage.getItem(store.userId);
+      if (existing) return existing;
+      const id = crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+      localStorage.setItem(store.userId, id);
+      return id;
+    }
+    function setSyncStatus(message, tone = 'muted') {
+      const el = document.getElementById('syncStatus');
+      if (!el) return;
+      
+      let displayMessage = message;
+      if (message === 'Synced from Postgres') {
+        displayMessage = 'Synced progress 💪';
+      } else if (message === 'Saved to Postgres') {
+        displayMessage = 'Saved progress 💪';
+      } else if (message === 'Database sync ready') {
+        displayMessage = 'Cloud sync ready 💪';
+      } else if (message === 'Offline — data saved in browser') {
+        displayMessage = 'Saved locally (Offline) ✓';
+      } else if (message === 'Offline mode: changes saved locally') {
+        displayMessage = 'Saved locally (Offline) ✓';
+      }
+      
+      el.textContent = displayMessage;
+      el.className = 'text-xs mt-1 font-medium ' + (tone === 'ok' ? 'text-emerald-400' : tone === 'warn' ? 'text-amber-400' : 'text-slate-500');
+    }
+    function currentTotals() {
+      return todayLog.reduce((a, x) => ({ cal: a.cal + x.cal, protein: a.protein + x.protein, carbs: a.carbs + x.carbs, fat: a.fat + x.fat }), { cal: 0, protein: 0, carbs: 0, fat: 0 });
+    }
+    function saveLocalState() {
+      localStorage.setItem(store.profile, JSON.stringify(userProfile));
+      localStorage.setItem(store.logDate, todayKey);
+      localStorage.setItem(store.waterDate, todayKey);
+      localStorage.setItem(store.log, JSON.stringify(todayLog));
+      localStorage.setItem(store.water, waterIntake);
+      localStorage.setItem(store.weekly, JSON.stringify(weeklyData));
+    }
+    async function loadTodayFromDatabase() {
+      try {
+        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${todayKey}`);
+        if (!res.ok) throw new Error('Database read failed');
+        const data = await res.json();
+        // Only overwrite local data if the database actually has content
+        if (data.profile) userProfile = data.profile;
+        if (Array.isArray(data.log) && data.log.length > 0) todayLog = data.log;
+        if (Number.isInteger(data.waterIntake) && data.waterIntake > 0) waterIntake = data.waterIntake;
+        if (data.weeklyData && typeof data.weeklyData === 'object' && Object.keys(data.weeklyData).length > 0) weeklyData = data.weeklyData;
+        saveLocalState();
+        setSyncStatus('Synced from Postgres', 'ok');
+      } catch (error) {
+        setSyncStatus('Offline — data saved in browser', 'warn');
+      }
+    }
+    async function saveDailyToDatabase() {
+      if (!userProfile) return;
+      try {
+        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${todayKey}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: userProfile, log: todayLog, waterIntake, weeklyData, totals: currentTotals() })
+        });
+        if (!res.ok) throw new Error('Database write failed');
+        setSyncStatus('Saved to Postgres', 'ok');
+      } catch (error) {
+        setSyncStatus('Offline mode: changes saved locally', 'warn');
+      }
+    }
+
+    function renderGoals() {
+      const icons = ['◒','▲','◆','◇','⬢','◈'];
+      document.getElementById('goalGrid').innerHTML = Object.entries(goalConfigs).map(([key, g], i) => `
+        <button data-goal="${key}" onclick="selectGoal('${key}')" class="goal-card text-left rounded-2xl border border-slate-700 bg-slate-900/55 p-4 hover:-translate-y-1 hover:border-emerald-400/60 transition">
+          <div class="text-3xl text-emerald-300">${icons[i]}</div>
+          <h3 class="font-bold mt-3">${g.name}</h3>
+          <p class="text-sm text-slate-400 mt-1">${g.note}</p>
+          <p class="text-xs text-slate-500 mt-3">${g.proteinFactor}g protein/kg</p>
+        </button>`).join('');
+    }
+
+    function goToStep2() {
+      if (!document.getElementById('age').value || !document.getElementById('height').value || !document.getElementById('weight').value) return;
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+      document.getElementById('step2').classList.add('slide-up');
+    }
+    function selectGoal(goal) {
+      selectedGoal = goal;
+      document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+      document.querySelector(`[data-goal="${goal}"]`).classList.add('selected');
+      const btn = document.getElementById('finishBtn');
+      btn.disabled = false;
+      btn.className = 'mt-7 w-full sm:w-auto rounded-xl bg-emerald-500 px-7 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition';
+    }
+    function finishOnboarding() {
+      const gender = document.getElementById('gender').value;
+      const age = +document.getElementById('age').value;
+      const height = +document.getElementById('height').value;
+      const weight = +document.getElementById('weight').value;
+      const activity = +document.getElementById('activity').value;
+      const bmr = Math.round(gender === 'male' ? (10 * weight + 6.25 * height - 5 * age + 5) : (10 * weight + 6.25 * height - 5 * age - 161));
+      const tdee = Math.round(bmr * activity);
+      const config = goalConfigs[selectedGoal];
+      const targetCalories = Math.round(tdee * config.multiplier);
+      userProfile = {
+        gender, age, height, weight, activity, bmr, tdee,
+        goal: selectedGoal, goalName: config.name, dietType: document.getElementById('dietType').value,
+        targetCalories, targetProtein: Math.round(weight * config.proteinFactor),
+        targetCarbs: Math.round((targetCalories * config.carbPct) / 4),
+        targetFat: Math.round((targetCalories * config.fatPct) / 9)
+      };
+      saveLocalState();
+      if (currentUser) updateHeaderProfileWidget(currentUser);
+      initApp();
+    }
+
+    function ring(label, currentId, targetId, ringId, percentId, color) {
+      return `<div class="glass rounded-2xl p-4 text-center hover:border-emerald-500/30 transition-all duration-300">
+        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto">
+          <svg viewBox="0 0 90 90" class="w-full h-full">
+            <circle cx="45" cy="45" r="36" stroke="#1f2937" stroke-width="7" fill="none"/>
+            <circle id="${ringId}" class="ring ring-glow" cx="45" cy="45" r="36" stroke="${color}" stroke-width="7" stroke-linecap="round" fill="none" style="--ring-glow-color: ${color}80"/>
+          </svg>
+          <div class="absolute inset-0 grid place-items-center"><div><p id="${percentId}" class="font-black text-base sm:text-lg">0%</p><p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">${label}</p></div></div>
+        </div>
+        <p class="mt-3 text-xs sm:text-sm font-bold text-slate-300"><span id="${currentId}">0</span><span class="text-slate-500 font-normal"> / </span><span id="${targetId}">0</span></p>
+      </div>`;
+    }
+    let currentMobileTab = 'dashboard';
+    function switchMobileTab(tab) {
+      currentMobileTab = tab;
+      const dashboardPanel = document.getElementById('dashboardPanel');
+      const trackerPanel = document.getElementById('trackerPanel');
+      const navBtnDashboard = document.getElementById('navBtnDashboard');
+      const navBtnTracker = document.getElementById('navBtnTracker');
+      
+      if (!dashboardPanel || !trackerPanel) return;
+      
+      if (tab === 'dashboard') {
+        dashboardPanel.classList.remove('hidden-mobile');
+        trackerPanel.classList.add('hidden-mobile');
+        if (navBtnDashboard) {
+          navBtnDashboard.classList.add('text-emerald-400');
+          navBtnDashboard.classList.remove('text-slate-400');
+        }
+        if (navBtnTracker) {
+          navBtnTracker.classList.remove('text-emerald-400');
+          navBtnTracker.classList.add('text-slate-400');
+        }
+      } else {
+        dashboardPanel.classList.add('hidden-mobile');
+        trackerPanel.classList.remove('hidden-mobile');
+        if (navBtnDashboard) {
+          navBtnDashboard.classList.remove('text-emerald-400');
+          navBtnDashboard.classList.add('text-slate-400');
+        }
+        if (navBtnTracker) {
+          navBtnTracker.classList.add('text-emerald-400');
+          navBtnTracker.classList.remove('text-slate-400');
+        }
+      }
+    }
+    function initApp() {
+      saveLocalState();
+      document.getElementById('onboarding').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('userGoalDisplay').textContent = userProfile.goalName;
+      document.getElementById('ringGrid').innerHTML =
+        ring('Calories','currentCals','targetCals','calRing','calPercent','#10b981') +
+        ring('Protein','currentProtein','targetProtein','proteinRing','proteinPercent','#3b82f6') +
+        ring('Carbs','currentCarbs','targetCarbs','carbRing','carbPercent','#f59e0b') +
+        ring('Fats','currentFat','targetFat','fatRing','fatPercent','#ef4444');
+      document.getElementById('targetCals').textContent = userProfile.targetCalories;
+      document.getElementById('targetProtein').textContent = userProfile.targetProtein;
+      document.getElementById('targetCarbs').textContent = userProfile.targetCarbs;
+      document.getElementById('targetFat').textContent = userProfile.targetFat;
+      const bmi = userProfile.weight / Math.pow(userProfile.height / 100, 2);
+      document.getElementById('bmiValue').textContent = bmi.toFixed(1);
+      document.getElementById('bmiCategory').textContent = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+      document.getElementById('bmrValue').textContent = userProfile.bmr;
+      document.getElementById('tdeeValue').textContent = userProfile.tdee;
+      document.getElementById('proteinPerKg').textContent = (userProfile.targetProtein / userProfile.weight).toFixed(1);
+      renderCategories();
+      initWaterTracker();
+      renderFoodGrid();
+      renderFoodLog();
+      initChart();
+      updateDashboard();
+      switchMobileTab('dashboard');
+    }
+
+    function renderCategories() {
+      document.getElementById('categoryTabs').innerHTML = categories.map(c => `<button data-cat="${c.toLowerCase()}" onclick="setFoodCategory('${c.toLowerCase()}')" class="food-tab whitespace-nowrap rounded-xl border border-slate-700 bg-slate-900/55 px-3 py-2 text-sm transition ${c === 'All' ? 'tab-active' : ''}">${c}</button>`).join('');
+    }
+    function setFoodCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.food-tab').forEach(t => t.classList.remove('tab-active'));
+      document.querySelector(`[data-cat="${cat}"]`).classList.add('tab-active');
+      renderFoodGrid();
+    }
+    function renderFoodGrid() {
+      const search = document.getElementById('foodSearch').value.toLowerCase();
+      const foods = Object.entries(foodDatabase).filter(([name, f]) => (currentCategory === 'all' || f.category === currentCategory) && name.toLowerCase().includes(search));
+      document.getElementById('foodGrid').innerHTML = foods.map(([name, f]) => `
+        <button onclick="openAddModal('${escapeName(name)}')" class="text-left rounded-xl bg-slate-900/55 border border-slate-800 p-4 hover:-translate-y-1 hover:border-emerald-400/50 hover:bg-slate-800/70 transition">
+          <div class="flex justify-between gap-3"><h3 class="font-bold">${name}</h3><span class="text-xs rounded-full bg-slate-800 px-2 py-1 text-slate-300">${f.category}</span></div>
+          <p class="text-sm text-slate-400 mt-3">${f.cal} cal • ${f.protein}g P • ${f.carbs}g C • ${f.fat}g F</p>
+          <p class="text-xs text-slate-500 mt-2">per ${f.per}${f.unit}</p>
+        </button>`).join('') || '<p class="text-slate-500 col-span-full py-10 text-center">No foods found</p>';
+    }
+    function escapeName(name) { return name.replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+    function openAddModal(foodName) {
+      selectedFood = { name: foodName, data: foodDatabase[foodName] };
+      servingType = selectedFood.data.unit === 'scoop' || selectedFood.data.unit === 'bottle' ? 'piece' : selectedFood.data.unit;
+      document.getElementById('modalFoodName').textContent = foodName;
+      document.getElementById('modalFoodMacros').textContent = `${selectedFood.data.cal} cal • ${selectedFood.data.protein}g P • ${selectedFood.data.carbs}g C • ${selectedFood.data.fat}g F`;
+      document.getElementById('servingAmount').value = selectedFood.data.per;
+      renderServingButtons();
+      updatePreview();
+      document.getElementById('addFoodModal').classList.remove('hidden');
+      document.getElementById('addFoodModal').classList.add('flex');
+    }
+    function renderServingButtons() {
+      document.getElementById('servingButtons').innerHTML = ['g','oz','cup','piece'].map(u => `<button onclick="setServingType('${u}')" class="serving-btn rounded-xl border border-slate-700 px-3 py-2 text-sm ${u === servingType ? 'serving-active' : ''}">${u}</button>`).join('');
+    }
+    function setServingType(type) { servingType = type; renderServingButtons(); updatePreview(); }
+    function updatePreview() {
+      if (!selectedFood) return;
+      const amount = +document.getElementById('servingAmount').value || 0;
+      const factor = (amount * conversions[servingType]) / (selectedFood.data.per * (conversions[selectedFood.data.unit] || 1));
+      document.getElementById('previewCals').textContent = Math.round(selectedFood.data.cal * factor);
+      document.getElementById('previewProtein').textContent = (selectedFood.data.protein * factor).toFixed(1) + 'g';
+      document.getElementById('previewCarbs').textContent = (selectedFood.data.carbs * factor).toFixed(1) + 'g';
+      document.getElementById('previewFats').textContent = (selectedFood.data.fat * factor).toFixed(1) + 'g';
+    }
+    function confirmAddFood() {
+      const amount = +document.getElementById('servingAmount').value;
+      if (!amount || !selectedFood) return;
+      const factor = (amount * conversions[servingType]) / (selectedFood.data.per * (conversions[selectedFood.data.unit] || 1));
+      todayLog.push({ name: selectedFood.name, amount, unit: servingType, cal: Math.round(selectedFood.data.cal * factor), protein: selectedFood.data.protein * factor, carbs: selectedFood.data.carbs * factor, fat: selectedFood.data.fat * factor, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      saveLocalState();
+      closeModal();
+      renderFoodLog();
+      updateDashboard();
+    }
+    function closeModal() {
+      document.getElementById('addFoodModal').classList.add('hidden');
+      document.getElementById('addFoodModal').classList.remove('flex');
+      selectedFood = null;
+    }
+    function getStepSize(unit) {
+      switch (unit) {
+        case 'g': return 25;
+        case 'oz': return 1;
+        case 'cup': return 0.25;
+        default: return 1;
+      }
+    }
+    function scaleFoodMacros(item, oldAmount, newAmount) {
+      const ratio = newAmount / oldAmount;
+      item.amount = Math.round(newAmount * 100) / 100;
+      item.cal = Math.round(item.cal * ratio);
+      item.protein = item.protein * ratio;
+      item.carbs = item.carbs * ratio;
+      item.fat = item.fat * ratio;
+    }
+    function incrementFood(index) {
+      const item = todayLog[index];
+      if (!item) return;
+      const step = getStepSize(item.unit);
+      const oldAmount = item.amount;
+      const newAmount = oldAmount + step;
+      scaleFoodMacros(item, oldAmount, newAmount);
+      saveLocalState();
+      renderFoodLog();
+      updateDashboard();
+    }
+    function decrementFood(index) {
+      const item = todayLog[index];
+      if (!item) return;
+      const step = getStepSize(item.unit);
+      const oldAmount = item.amount;
+      const newAmount = oldAmount - step;
+      if (newAmount <= 0) {
+        removeFood(index);
+      } else {
+        scaleFoodMacros(item, oldAmount, newAmount);
+        saveLocalState();
+        renderFoodLog();
+        updateDashboard();
+      }
+    }
+    function renderFoodLog() {
+      const container = document.getElementById('foodLog');
+      if (!todayLog.length) { container.innerHTML = '<p class="text-slate-500 text-center py-8">No food logged yet today</p>'; return; }
+      container.innerHTML = todayLog.map((item, i) => `<div class="flex items-center justify-between gap-3 bg-slate-900/55 rounded-xl p-3 border border-slate-800">
+        <div class="flex-grow min-w-0">
+          <p class="font-semibold text-sm truncate">${item.name}</p>
+          <p class="text-xs text-slate-400 mt-0.5">${item.cal} cal • ${item.protein.toFixed(1)}g P • ${item.time}</p>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button onclick="decrementFood(${i})" class="btn-qty">-</button>
+          <span class="text-xs font-semibold text-slate-200 min-w-[45px] text-center">${item.amount}${item.unit}</span>
+          <button onclick="incrementFood(${i})" class="btn-qty">+</button>
+          <button onclick="removeFood(${i})" class="ml-1 text-slate-500 hover:text-red-400 p-1 rounded-lg transition" title="Delete">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>`).join('');
+    }
+    function removeFood(index) { todayLog.splice(index, 1); saveLocalState(); renderFoodLog(); updateDashboard(); }
+    function clearLog() { todayLog = []; saveLocalState(); renderFoodLog(); updateDashboard(); }
+    function updateDashboard() {
+      const totals = currentTotals();
+      document.getElementById('currentCals').textContent = Math.round(totals.cal);
+      document.getElementById('currentProtein').textContent = totals.protein.toFixed(1);
+      document.getElementById('currentCarbs').textContent = totals.carbs.toFixed(1);
+      document.getElementById('currentFat').textContent = totals.fat.toFixed(1);
+      updateRing('calRing', 'calPercent', totals.cal, userProfile.targetCalories);
+      updateRing('proteinRing', 'proteinPercent', totals.protein, userProfile.targetProtein);
+      updateRing('carbRing', 'carbPercent', totals.carbs, userProfile.targetCarbs);
+      updateRing('fatRing', 'fatPercent', totals.fat, userProfile.targetFat);
+      updateBar('proteinBar', 'proteinBarText', totals.protein, userProfile.targetProtein, 'g');
+      updateBar('carbBar', 'carbBarText', totals.carbs, userProfile.targetCarbs, 'g');
+      updateBar('fatBar', 'fatBarText', totals.fat, userProfile.targetFat, 'g');
+      weeklyData[todayKey] = +totals.protein.toFixed(1);
+      saveLocalState();
+      updateChart();
+      updateMotivationalMessage(totals);
+      saveDailyToDatabase();
+    }
+    
+    function updateMotivationalMessage(totals) {
+      const el = document.getElementById('motivationalSummary');
+      if (!el) return;
+      if (!userProfile) return;
+      
+      const calPct = Math.round((totals.cal / userProfile.targetCalories) * 100);
+      const proteinPct = Math.round((totals.protein / userProfile.targetProtein) * 100);
+      
+      let message = "";
+      if (totals.cal === 0) {
+        message = "Start your engine! Add your first meal to fuel your muscles today. 🚀";
+      } else if (proteinPct < 40) {
+        message = `Keep pushing! You've hit ${proteinPct}% of your protein goal. Let's get those gains! 💪`;
+      } else if (proteinPct < 75) {
+        message = `Looking solid! Protein is at ${proteinPct}%. You're building solid muscle! 🍗🔥`;
+      } else if (proteinPct < 100) {
+        message = `Almost there! You're at ${proteinPct}% of your protein goal. Finish strong! ⚡🏋️`;
+      } else if (proteinPct >= 100 && proteinPct <= 120) {
+        message = "Superb! Protein target unlocked. Muscle recovery mode: ACTIVE! 🛡️💪";
+      } else {
+        message = "Protein surplus achieved! You are a beast today! 🦍⚡";
+      }
+      el.textContent = message;
+    }
+    function updateRing(ringId, percentId, current, target) {
+      const percent = Math.min((current / target) * 100, 100);
+      document.getElementById(ringId).style.strokeDashoffset = 226 - (226 * percent / 100);
+      document.getElementById(percentId).textContent = Math.round(percent) + '%';
+    }
+    function updateBar(barId, textId, current, target, unit) {
+      document.getElementById(barId).style.width = Math.min((current / target) * 100, 100) + '%';
+      document.getElementById(textId).textContent = `${current.toFixed(1)}${unit} / ${target}${unit}`;
+    }
+    function initWaterTracker() {
+      document.getElementById('waterGlasses').innerHTML = Array.from({ length: 8 }, (_, i) => `
+        <button onclick="toggleWater(${i + 1})" class="water-cup h-14 ${i < waterIntake ? 'filled' : ''}">
+          <div class="wave-fill"></div>
+          <div class="cup-handle"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-xs font-bold z-10 ${i < waterIntake ? 'text-white' : 'text-slate-500'}">
+            ${i + 1}
+          </div>
+        </button>`).join('');
+      document.getElementById('waterCount').textContent = waterIntake;
+    }
+    function toggleWater(count) { waterIntake = waterIntake === count ? count - 1 : count; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); }
+    function initChart() {
+      const ctx = document.getElementById('weeklyChart').getContext('2d');
+      weeklyChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: lastSeven().labels, datasets: [{ data: lastSeven().data, backgroundColor: 'rgba(16, 185, 129, 0.25)', borderColor: '#10b981', borderWidth: 1.5, borderRadius: 6 }] },
+        options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+      });
+    }
+    function lastSeven() {
+      const labels = [], data = [];
+      for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().slice(0, 10); labels.push(d.toLocaleDateString('en', { weekday: 'short' })); data.push(weeklyData[key] || 0); }
+      return { labels, data };
+    }
+    function updateChart() { if (!weeklyChart) return; weeklyChart.data.datasets[0].data = lastSeven().data; weeklyChart.update(); }
+    function showProfile() {
+      document.getElementById('profileHeight').textContent = userProfile.height + ' cm';
+      document.getElementById('profileWeight').textContent = userProfile.weight + ' kg';
+      document.getElementById('profileGoal').textContent = userProfile.goalName;
+      document.getElementById('profileDiet').textContent = userProfile.dietType;
+      document.getElementById('profileTarget').textContent = `${userProfile.targetCalories} cal • ${userProfile.targetProtein}g protein • ${userProfile.targetCarbs}g carbs • ${userProfile.targetFat}g fats`;
+      
+      // Populate user info inside modal
+      if (currentUser) {
+        document.getElementById('profilePhone').value = currentUser.phone || '';
+        
+        const avatar = document.getElementById('modalUserAvatar');
+        if (currentUser.picture) {
+          avatar.innerHTML = `<img src="${currentUser.picture}" class="w-full h-full object-cover" alt="${currentUser.name}" referrerPolicy="no-referrer" />`;
+          avatar.className = "w-16 h-16 rounded-full border-2 border-emerald-500 overflow-hidden bg-slate-800 flex-shrink-0 flex items-center justify-center";
+        } else {
+          const initial = (currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase();
+          const colors = {
+            emerald: 'bg-emerald-500 border-emerald-400/40',
+            blue: 'bg-blue-500 border-blue-400/40',
+            purple: 'bg-purple-500 border-purple-400/40',
+            rose: 'bg-red-500 border-red-400/40',
+            amber: 'bg-amber-500 border-amber-400/40'
+          };
+          const bgClass = colors[currentUser.color] || 'bg-slate-700 border-slate-600';
+          avatar.innerHTML = `<span>${initial}</span>`;
+          avatar.className = `w-16 h-16 rounded-full border-2 flex items-center justify-center font-bold text-slate-100 overflow-hidden flex-shrink-0 ${bgClass}`;
+        }
+        document.getElementById('modalUserName').textContent = currentUser.name || 'User';
+        document.getElementById('modalUserEmail').textContent = currentUser.email || 'user@domain.com';
+      }
+
+      document.getElementById('profileModal').classList.remove('hidden');
+      document.getElementById('profileModal').classList.add('flex');
+    }
+    function closeProfile() { document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); }
+    async function resetProfile() {
+      if (!confirm('Reset all FitTrack Pro data?')) return;
+      try { await fetch(`${API_BASE}/users/${encodeURIComponent(USER_ID)}`, { method: 'DELETE' }); } catch (error) {}
+      Object.values(store).forEach(k => localStorage.removeItem(k));
+      location.reload();
+    }
+
+    // --- Authentication & Session Helper Functions ---
+
+    const mockAccounts = [
+      { id: 'google-1011', name: 'Tony Stark', email: 'tony@starkindustries.com', phone: '+1 (212) 555-0143', color: 'rose', picture: '' },
+      { id: 'google-1012', name: 'Bruce Banner', email: 'banner@avengers.org', phone: '+1 (415) 555-0182', color: 'emerald', picture: '' },
+      { id: 'google-1013', name: 'Selina Kyle', email: 'selina@gotham.city', phone: '+1 (609) 555-0199', color: 'purple', picture: '' }
+    ];
+
+    function decodeJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch(e) {
+        return null;
+      }
+    }
+
+    function switchLoginTab(tab) {
+      const panelSignIn = document.getElementById('panelSignIn');
+      const panelSignUp = document.getElementById('panelSignUp');
+      const tabBtnSignIn = document.getElementById('tabBtnSignIn');
+      const tabBtnSignUp = document.getElementById('tabBtnSignUp');
+      
+      if (!panelSignIn || !panelSignUp || !tabBtnSignIn || !tabBtnSignUp) return;
+      
+      if (tab === 'signin') {
+        panelSignIn.classList.remove('hidden');
+        panelSignUp.classList.add('hidden');
+        tabBtnSignIn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 bg-emerald-500 text-slate-950 neon";
+        tabBtnSignUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-300";
+      } else {
+        panelSignIn.classList.add('hidden');
+        panelSignUp.classList.remove('hidden');
+        tabBtnSignIn.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-300";
+        tabBtnSignUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 bg-emerald-500 text-slate-950 neon";
+      }
+    }
+
+    async function initGoogleAuth() {
+      let isRealGoogle = false;
+      try {
+        const res = await fetch(`${API_BASE.replace('/api', '')}/api/config`);
+        if (!res.ok) throw new Error('Config load failed');
+        const config = await res.json();
+        
+        if (config.googleClientId && config.googleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
+          // Real Google OAuth is configured
+          if (typeof google !== 'undefined' && google.accounts) {
+            google.accounts.id.initialize({
+              client_id: config.googleClientId,
+              callback: handleGoogleLogin
+            });
+            
+            // Render Sign In button
+            google.accounts.id.renderButton(
+              document.getElementById('googleSignInBtn'),
+              { theme: 'outline', size: 'large', width: 280, text: 'signin_with' }
+            );
+            
+            // Render Sign Up button
+            google.accounts.id.renderButton(
+              document.getElementById('googleSignUpBtn'),
+              { theme: 'outline', size: 'large', width: 280, text: 'signup_with' }
+            );
+            
+            isRealGoogle = true;
+          }
+        }
+      } catch (err) {
+        console.warn('Google Auth config not available:', err.message);
+      }
+      
+      if (!isRealGoogle) {
+        // No real Google — show the fallback/demo buttons
+        const signInBtn = document.getElementById('googleSignInBtn');
+        const signUpBtn = document.getElementById('googleSignUpBtn');
+        if (signInBtn) signInBtn.style.display = 'none';
+        if (signUpBtn) signUpBtn.style.display = 'none';
+        
+        const simBtn = document.getElementById('googleSimBtn');
+        if (simBtn) {
+          simBtn.classList.remove('hidden');
+          simBtn.classList.add('flex');
+        }
+        const simSignUpBtn = document.getElementById('googleSimSignUpBtn');
+        if (simSignUpBtn) {
+          simSignUpBtn.classList.remove('hidden');
+          simSignUpBtn.classList.add('flex');
+        }
+        
+        const simInfo = document.getElementById('googleSimInfo');
+        if (simInfo) simInfo.classList.remove('hidden');
+      }
+    }
+
+    function handleGoogleLogin(response) {
+      const payload = decodeJwt(response.credential);
+      if (!payload) return;
+      
+      const user = {
+        id: 'google-' + payload.sub,
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture,
+        phone: localStorage.getItem('fittrack_phone') || '',
+        color: 'emerald'
+      };
+      
+      loginUser(user);
+    }
+
+    function openGoogleSimModal() {
+      document.getElementById('googleSimModal').classList.remove('hidden');
+      document.getElementById('googleSimModal').classList.add('flex');
+    }
+    
+    function closeGoogleSimModal() {
+      document.getElementById('googleSimModal').classList.add('hidden');
+      document.getElementById('googleSimModal').classList.remove('flex');
+    }
+
+    function renderSimulatedAccounts() {
+      const list = document.getElementById('simulatedAccountsList');
+      if (!list) return;
+      list.innerHTML = mockAccounts.map(acc => `
+        <button onclick="loginWithSimulatedAccount('${acc.id}')" class="w-full flex items-center gap-3 rounded-xl p-3 text-left account-row transition">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-slate-100 bg-${acc.color === 'rose' ? 'red' : acc.color === 'emerald' ? 'emerald' : acc.color === 'purple' ? 'purple' : 'slate'}-500 flex-shrink-0">
+            ${acc.name.charAt(0)}
+          </div>
+          <div class="flex-grow min-w-0">
+            <p class="font-bold text-sm text-slate-200">${acc.name}</p>
+            <p class="text-xs text-slate-400 truncate">${acc.email}</p>
+          </div>
+          <span class="text-xs text-emerald-400 font-semibold flex-shrink-0">Sign In</span>
+        </button>
+      `).join('');
+    }
+
+    function loginWithSimulatedAccount(id) {
+      const acc = mockAccounts.find(x => x.id === id);
+      if (!acc) return;
+      loginUser({ ...acc });
+      closeGoogleSimModal();
+    }
+
+    function handleCustomSimLogin(event) {
+      event.preventDefault();
+      const name = document.getElementById('simName').value;
+      const email = document.getElementById('simEmail').value;
+      const phone = document.getElementById('simPhone').value;
+      const color = document.getElementById('simColor').value;
+      
+      const user = {
+        id: 'mock-' + Date.now(),
+        name,
+        email,
+        phone,
+        color,
+        picture: ''
+      };
+      
+      loginUser(user);
+      closeGoogleSimModal();
+    }
+
+    function handleCredentialsLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const namePart = email.split('@')[0];
+      const name = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      
+      const user = {
+        id: 'user-' + btoa(email).substring(0, 12),
+        name,
+        email,
+        phone: '',
+        color: 'emerald',
+        picture: ''
+      };
+      
+      loginUser(user);
+    }
+
+    function handleSignUpCredentials(event) {
+      event.preventDefault();
+      const email = document.getElementById('signUpEmail').value;
+      const namePart = email.split('@')[0];
+      const name = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      
+      const user = {
+        id: 'user-' + btoa(email).substring(0, 12),
+        name,
+        email,
+        phone: '',
+        color: 'emerald',
+        picture: ''
+      };
+      
+      loginUser(user);
+    }
+
+    function guestLogin() {
+      const user = {
+        id: 'guest-' + Math.random().toString(36).substring(2, 11),
+        name: 'Guest User',
+        email: 'guest@domain.com',
+        phone: '',
+        color: 'blue',
+        picture: ''
+      };
+      loginUser(user);
+    }
+
+    function loginUser(user) {
+      localStorage.setItem(store.user, JSON.stringify(user));
+      currentUser = user;
+      USER_ID = user.id;
+      
+      document.getElementById('loginPage').classList.add('hidden');
+      
+      // Load user profile from DB/localStorage if it exists
+      const localProfile = localStorage.getItem(store.profile);
+      if (localProfile) {
+        userProfile = JSON.parse(localProfile);
+      }
+      
+      loadTodayFromDatabase().finally(() => {
+        if (userProfile) {
+          updateHeaderProfileWidget(currentUser);
+          initApp();
+        } else {
+          document.getElementById('onboarding').classList.remove('hidden');
+        }
+      });
+    }
+
+    function updateHeaderProfileWidget(user) {
+      const avatarContainer = document.getElementById('headerUserAvatar');
+      if (!avatarContainer) return;
+      if (user.picture) {
+        avatarContainer.innerHTML = `<img src="${user.picture}" class="w-full h-full object-cover" alt="${user.name}" referrerPolicy="no-referrer" />`;
+        avatarContainer.className = "w-10 h-10 rounded-full border border-slate-600 overflow-hidden bg-slate-800 flex-shrink-0 flex items-center justify-center";
+      } else {
+        const initial = (user.name || user.email || 'U').charAt(0).toUpperCase();
+        const colors = {
+          emerald: 'bg-emerald-500 border-emerald-400/40',
+          blue: 'bg-blue-500 border-blue-400/40',
+          purple: 'bg-purple-500 border-purple-400/40',
+          rose: 'bg-red-500 border-red-400/40',
+          amber: 'bg-amber-500 border-amber-400/40'
+        };
+        const bgClass = colors[user.color] || 'bg-slate-700 border-slate-600';
+        avatarContainer.innerHTML = `<span>${initial}</span>`;
+        avatarContainer.className = `w-10 h-10 rounded-full border flex items-center justify-center font-bold text-slate-100 overflow-hidden flex-shrink-0 ${bgClass}`;
+      }
+      document.getElementById('headerUserName').textContent = user.name || 'User';
+      document.getElementById('headerUserEmail').textContent = user.email || '';
+    }
+
+    function savePhone() {
+      const phoneInput = document.getElementById('profilePhone');
+      if (!phoneInput) return;
+      const phone = phoneInput.value;
+      if (currentUser) {
+        currentUser.phone = phone;
+        localStorage.setItem(store.user, JSON.stringify(currentUser));
+        localStorage.setItem('fittrack_phone', phone);
+      }
+      if (userProfile) {
+        userProfile.phone = phone;
+        saveLocalState();
+        saveDailyToDatabase();
+      }
+    }
+
+    function signOut() {
+      if (!confirm('Are you sure you want to sign out?')) return;
+      localStorage.removeItem(store.user);
+      localStorage.removeItem(store.profile);
+      localStorage.removeItem(store.logDate);
+      localStorage.removeItem(store.log);
+      localStorage.removeItem(store.waterDate);
+      localStorage.removeItem(store.water);
+      localStorage.removeItem(store.weekly);
+      location.reload();
+    }
+
+    function checkSessionAndStartup() {
+      document.getElementById('servingAmount').addEventListener('input', updatePreview);
+      renderGoals();
+      
+      initGoogleAuth();
+      
+      currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
+      if (currentUser) {
+        USER_ID = currentUser.id;
+        document.getElementById('loginPage').classList.add('hidden');
+        userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
+        if (userProfile) {
+          updateHeaderProfileWidget(currentUser);
+          loadTodayFromDatabase().finally(initApp);
+        } else {
+          document.getElementById('onboarding').classList.remove('hidden');
+        }
+      } else {
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('onboarding').classList.add('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+        renderSimulatedAccounts();
+      }
+    }
+    
+    window.addEventListener('DOMContentLoaded', checkSessionAndStartup);
+  </script>
+</body>
+</html>
