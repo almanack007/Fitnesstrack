@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { Pool } = require('pg');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Manually load .env variables if present
 if (fs.existsSync(path.join(__dirname, '.env'))) {
@@ -32,6 +33,13 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
 
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/fittrack';
+
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+if (genAI) {
+  console.log('Gemini AI integration enabled successfully.');
+} else {
+  console.log('Gemini AI integration running in fallback (no GEMINI_API_KEY configured).');
+}
 
 const app = express();
 let pool;
@@ -115,6 +123,75 @@ app.get('/api/config', (req, res) => {
   res.json({
     googleClientId: process.env.GOOGLE_CLIENT_ID || null
   });
+});
+
+app.post('/api/scan', async (req, res) => {
+  const { image } = req.body;
+  if (!image) {
+    return res.status(400).json({ error: 'Image data is required' });
+  }
+
+  if (!genAI) {
+    return res.json({ fallback: true, message: 'Gemini API key not configured' });
+  }
+
+  try {
+    const matches = image.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/);
+    if (!matches || matches.length < 3) {
+      return res.status(400).json({ error: 'Invalid base64 image format' });
+    }
+    const mimeType = `image/${matches[1]}`;
+    const base64Data = matches[2];
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const prompt = `You are a strict food classification model. Analyze the provided image.
+First, determine if the image actually contains any edible food item.
+If the image shows no food (e.g. it shows a keyboard, computer, laptop, screen, hand, document, background wall, metal surface, empty table, animal, or general object that is NOT edible food), you MUST return JSON:
+{ "match": "not_food", "confidence": 0 }
+
+If food is present, identify the food item and match it to the single closest item in this database of Indian foods:
+["Daal Chawal", "Paneer Butter Masala", "Butter Chicken", "Chana Masala", "Chicken Biryani", "Veg Biryani", "Choole Bhature", "Dal Makhani", "Palak Paneer", "Rajma Chawal", "Khichdi", "Muttar Paneer", "Aloo Gobi", "Bhindi Masala", "Basmati Rice Cooked", "Brown Rice Cooked", "Roti / Chapati", "Tandoori Roti", "Plain Paratha", "Aloo Paratha", "Butter Naan", "Garlic Naan", "Puri", "Bhatura", "Poha", "Upma", "Idli with Sambar", "Masala Dosa", "Moong Dal Cooked", "Masoor Dal Cooked", "Soya Chunks Cooked", "Paneer Bhurji", "Tandoori Chicken", "Fish Tikka", "Chicken Tikka", "Egg Bhurji", "Boiled Egg", "Chicken Breast", "Mutton Curry", "Paneer raw", "Whole Milk Curd / Dahi", "Cow Milk", "Buffalo Milk", "Ghee", "Sweet Lassi", "Chaas / Buttermilk", "Samosa", "Dhokla", "Medu Vada", "Pani Puri", "Bhel Puri", "Pav Bhaji", "Vada Pav", "Roasted Chana", "Roasted Makhana", "Gulab Jamun", "Rasgulla", "Gajar ka Halwa", "Jalebi", "Besan Ladoo", "Kheer", "Masala Chai", "Filter Coffee", "Tender Coconut Water", "Sugarcane Juice", "Nimbu Pani"]
+
+Return the result strictly as a raw JSON object (no markdown, no quotes around the json block, no backticks) with format:
+{ "match": "Matched Food Name", "confidence": percentage }`;
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType
+        }
+      }
+    ]);
+
+    let text = result.response.text();
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('Failed to parse Gemini response text:', text);
+      const matchRegex = text.match(/"match"\s*:\s*"([^"]+)"/);
+      const confRegex = text.match(/"confidence"\s*:\s*(\d+)/);
+      if (matchRegex) {
+        parsed = {
+          match: matchRegex[1],
+          confidence: confRegex ? parseInt(confRegex[1], 10) : 85
+        };
+      } else {
+        throw new Error('Could not parse visual match from AI output');
+      }
+    }
+
+    res.json(parsed);
+
+  } catch (error) {
+    console.error('[LensPro AI Error] Failed to scan image:', error);
+    res.status(500).json({ error: 'AI visual scanning failed' });
+  }
 });
 
 app.get('/api/daily/:userId/:date', requireDb, async (req, res) => {

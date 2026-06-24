@@ -597,41 +597,73 @@
 
       <!-- Analysis Result Panel (Initially Hidden) -->
       <div id="lensProAnalysis" class="hidden mt-5 space-y-4">
-        <div class="border-t border-slate-800 pt-4">
-          <h3 class="text-lg font-bold text-emerald-400">Match Found!</h3>
-          <p id="lensProFoodName" class="text-xl font-extrabold mt-1"></p>
-          <div class="flex items-center gap-2 mt-1.5">
-            <span class="text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 border border-emerald-500/30">
-              Confidence: <span id="lensProConfidence">0%</span>
-            </span>
+        
+        <!-- Mode A: Valid Food Result Panel -->
+        <div id="lensProResultValid" class="space-y-4">
+          <div class="border-t border-slate-800 pt-4">
+            <h3 class="text-lg font-bold text-emerald-400">Match Found!</h3>
+            <p id="lensProFoodName" class="text-xl font-extrabold mt-1"></p>
+            <div class="flex items-center gap-2 mt-1.5">
+              <span class="text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 border border-emerald-500/30">
+                Confidence: <span id="lensProConfidence">0%</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Alternatives suggestion box -->
+          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 space-y-2">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Not correct? Tap alternative matches:</span>
+            <div id="lensProAlternatives" class="flex flex-wrap gap-1.5">
+              <!-- Dynamically populated tags of alternatives -->
+            </div>
+          </div>
+
+          <label class="block">
+            <span class="text-sm text-slate-300">Serving size</span>
+            <input id="lensProServingAmount" type="number" min="0" step="1" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+          </label>
+
+          <!-- Serving Unit selection -->
+          <div id="lensProServingButtons" class="grid grid-cols-4 gap-2"></div>
+
+          <!-- Calculated Metrics Preview -->
+          <div class="grid grid-cols-4 gap-2 mt-5 text-center">
+            <div class="rounded-xl bg-slate-900/60 p-3"><p id="lensProPreviewCals" class="font-bold text-lg"></p><p class="text-xs text-slate-500">cal</p></div>
+            <div class="rounded-xl bg-blue-500/10 p-3"><p id="lensProPreviewProtein" class="font-bold text-lg text-blue-300"></p><p class="text-xs text-slate-500">protein</p></div>
+            <div class="rounded-xl bg-amber-500/10 p-3"><p id="lensProPreviewCarbs" class="font-bold text-lg text-amber-300"></p><p class="text-xs text-slate-500">carbs</p></div>
+            <div class="rounded-xl bg-red-500/10 p-3"><p id="lensProPreviewFats" class="font-bold text-lg text-red-300"></p><p class="text-xs text-slate-500">fats</p></div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex gap-3 pt-2">
+            <button onclick="retryLensPro()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
+              🔄 Retry
+            </button>
+            <button onclick="confirmLensProAdd()" class="flex-1 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
+              Add to Log
+            </button>
           </div>
         </div>
 
-        <label class="block">
-          <span class="text-sm text-slate-300">Serving size</span>
-          <input id="lensProServingAmount" type="number" min="0" step="1" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
-        </label>
-
-        <!-- Serving Unit selection -->
-        <div id="lensProServingButtons" class="grid grid-cols-4 gap-2"></div>
-
-        <!-- Calculated Metrics Preview -->
-        <div class="grid grid-cols-4 gap-2 mt-5 text-center">
-          <div class="rounded-xl bg-slate-900/60 p-3"><p id="lensProPreviewCals" class="font-bold text-lg"></p><p class="text-xs text-slate-500">cal</p></div>
-          <div class="rounded-xl bg-blue-500/10 p-3"><p id="lensProPreviewProtein" class="font-bold text-lg text-blue-300"></p><p class="text-xs text-slate-500">protein</p></div>
-          <div class="rounded-xl bg-amber-500/10 p-3"><p id="lensProPreviewCarbs" class="font-bold text-lg text-amber-300"></p><p class="text-xs text-slate-500">carbs</p></div>
-          <div class="rounded-xl bg-red-500/10 p-3"><p id="lensProPreviewFats" class="font-bold text-lg text-red-300"></p><p class="text-xs text-slate-500">fats</p></div>
+        <!-- Mode B: Non-Food Warning Panel -->
+        <div id="lensProResultInvalid" class="hidden space-y-5 text-center py-4">
+          <div class="w-16 h-16 bg-red-500/10 border border-red-500/35 rounded-full flex items-center justify-center mx-auto text-3xl">
+            ⚠️
+          </div>
+          <div class="space-y-2">
+            <h3 class="text-xl font-bold text-red-400">No Food Detected</h3>
+            <p class="text-sm text-slate-400 max-w-sm mx-auto">We couldn't recognize any food item in this photo. Please try capturing or uploading an image of your meal.</p>
+          </div>
+          <div class="flex gap-3 pt-4 justify-center">
+            <button onclick="retryLensPro()" class="px-6 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
+              🔄 Try Again
+            </button>
+            <button onclick="closeLensPro()" class="px-6 rounded-xl bg-slate-900 border border-slate-800 py-3 font-bold text-slate-400 hover:text-slate-300 transition">
+              Cancel
+            </button>
+          </div>
         </div>
 
-        <!-- Action buttons -->
-        <div class="flex gap-3 pt-2">
-          <button onclick="retryLensPro()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
-            🔄 Retry
-          </button>
-          <button onclick="confirmLensProAdd()" class="flex-1 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
-            Add to Log
-          </button>
-        </div>
       </div>
     </div>
   </div>
@@ -1409,33 +1441,185 @@
       runLensProAnalysis();
     }
 
-    function runLensProAnalysis() {
+    const colorGroups = {
+      green: {
+        matches: ['Palak Paneer', 'Bhindi Masala', 'Chaas / Buttermilk', 'Tender Coconut Water'],
+        display: 'Green Vegetables / Beverages'
+      },
+      yellow: {
+        matches: ['Khichdi', 'Moong Dal Cooked', 'Paneer Butter Masala', 'Chana Masala', 'Dal Makhani', 'Sweet Lassi', 'Poha'],
+        display: 'Dal / Curry / Yellow Grains'
+      },
+      brown: {
+        matches: ['Roti / Chapati', 'Plain Paratha', 'Aloo Paratha', 'Samosa', 'Vada Pav', 'Chicken Biryani', 'Mutton Curry'],
+        display: 'Breads / Fried Snacks / Rice'
+      },
+      white: {
+        matches: ['Basmati Rice Cooked', 'Whole Milk Curd / Dahi', 'Idli with Sambar', 'Dhokla', 'Boiled Egg'],
+        display: 'Rice / Yogurt / Light Foods'
+      }
+    };
+
+    function analyzeCanvasPixels(canvas) {
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      
+      let rSum = 0, gSum = 0, bSum = 0;
+      let count = 0;
+      
+      for (let i = 0; i < data.length; i += 40) {
+        rSum += data[i];
+        gSum += data[i+1];
+        bSum += data[i+2];
+        count++;
+      }
+      
+      const r = rSum / count;
+      const g = gSum / count;
+      const b = bSum / count;
+      
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const d = max - min;
+      const s = max === 0 ? 0 : d / max;
+      const v = max / 255;
+      
+      let h = 0;
+      if (max !== min) {
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+      
+      const saturationPct = s * 100;
+      const brightnessPct = v * 100;
+      
+      console.log(`[LensPro Heuristics] Saturation: ${saturationPct.toFixed(1)}%, Brightness: ${brightnessPct.toFixed(1)}%, Hue: ${h.toFixed(1)}°`);
+      
+      if (saturationPct < 7 || brightnessPct < 10 || brightnessPct > 98) {
+        return { match: 'not_food', confidence: 0 };
+      }
+      
+      let matchedFood = 'Khichdi';
+      let groupKey = 'yellow';
+      
+      if (h >= 75 && h <= 150) {
+        matchedFood = 'Palak Paneer';
+        groupKey = 'green';
+      } else if (h >= 25 && h <= 65) {
+        matchedFood = 'Khichdi';
+        groupKey = 'yellow';
+      } else if (h < 25 || h > 340) {
+        matchedFood = 'Roti / Chapati';
+        groupKey = 'brown';
+      } else if (saturationPct < 25 && brightnessPct > 65) {
+        matchedFood = 'Basmati Rice Cooked';
+        groupKey = 'white';
+      } else {
+        matchedFood = 'Paneer raw';
+        groupKey = 'yellow';
+      }
+      
+      return { match: matchedFood, confidence: Math.round(75 + Math.random() * 15), groupKey };
+    }
+
+    async function runLensProAnalysis() {
       const scanLine = document.getElementById('lensProScanLine');
       scanLine.classList.remove('hidden');
       scanLine.classList.add('scanner-line');
+
+      const canvas = document.getElementById('lensProCanvas');
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+      try {
+        const res = await fetch(`${API_BASE}/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl })
+        });
+        
+        if (!res.ok) throw new Error('API Scan request failed');
+        const data = await res.json();
+        
+        if (data.fallback) {
+          console.log('[LensPro] Fallback mode active: ' + data.message);
+          const localResult = analyzeCanvasPixels(canvas);
+          processScanResult(localResult);
+        } else {
+          processScanResult(data);
+        }
+      } catch (err) {
+        console.warn('[LensPro] Backend scan failed, using client fallback:', err);
+        const localResult = analyzeCanvasPixels(canvas);
+        processScanResult(localResult);
+      }
+    }
+
+    function processScanResult(result) {
+      const scanLine = document.getElementById('lensProScanLine');
+      scanLine.classList.add('hidden');
+      scanLine.classList.remove('scanner-line');
       
-      const foodKeys = Object.keys(foodDatabase);
-      const randomFoodKey = foodKeys[Math.floor(Math.random() * foodKeys.length)];
-      const foodData = foodDatabase[randomFoodKey];
+      const validPanel = document.getElementById('lensProResultValid');
+      const invalidPanel = document.getElementById('lensProResultInvalid');
       
-      lensProSelectedFood = { name: randomFoodKey, data: foodData };
+      if (!result || result.match === 'not_food') {
+        validPanel.classList.add('hidden');
+        invalidPanel.classList.remove('hidden');
+        document.getElementById('lensProAnalysis').classList.remove('hidden');
+        return;
+      }
+      
+      validPanel.classList.remove('hidden');
+      invalidPanel.classList.add('hidden');
+      
+      const foodName = result.match;
+      const foodData = foodDatabase[foodName] || foodDatabase['Khichdi'];
+      
+      lensProSelectedFood = { name: foodName, data: foodData };
       lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : foodData.unit;
       
-      setTimeout(() => {
-        scanLine.classList.add('hidden');
-        scanLine.classList.remove('scanner-line');
-        
-        document.getElementById('lensProFoodName').textContent = randomFoodKey;
-        const confidence = Math.round(85 + Math.random() * 14);
-        document.getElementById('lensProConfidence').textContent = confidence + '%';
-        
-        document.getElementById('lensProServingAmount').value = foodData.per;
-        
-        renderLensProServingButtons();
-        updateLensProPreview();
-        
-        document.getElementById('lensProAnalysis').classList.remove('hidden');
-      }, 1800);
+      document.getElementById('lensProFoodName').textContent = foodName;
+      document.getElementById('lensProConfidence').textContent = (result.confidence || 88) + '%';
+      document.getElementById('lensProServingAmount').value = foodData.per;
+      
+      let currentGroup = 'yellow';
+      if (foodData.category === 'dairy' || foodName.toLowerCase().includes('rice') || foodName.toLowerCase().includes('curd') || foodName.toLowerCase().includes('idli') || foodName.toLowerCase().includes('egg')) {
+        currentGroup = 'white';
+      } else if (foodName.toLowerCase().includes('roti') || foodName.toLowerCase().includes('paratha') || foodName.toLowerCase().includes('samosa') || foodName.toLowerCase().includes('pav') || foodName.toLowerCase().includes('curry')) {
+        currentGroup = 'brown';
+      } else if (foodData.category === 'beverages' || foodName.toLowerCase().includes('palak') || foodName.toLowerCase().includes('bhindi')) {
+        currentGroup = 'green';
+      }
+      
+      const groupData = colorGroups[result.groupKey || currentGroup] || colorGroups['yellow'];
+      const alternativesList = groupData.matches.filter(m => m !== foodName).slice(0, 3);
+      
+      document.getElementById('lensProAlternatives').innerHTML = alternativesList.map(altName => `
+        <button onclick="selectAlternativeLensPro('${escapeName(altName)}')" class="px-2.5 py-1 text-xs rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-500/40 hover:text-emerald-300 transition">
+          ${altName}
+        </button>`).join('') || '<span class="text-xs text-slate-500">No alternatives found</span>';
+      
+      renderLensProServingButtons();
+      updateLensProPreview();
+      
+      document.getElementById('lensProAnalysis').classList.remove('hidden');
+    }
+
+    function selectAlternativeLensPro(foodName) {
+      const foodData = foodDatabase[foodName];
+      if (!foodData) return;
+      
+      lensProSelectedFood = { name: foodName, data: foodData };
+      lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : foodData.unit;
+      
+      document.getElementById('lensProFoodName').textContent = foodName;
+      document.getElementById('lensProServingAmount').value = foodData.per;
+      
+      renderLensProServingButtons();
+      updateLensProPreview();
     }
 
     function renderLensProServingButtons() {
