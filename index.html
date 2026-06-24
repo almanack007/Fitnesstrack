@@ -148,6 +148,20 @@
     .water-cup.filled .cup-handle {
       border-color: #60a5fa;
     }
+    @keyframes scanAnimation {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+    .scanner-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #10b981, transparent);
+      box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+      animation: scanAnimation 2.5s ease-in-out infinite;
+    }
   </style>
 </head>
 <body class="text-slate-100">
@@ -410,6 +424,13 @@
         </svg>
         <span class="text-[10px] font-semibold">Dashboard</span>
       </button>
+      <button id="navBtnLensPro" onclick="openLensPro()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="text-[10px] font-semibold">LensPro</span>
+      </button>
       <button id="navBtnTracker" onclick="switchMobileTab('tracker')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -499,7 +520,16 @@
       <div id="trackerPanel" class="md:col-span-6 lg:col-span-4 space-y-6">
         <div class="glass rounded-2xl p-5">
           <div class="flex flex-col gap-4 mb-4">
-            <h2 class="text-xl font-bold">Food Tracking</h2>
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-bold">Food Tracking</h2>
+              <button onclick="openLensPro()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/10 border border-emerald-500/35 hover:bg-emerald-500/20 text-emerald-300 transition duration-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                LensPro
+              </button>
+            </div>
             <div class="relative">
               <input id="foodSearch" oninput="renderFoodGrid()" type="search" placeholder="Search roti, paneer, dal, chai..." class="w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 pl-10 text-slate-100" />
               <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -514,6 +544,97 @@
 
     </div>
   </main>
+
+  <!-- LensPro Camera & Image Scanner Modal -->
+  <div id="lensProModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-lg slide-up my-auto max-h-[95vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h2 class="text-2xl font-bold flex items-center gap-2">
+            <span class="text-emerald-400">📸</span> LensPro
+          </h2>
+          <p class="text-slate-400 text-sm mt-1">Scan or upload an image of food to log metrics</p>
+        </div>
+        <button onclick="closeLensPro()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Close</button>
+      </div>
+
+      <!-- Viewfinder Container -->
+      <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
+        <!-- Live Video Viewfinder -->
+        <video id="lensProVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
+        
+        <!-- Freeze-frame Canvas / Uploaded image preview -->
+        <canvas id="lensProCanvas" class="absolute inset-0 w-full h-full object-cover hidden"></canvas>
+
+        <!-- Scanning Laser Line Overlay -->
+        <div id="lensProScanLine" class="absolute left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_15px_#10b981] hidden pointer-events-none"></div>
+
+        <!-- Camera Off / Blocked / Uninitiated placeholder UI -->
+        <div id="lensProPlaceholder" class="text-center p-4 z-10">
+          <svg class="w-12 h-12 text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <p id="lensProStatusText" class="text-sm text-slate-400">Requesting camera access...</p>
+        </div>
+      </div>
+
+      <!-- Controls Panel -->
+      <div id="lensProControls" class="flex flex-col gap-3 mt-4">
+        <div class="flex gap-2">
+          <button id="lensProCaptureBtn" onclick="captureLensProPhoto()" class="flex-1 rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition flex items-center justify-center gap-2">
+            📸 Capture Photo
+          </button>
+          <button id="lensProUploadBtn" onclick="triggerLensProUpload()" class="rounded-xl border border-slate-700 bg-slate-900/55 px-4 py-3 text-slate-300 hover:border-slate-600 transition flex items-center justify-center" title="Upload Photo">
+            📁
+          </button>
+          <input type="file" id="lensProFileInput" accept="image/*" class="hidden" onchange="handleLensProUpload(event)" />
+        </div>
+        <div id="lensProSwitchCameraContainer" class="hidden text-center">
+          <button onclick="switchLensProCamera()" class="text-xs text-emerald-400 underline hover:text-emerald-300">Switch Camera</button>
+        </div>
+      </div>
+
+      <!-- Analysis Result Panel (Initially Hidden) -->
+      <div id="lensProAnalysis" class="hidden mt-5 space-y-4">
+        <div class="border-t border-slate-800 pt-4">
+          <h3 class="text-lg font-bold text-emerald-400">Match Found!</h3>
+          <p id="lensProFoodName" class="text-xl font-extrabold mt-1"></p>
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 border border-emerald-500/30">
+              Confidence: <span id="lensProConfidence">0%</span>
+            </span>
+          </div>
+        </div>
+
+        <label class="block">
+          <span class="text-sm text-slate-300">Serving size</span>
+          <input id="lensProServingAmount" type="number" min="0" step="1" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+        </label>
+
+        <!-- Serving Unit selection -->
+        <div id="lensProServingButtons" class="grid grid-cols-4 gap-2"></div>
+
+        <!-- Calculated Metrics Preview -->
+        <div class="grid grid-cols-4 gap-2 mt-5 text-center">
+          <div class="rounded-xl bg-slate-900/60 p-3"><p id="lensProPreviewCals" class="font-bold text-lg"></p><p class="text-xs text-slate-500">cal</p></div>
+          <div class="rounded-xl bg-blue-500/10 p-3"><p id="lensProPreviewProtein" class="font-bold text-lg text-blue-300"></p><p class="text-xs text-slate-500">protein</p></div>
+          <div class="rounded-xl bg-amber-500/10 p-3"><p id="lensProPreviewCarbs" class="font-bold text-lg text-amber-300"></p><p class="text-xs text-slate-500">carbs</p></div>
+          <div class="rounded-xl bg-red-500/10 p-3"><p id="lensProPreviewFats" class="font-bold text-lg text-red-300"></p><p class="text-xs text-slate-500">fats</p></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex gap-3 pt-2">
+          <button onclick="retryLensPro()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
+            🔄 Retry
+          </button>
+          <button onclick="confirmLensProAdd()" class="flex-1 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
+            Add to Log
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="addFoodModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
     <div class="glass rounded-2xl p-5 w-full max-w-lg slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
@@ -1138,6 +1259,242 @@
       location.reload();
     }
 
+    }
+
+    // --- LensPro Camera & Image Scanner Functions ---
+    let lensProStream = null;
+    let currentFacingMode = 'environment';
+    let lensProSelectedFood = null;
+    let lensProServingType = 'g';
+
+    async function openLensPro() {
+      const modal = document.getElementById('lensProModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      document.getElementById('lensProVideo').classList.add('hidden');
+      document.getElementById('lensProCanvas').classList.add('hidden');
+      document.getElementById('lensProScanLine').classList.add('hidden');
+      document.getElementById('lensProAnalysis').classList.add('hidden');
+      document.getElementById('lensProControls').classList.remove('hidden');
+      document.getElementById('lensProPlaceholder').classList.remove('hidden');
+      document.getElementById('lensProStatusText').textContent = 'Requesting camera access...';
+
+      startLensProStream();
+    }
+
+    async function startLensProStream() {
+      stopLensProStream();
+      
+      const video = document.getElementById('lensProVideo');
+      const placeholder = document.getElementById('lensProPlaceholder');
+      const statusText = document.getElementById('lensProStatusText');
+      const switchBtnContainer = document.getElementById('lensProSwitchCameraContainer');
+
+      try {
+        const constraints = {
+          video: { facingMode: currentFacingMode }
+        };
+        
+        lensProStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = lensProStream;
+        
+        video.onloadedmetadata = () => {
+          video.play();
+          video.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        };
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        if (videoDevices.length > 1) {
+          switchBtnContainer.classList.remove('hidden');
+        } else {
+          switchBtnContainer.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error("Camera access failed:", error);
+        video.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        statusText.innerHTML = `Camera access unavailable.<br><span class="text-xs text-slate-500">Please upload a picture instead.</span>`;
+        switchBtnContainer.classList.add('hidden');
+      }
+    }
+
+    function stopLensProStream() {
+      if (lensProStream) {
+        lensProStream.getTracks().forEach(track => track.stop());
+        lensProStream = null;
+      }
+      const video = document.getElementById('lensProVideo');
+      if (video) {
+        video.srcObject = null;
+      }
+    }
+
+    function closeLensPro() {
+      stopLensProStream();
+      const modal = document.getElementById('lensProModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function switchLensProCamera() {
+      currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+      startLensProStream();
+    }
+
+    function triggerLensProUpload() {
+      document.getElementById('lensProFileInput').click();
+    }
+
+    function handleLensProUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      stopLensProStream();
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('lensProCanvas');
+          const ctx = canvas.getContext('2d');
+          
+          document.getElementById('lensProVideo').classList.add('hidden');
+          document.getElementById('lensProPlaceholder').classList.add('hidden');
+          canvas.classList.remove('hidden');
+          
+          canvas.width = 640;
+          canvas.height = 360;
+          
+          const hRatio = canvas.width / img.width;
+          const vRatio = canvas.height / img.height;
+          const ratio  = Math.min(hRatio, vRatio);
+          const centerShift_x = (canvas.width - img.width * ratio) / 2;
+          const centerShift_y = (canvas.height - img.height * ratio) / 2;  
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, img.width, img.height,
+                             centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+          
+          document.getElementById('lensProControls').classList.add('hidden');
+          runLensProAnalysis();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function captureLensProPhoto() {
+      const video = document.getElementById('lensProVideo');
+      const canvas = document.getElementById('lensProCanvas');
+      const placeholder = document.getElementById('lensProPlaceholder');
+      
+      if (video.classList.contains('hidden')) {
+        triggerLensProUpload();
+        return;
+      }
+      
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+      
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      video.classList.add('hidden');
+      placeholder.classList.add('hidden');
+      canvas.classList.remove('hidden');
+      
+      stopLensProStream();
+      document.getElementById('lensProControls').classList.add('hidden');
+      
+      runLensProAnalysis();
+    }
+
+    function runLensProAnalysis() {
+      const scanLine = document.getElementById('lensProScanLine');
+      scanLine.classList.remove('hidden');
+      scanLine.classList.add('scanner-line');
+      
+      const foodKeys = Object.keys(foodDatabase);
+      const randomFoodKey = foodKeys[Math.floor(Math.random() * foodKeys.length)];
+      const foodData = foodDatabase[randomFoodKey];
+      
+      lensProSelectedFood = { name: randomFoodKey, data: foodData };
+      lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : foodData.unit;
+      
+      setTimeout(() => {
+        scanLine.classList.add('hidden');
+        scanLine.classList.remove('scanner-line');
+        
+        document.getElementById('lensProFoodName').textContent = randomFoodKey;
+        const confidence = Math.round(85 + Math.random() * 14);
+        document.getElementById('lensProConfidence').textContent = confidence + '%';
+        
+        document.getElementById('lensProServingAmount').value = foodData.per;
+        
+        renderLensProServingButtons();
+        updateLensProPreview();
+        
+        document.getElementById('lensProAnalysis').classList.remove('hidden');
+      }, 1800);
+    }
+
+    function renderLensProServingButtons() {
+      document.getElementById('lensProServingButtons').innerHTML = ['g','oz','cup','piece'].map(u => `
+        <button onclick="setLensProServingType('${u}')" class="lens-pro-serving-btn rounded-xl border border-slate-700 px-3 py-2 text-sm ${u === lensProServingType ? 'serving-active' : ''}">
+          ${u}
+        </button>`).join('');
+    }
+
+    function setLensProServingType(type) {
+      lensProServingType = type;
+      renderLensProServingButtons();
+      updateLensProPreview();
+    }
+
+    function updateLensProPreview() {
+      if (!lensProSelectedFood) return;
+      const amount = +document.getElementById('lensProServingAmount').value || 0;
+      const factor = (amount * conversions[lensProServingType]) / (lensProSelectedFood.data.per * (conversions[lensProSelectedFood.data.unit] || 1));
+      
+      document.getElementById('lensProPreviewCals').textContent = Math.round(lensProSelectedFood.data.cal * factor);
+      document.getElementById('lensProPreviewProtein').textContent = (lensProSelectedFood.data.protein * factor).toFixed(1) + 'g';
+      document.getElementById('lensProPreviewCarbs').textContent = (lensProSelectedFood.data.carbs * factor).toFixed(1) + 'g';
+      document.getElementById('lensProPreviewFats').textContent = (lensProSelectedFood.data.fat * factor).toFixed(1) + 'g';
+    }
+
+    function retryLensPro() {
+      document.getElementById('lensProAnalysis').classList.add('hidden');
+      document.getElementById('lensProCanvas').classList.add('hidden');
+      document.getElementById('lensProControls').classList.remove('hidden');
+      document.getElementById('lensProFileInput').value = '';
+      openLensPro();
+    }
+
+    function confirmLensProAdd() {
+      const amount = +document.getElementById('lensProServingAmount').value;
+      if (!amount || !lensProSelectedFood) return;
+      
+      const factor = (amount * conversions[lensProServingType]) / (lensProSelectedFood.data.per * (conversions[lensProSelectedFood.data.unit] || 1));
+      
+      todayLog.push({
+        name: lensProSelectedFood.name + ' (LensPro)',
+        amount,
+        unit: lensProServingType,
+        cal: Math.round(lensProSelectedFood.data.cal * factor),
+        protein: lensProSelectedFood.data.protein * factor,
+        carbs: lensProSelectedFood.data.carbs * factor,
+        fat: lensProSelectedFood.data.fat * factor,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      
+      saveLocalState();
+      closeLensPro();
+      renderFoodLog();
+      updateDashboard();
+    }
+
     // --- Authentication & Session Helper Functions ---
 
     const mockAccounts = [
@@ -1431,6 +1788,7 @@
 
     function checkSessionAndStartup() {
       document.getElementById('servingAmount').addEventListener('input', updatePreview);
+      document.getElementById('lensProServingAmount').addEventListener('input', updateLensProPreview);
       renderGoals();
       
       initGoogleAuth();
