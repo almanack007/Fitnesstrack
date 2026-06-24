@@ -616,6 +616,9 @@
             <div id="lensProAlternatives" class="flex flex-wrap gap-1.5">
               <!-- Dynamically populated tags of alternatives -->
             </div>
+            <div class="pt-1.5 border-t border-slate-800/60 text-center">
+              <span class="text-[10px] text-slate-400">Still not seeing it? <button onclick="switchToManualSearchLensPro()" class="text-emerald-400 hover:text-emerald-300 underline font-semibold transition">Search database manually</button></span>
+            </div>
           </div>
 
           <label class="block">
@@ -658,8 +661,8 @@
             <button onclick="retryLensPro()" class="px-6 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
               🔄 Try Again
             </button>
-            <button onclick="closeLensPro()" class="px-6 rounded-xl bg-slate-900 border border-slate-800 py-3 font-bold text-slate-400 hover:text-slate-300 transition">
-              Cancel
+            <button onclick="switchToManualSearchLensPro()" class="px-6 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
+              Search manually
             </button>
           </div>
         </div>
@@ -763,7 +766,7 @@
       power: { name: 'Power Building', note: '+15% surplus', multiplier: 1.15, proteinFactor: 2.0, carbPct: 0.40, fatPct: 0.30 },
       recomp: { name: 'Body Recomposition', note: '-5% deficit, high protein', multiplier: 0.95, proteinFactor: 2.0, carbPct: 0.30, fatPct: 0.25 }
     };
-    const categories = ['All','Meals','Breads & Rice','Proteins & Dals','Dairy','Snacks','Sweets','Beverages'];
+    const categories = ['All','Meals','Breads & Rice','Proteins & Dals','Dairy','Fruits','Snacks','Sweets','Beverages'];
     const conversions = { g: 1, oz: 28.35, cup: 240, piece: 1 };
     const baseFoods = [
       // Meals category
@@ -819,6 +822,13 @@
       ['Ghee', 'dairy', 900, 0.0, 0.0, 100.0],
       ['Sweet Lassi', 'dairy', 100, 2.5, 15.0, 3.0, 'cup'],
       ['Chaas / Buttermilk', 'dairy', 22, 1.0, 2.0, 0.75, 'cup'],
+
+      // Fruits category
+      ['Banana', 'fruits', 89, 1.1, 22.8, 0.3, 'piece'],
+      ['Apple', 'fruits', 52, 0.3, 13.8, 0.2, 'piece'],
+      ['Mango', 'fruits', 60, 0.8, 15.0, 0.4, 'piece'],
+      ['Orange', 'fruits', 47, 0.9, 12.0, 0.1, 'piece'],
+      ['Papaya', 'fruits', 43, 0.5, 11.0, 0.3],
 
       // Snacks category
       ['Samosa', 'snacks', 250, 4.0, 32.0, 12.0, 'piece'],
@@ -1447,16 +1457,16 @@
         display: 'Green Vegetables / Beverages'
       },
       yellow: {
-        matches: ['Khichdi', 'Moong Dal Cooked', 'Paneer Butter Masala', 'Chana Masala', 'Dal Makhani', 'Sweet Lassi', 'Poha'],
-        display: 'Dal / Curry / Yellow Grains'
+        matches: ['Banana', 'Mango', 'Papaya', 'Khichdi', 'Moong Dal Cooked', 'Paneer Butter Masala', 'Chana Masala', 'Poha'],
+        display: 'Dal / Curry / Yellow Produce'
       },
       brown: {
-        matches: ['Roti / Chapati', 'Plain Paratha', 'Aloo Paratha', 'Samosa', 'Vada Pav', 'Chicken Biryani', 'Mutton Curry'],
+        matches: ['Roti / Chapati', 'Plain Paratha', 'Aloo Paratha', 'Samosa', 'Vada Pav', 'Chicken Biryani'],
         display: 'Breads / Fried Snacks / Rice'
       },
       white: {
-        matches: ['Basmati Rice Cooked', 'Whole Milk Curd / Dahi', 'Idli with Sambar', 'Dhokla', 'Boiled Egg'],
-        display: 'Rice / Yogurt / Light Foods'
+        matches: ['Apple', 'Orange', 'Basmati Rice Cooked', 'Whole Milk Curd / Dahi', 'Idli with Sambar', 'Boiled Egg'],
+        display: 'Fruits / Rice / Light Foods'
       }
     };
 
@@ -1502,27 +1512,41 @@
         return { match: 'not_food', confidence: 0 };
       }
       
-      let matchedFood = 'Khichdi';
+      let matchedFood = 'Banana';
       let groupKey = 'yellow';
       
-      if (h >= 75 && h <= 150) {
+      if (saturationPct < 25 && brightnessPct > 65) {
+        matchedFood = 'Apple';
+        groupKey = 'white';
+      } else if (h >= 75 && h <= 150) {
         matchedFood = 'Palak Paneer';
         groupKey = 'green';
       } else if (h >= 25 && h <= 65) {
-        matchedFood = 'Khichdi';
+        matchedFood = 'Banana';
         groupKey = 'yellow';
       } else if (h < 25 || h > 340) {
         matchedFood = 'Roti / Chapati';
         groupKey = 'brown';
-      } else if (saturationPct < 25 && brightnessPct > 65) {
-        matchedFood = 'Basmati Rice Cooked';
-        groupKey = 'white';
       } else {
-        matchedFood = 'Paneer raw';
+        matchedFood = 'Banana';
         groupKey = 'yellow';
       }
       
       return { match: matchedFood, confidence: Math.round(75 + Math.random() * 15), groupKey };
+    }
+
+    function switchToManualSearchLensPro() {
+      closeLensPro();
+      switchMobileTab('tracker');
+      
+      const search = document.getElementById('foodSearch');
+      if (search) {
+        search.value = '';
+        renderFoodGrid();
+        setTimeout(() => {
+          search.focus();
+        }, 150);
+      }
     }
 
     async function runLensProAnalysis() {
