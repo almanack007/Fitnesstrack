@@ -129,6 +129,45 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+app.get('/api/test-gemini', async (req, res) => {
+  const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+  const versions = ['v1beta', 'v1'];
+  const results = [];
+
+  for (const version of versions) {
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      try {
+        const testRes = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'Respond with the word: OK' }] }]
+          })
+        });
+        const text = await testRes.text();
+        results.push({
+          version,
+          model,
+          status: testRes.status,
+          response: text.substring(0, 300)
+        });
+      } catch (err) {
+        results.push({
+          version,
+          model,
+          error: err.message
+        });
+      }
+    }
+  }
+
+  res.json({
+    keyHint: GEMINI_API_KEY ? GEMINI_API_KEY.substring(0, 6) + '...' : 'NOT SET',
+    results
+  });
+});
+
 app.post('/api/scan', async (req, res) => {
   const { image } = req.body;
 
