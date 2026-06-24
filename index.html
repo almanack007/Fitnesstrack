@@ -6,7 +6,7 @@
   <title>FitTrack Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -222,7 +222,7 @@
         <div id="googleSignUpBtn" class="flex justify-center min-h-[44px] mb-4"></div>
         
         <!-- Fallback Google Sign Up (visible when SDK not configured) -->
-        <button id="googleSimSignUpBtn" onclick="openGoogleSimModal()" class="w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
+        <button id="googleSimSignUpBtn" onclick="openGoogleSimModal()" class="hidden w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -1537,7 +1537,9 @@
       }
     }
 
+    let googleAuthInitialized = false;
     async function initGoogleAuth() {
+      if (googleAuthInitialized) return;
       let isRealGoogle = false;
       try {
         const res = await fetch(`${API_BASE.replace('/api', '')}/api/config`);
@@ -1552,19 +1554,39 @@
               callback: handleGoogleLogin
             });
             
+            const signInBtn = document.getElementById('googleSignInBtn');
+            const signUpBtn = document.getElementById('googleSignUpBtn');
+            if (signInBtn) signInBtn.style.display = '';
+            if (signUpBtn) signUpBtn.style.display = '';
+            
             // Render Sign In button
             google.accounts.id.renderButton(
-              document.getElementById('googleSignInBtn'),
+              signInBtn,
               { theme: 'outline', size: 'large', width: 280, text: 'signin_with' }
             );
             
             // Render Sign Up button
             google.accounts.id.renderButton(
-              document.getElementById('googleSignUpBtn'),
+              signUpBtn,
               { theme: 'outline', size: 'large', width: 280, text: 'signup_with' }
             );
             
+            // Hide the fallback simulated buttons
+            const simBtn = document.getElementById('googleSimBtn');
+            if (simBtn) {
+              simBtn.classList.add('hidden');
+              simBtn.classList.remove('flex');
+            }
+            const simSignUpBtn = document.getElementById('googleSimSignUpBtn');
+            if (simSignUpBtn) {
+              simSignUpBtn.classList.add('hidden');
+              simSignUpBtn.classList.remove('flex');
+            }
+            const simInfo = document.getElementById('googleSimInfo');
+            if (simInfo) simInfo.classList.add('hidden');
+            
             isRealGoogle = true;
+            googleAuthInitialized = true;
           }
         }
       } catch (err) {
