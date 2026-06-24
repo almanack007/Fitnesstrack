@@ -206,7 +206,7 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
       contents: [{
         parts: [
           { text: prompt },
-          { inline_data: { mime_type: mimeType, data: base64Data } }
+          { inlineData: { mimeType: mimeType, data: base64Data } }
         ]
       }],
       generationConfig: {
