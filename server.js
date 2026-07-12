@@ -201,10 +201,12 @@ Examples of good answers: "white basmati rice", "banana", "butter chicken curry"
 
 STEP 2 — DECIDE: Is there actual VISIBLE, OPEN food in the image?
 Rules:
-- Sealed/closed container, jar, tin, bottle, or packet = NOT FOOD (you cannot see the food)
-- Non-food object (electronics, furniture, fabric, body parts, hands, feet, floor, wall, screen, paper) = NOT FOOD
-- Blurry, dark, or unidentifiable content = NOT FOOD
-- Clearly visible prepared, raw, or plated food = FOOD
+- If you can clearly see food (even if it is being held in someone's hand), set is_food to true
+- Sealed/closed container, jar, tin, bottle, or wrapped packet where food is NOT visible = NOT FOOD
+- Non-food object with NO food visible at all (electronics, furniture, fabric, floor, wall, screen, paper) = NOT FOOD
+- Blurry, dark, or completely unidentifiable content with no food visible = NOT FOOD
+- A hand or person holding food (e.g. holding a lemon, mango, apple) = FOOD — focus on the food item, not the hand
+- Clearly visible prepared, raw, plated, or held food = FOOD
 
 STEP 3 — MATCH: If FOOD, check if it matches any item in our database of tracked foods:
 ["Daal Chawal","Paneer Butter Masala","Butter Chicken","Chana Masala","Chicken Biryani","Veg Biryani","Choole Bhature","Dal Makhani","Palak Paneer","Rajma Chawal","Khichdi","Muttar Paneer","Aloo Gobi","Bhindi Masala","Basmati Rice Cooked","Brown Rice Cooked","Roti / Chapati","Tandoori Roti","Plain Paratha","Aloo Paratha","Butter Naan","Garlic Naan","Puri","Bhatura","Poha","Upma","Idli with Sambar","Masala Dosa","Moong Dal Cooked","Masoor Dal Cooked","Soya Chunks Cooked","Paneer Bhurji","Tandoori Chicken","Fish Tikka","Chicken Tikka","Egg Bhurji","Boiled Egg","Chicken Breast","Mutton Curry","Paneer raw","Whole Milk Curd / Dahi","Cow Milk","Buffalo Milk","Ghee","Sweet Lassi","Chaas / Buttermilk","Samosa","Dhokla","Medu Vada","Pani Puri","Bhel Puri","Pav Bhaji","Vada Pav","Roasted Chana","Roasted Makhana","Gulab Jamun","Rasgulla","Gajar ka Halwa","Jalebi","Besan Ladoo","Kheer","Masala Chai","Filter Coffee","Tender Coconut Water","Sugarcane Juice","Nimbu Pani","Banana","Apple","Mango","Orange","Papaya"]

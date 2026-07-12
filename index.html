@@ -1637,8 +1637,8 @@
         return;
       }
 
-      // Not food or low confidence
-      if (!result || result.match === 'not_food' || !result.is_food) {
+      // Not food
+      if (!result || !result.is_food) {
         const msg = result && result.rejection_message
           ? result.rejection_message
           : 'We couldn\'t recognize any food item in this photo. Try capturing your meal directly on a plate or bowl.';
@@ -1656,41 +1656,59 @@
       validPanel.classList.remove('hidden');
       invalidPanel.classList.add('hidden');
 
-      let foodName = result.match;
-      if (!foodName || !foodDatabase[foodName]) {
-        foodName = result.identified_as || 'Scanned Food';
-        // Capitalize words nicely
-        foodName = foodName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        
-        if (!foodDatabase[foodName] && result.estimated_macros) {
-          foodDatabase[foodName] = {
-            category: 'Meals',
-            cal: parseInt(result.estimated_macros.cal, 10) || 0,
-            protein: parseFloat(result.estimated_macros.protein) || 0,
-            carbs: parseFloat(result.estimated_macros.carbs) || 0,
-            fat: parseFloat(result.estimated_macros.fat) || 0,
-            unit: result.estimated_macros.unit || 'g',
-            per: parseInt(result.estimated_macros.per, 10) || 100
-          };
-        }
+      // --- CalAI-style: always trust AI identified name + estimated macros ---
+      // Step 1: Determine display name — prefer specific identified_as over match
+      let foodName = '';
+      if (result.identified_as && result.identified_as.trim()) {
+        // Use the AI's free-form identification (most specific)
+        foodName = result.identified_as.trim()
+          .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      } else if (result.match && result.match.trim()) {
+        foodName = result.match.trim();
+      } else {
+        foodName = 'Scanned Food';
       }
 
-      const foodData = foodDatabase[foodName] || foodDatabase['Khichdi'];
+      // Step 2: Build foodData — prefer AI estimated_macros over database lookup
+      let foodData;
+      const macros = result.estimated_macros;
+      if (macros && (macros.cal > 0 || macros.protein > 0 || macros.carbs > 0 || macros.fat > 0)) {
+        // AI returned real macro estimates — use them directly (CalAI approach)
+        foodData = {
+          category: 'AI Scanned',
+          cal: parseInt(macros.cal, 10) || 0,
+          protein: parseFloat(macros.protein) || 0,
+          carbs: parseFloat(macros.carbs) || 0,
+          fat: parseFloat(macros.fat) || 0,
+          unit: macros.unit || 'g',
+          per: parseInt(macros.per, 10) || 100
+        };
+      } else if (result.match && foodDatabase[result.match]) {
+        // Fall back to database match only if AI gave no macros
+        foodData = foodDatabase[result.match];
+        foodName = result.match;
+      } else {
+        // Last resort: zero macros with user ability to edit
+        foodData = { category: 'AI Scanned', cal: 0, protein: 0, carbs: 0, fat: 0, unit: 'g', per: 100 };
+      }
+
+      // Register in foodDatabase so serving size changes work correctly
+      foodDatabase[foodName] = foodData;
 
       lensProSelectedFood = { name: foodName, data: foodData };
-      lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : foodData.unit;
+      lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : (foodData.unit || 'g');
 
       document.getElementById('lensProFoodName').textContent = foodName;
 
-      // Show what the AI actually identified (free-form)
+      // Show what the AI actually identified
       const identifiedAs = result.identified_as || '';
       const identEl = document.getElementById('lensProIdentifiedAs');
-      identEl.textContent = identifiedAs ? `AI identified: "${identifiedAs}"` : '';
+      identEl.textContent = identifiedAs && identifiedAs.toLowerCase() !== foodName.toLowerCase()
+        ? `AI identified: "${identifiedAs}"` : '';
 
-      const confidence = result.confidence || 88;
+      const confidence = result.food_confidence || result.confidence || 88;
       document.getElementById('lensProConfidence').textContent = confidence + '%';
 
-      // Confidence warning badge
       const lowWarning = document.getElementById('lensProLowConfidenceWarning');
       if (confidence < 85) {
         lowWarning.classList.remove('hidden');
@@ -1716,6 +1734,7 @@
 
       document.getElementById('lensProAnalysis').classList.remove('hidden');
     }
+
 
     function selectAlternativeLensPro(foodName) {
       const foodData = foodDatabase[foodName];
