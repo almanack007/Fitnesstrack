@@ -220,7 +220,9 @@ Fields in estimated_macros:
 - unit: serving unit, either "g" (default), "cup" (for beverages/liquids), or "piece" (for fruits, boiled eggs, etc.)
 - per: serving size value (100 for "g", 1 for "piece" or "cup")
 
-STEP 5 — CONFIDENCE: Rate 0-100 how confident you are that this is food and that your identification is correct. Be honest.
+STEP 5 — CONFIDENCE: Provide two separate confidence scores from 0 to 100:
+- food_confidence: How confident you are that the image contains a visible, open, and identifiable food item. (This should be very high, e.g., 95-100, for clear images of food like a green mango or chicken curry, regardless of whether it matches our database list).
+- match_confidence: How confident you are that the food item matches the specific database item you selected in STEP 3. If "match" is empty, this should be 0.
 
 STEP 6 — REJECTION MESSAGE: If NOT FOOD, write one short friendly sentence saying what you actually see (e.g. "Looks like a laptop screen — point the camera at your meal instead.").
 
@@ -229,7 +231,8 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
   "is_food": true or false,
   "identified_as": "specific food name if food, otherwise empty string",
   "match": "exact name from database list if matched, otherwise empty string",
-  "confidence": 0-100,
+  "food_confidence": 0-100,
+  "match_confidence": 0-100,
   "rejection_message": "friendly message if not food, otherwise empty string",
   "estimated_macros": {
     "cal": 0,
@@ -283,12 +286,23 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
     let parsed;
     try {
       parsed = JSON.parse(text);
+      if (parsed.food_confidence !== undefined) {
+        parsed.confidence = parseInt(parsed.food_confidence, 10);
+      } else if (parsed.confidence !== undefined) {
+        parsed.confidence = parseInt(parsed.confidence, 10);
+      } else {
+        parsed.confidence = 95;
+      }
     } catch (e) {
       console.error('[LensPro /api/scan] JSON parse failed, using regex extraction. Text was:', text);
       const isFoodMatch = /"is_food"\s*:\s*true/i.test(text);
       const identMatch = text.match(/"identified_as"\s*:\s*"([^"]*)"/); 
       const matchMatch = text.match(/"match"\s*:\s*"([^"]*)"/); 
-      const confMatch = text.match(/"confidence"\s*:\s*(\d+)/);
+      
+      const foodConfMatch = text.match(/"food_confidence"\s*:\s*(\d+)/);
+      const oldConfMatch = text.match(/"confidence"\s*:\s*(\d+)/);
+      const confVal = foodConfMatch ? parseInt(foodConfMatch[1], 10) : (oldConfMatch ? parseInt(oldConfMatch[1], 10) : 95);
+      
       const rejMatch = text.match(/"rejection_message"\s*:\s*"([^"]*)"/); 
       
       const calMatch = text.match(/"cal"\s*:\s*(\d+)/);
@@ -302,7 +316,7 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
         is_food: isFoodMatch,
         identified_as: identMatch ? identMatch[1] : '',
         match: matchMatch ? matchMatch[1] : '',
-        confidence: confMatch ? parseInt(confMatch[1], 10) : 0,
+        confidence: confVal,
         rejection_message: rejMatch ? rejMatch[1] : '',
         estimated_macros: isFoodMatch ? {
           cal: calMatch ? parseInt(calMatch[1], 10) : 0,
