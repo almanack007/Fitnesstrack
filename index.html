@@ -816,6 +816,13 @@
           <button onclick="addCustomWater()" class="rounded-xl bg-emerald-500 text-slate-950 px-4 font-bold neon">Add</button>
         </div>
       </label>
+      <div class="mt-4 pt-4 border-t border-slate-800 text-left">
+        <span class="text-sm text-slate-300">Edit Today's Total (ml)</span>
+        <div class="flex gap-2 mt-2">
+          <input id="editTotalWaterAmount" type="number" step="50" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2" />
+          <button onclick="editTotalWater()" class="rounded-xl bg-slate-800 text-slate-300 px-4 font-bold border border-slate-700 hover:bg-slate-700 transition">Update</button>
+        </div>
+      </div>
       <div class="mt-4 pt-4 border-t border-slate-800">
         <button onclick="resetWater()" class="text-sm text-red-400 hover:text-red-300 transition">Reset today's water</button>
       </div>
@@ -1498,10 +1505,11 @@
       document.getElementById('waterBottles').innerHTML = bottlesHTML.join('');
     }
     
-    function openWaterModal() { document.getElementById('waterModal').classList.remove('hidden'); document.getElementById('waterModal').classList.add('flex'); }
+    function openWaterModal() { document.getElementById('editTotalWaterAmount').value = waterIntake; document.getElementById('waterModal').classList.remove('hidden'); document.getElementById('waterModal').classList.add('flex'); }
     function closeWaterModal() { document.getElementById('waterModal').classList.add('hidden'); document.getElementById('waterModal').classList.remove('flex'); }
     function addWater(amount) { waterIntake += amount; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); }
     function addCustomWater() { const amt = parseInt(document.getElementById('customWaterAmount').value, 10); if(!isNaN(amt) && amt > 0) { addWater(amt); document.getElementById('customWaterAmount').value = ''; } }
+    function editTotalWater() { const amt = parseInt(document.getElementById('editTotalWaterAmount').value, 10); if(!isNaN(amt) && amt >= 0) { waterIntake = amt; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); } }
     function resetWater() { waterIntake = 0; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); }
     function saveWaterGoal() {
       if(!userProfile) return;
