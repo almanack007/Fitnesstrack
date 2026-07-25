@@ -439,6 +439,21 @@
       </button>
     </div>
 
+    <!-- Calendar & Streak Section -->
+    <div id="calendarSection" class="max-w-[1600px] mx-auto mb-6">
+      <div class="glass rounded-2xl p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            History <span id="streakBadge" class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">🔥 0 Day Streak</span>
+          </h2>
+          <button onclick="selectDate(todayKey)" class="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700">Today</button>
+        </div>
+        <div id="calendarContainer" class="flex gap-3 overflow-x-auto thin-scroll pb-2 snap-x">
+          <!-- Calendar items injected here -->
+        </div>
+      </div>
+    </div>
+
     <!-- Responsive Grid -->
     <div class="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
       
@@ -451,7 +466,7 @@
           <!-- Stats Dashboard -->
           <div class="glass rounded-2xl p-5">
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h2 class="text-xl font-bold">Dashboard</h2>
+              <h2 class="text-xl font-bold">Dashboard <span id="dashDateLabel" class="text-sm text-slate-400 font-normal ml-2"></span></h2>
               <span class="text-xs text-slate-400">Targets update from your profile</span>
             </div>
             <div id="motivationalSummary" class="text-emerald-400 font-medium text-xs sm:text-sm mb-4 border-l-2 border-emerald-500/50 pl-3 py-1.5 italic bg-emerald-500/5 rounded-r-lg text-left">
@@ -506,7 +521,7 @@
           <!-- Food Log -->
           <div class="glass rounded-2xl p-5 flex flex-col min-h-[350px]">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-bold">Food Log</h2>
+              <h2 class="text-xl font-bold">Food Log <span id="logDateLabel" class="text-sm text-slate-400 font-normal ml-2"></span></h2>
               <button onclick="clearLog()" class="rounded-lg border border-red-400/30 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/10 transition">Clear all</button>
             </div>
             <div id="foodLog" class="space-y-3 flex-grow overflow-auto max-h-[320px] thin-scroll"></div>
@@ -751,12 +766,15 @@
       user: 'fittrack_user'
     };
     const todayKey = new Date().toISOString().slice(0, 10);
+    let viewDateKey = todayKey;
+    let historyDays = [];
+    let currentStreak = 0;
     const API_BASE = localStorage.getItem(store.apiBase) || `${window.location.origin}/api`;
     let currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
     let USER_ID = currentUser ? currentUser.id : getOrCreateUserId();
     let userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
-    let todayLog = localStorage.getItem(store.logDate) === todayKey ? JSON.parse(localStorage.getItem(store.log) || '[]') : [];
-    let waterIntake = localStorage.getItem(store.waterDate) === todayKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
+    let todayLog = localStorage.getItem(store.logDate) === viewDateKey ? JSON.parse(localStorage.getItem(store.log) || '[]') : [];
+    let waterIntake = localStorage.getItem(store.waterDate) === viewDateKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
     let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
     let selectedGoal = null;
     let selectedFood = null;
@@ -903,15 +921,15 @@
     }
     function saveLocalState() {
       localStorage.setItem(store.profile, JSON.stringify(userProfile));
-      localStorage.setItem(store.logDate, todayKey);
-      localStorage.setItem(store.waterDate, todayKey);
+      localStorage.setItem(store.logDate, viewDateKey);
+      localStorage.setItem(store.waterDate, viewDateKey);
       localStorage.setItem(store.log, JSON.stringify(todayLog));
       localStorage.setItem(store.water, waterIntake);
       localStorage.setItem(store.weekly, JSON.stringify(weeklyData));
     }
-    async function loadTodayFromDatabase() {
+    async function loadDayFromDatabase() {
       try {
-        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${todayKey}`);
+        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${viewDateKey}`);
         if (!res.ok) throw new Error('Database read failed');
         const data = await res.json();
         // Only overwrite local data if the database actually has content
@@ -928,16 +946,128 @@
     async function saveDailyToDatabase() {
       if (!userProfile) return;
       try {
-        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${todayKey}`, {
+        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${viewDateKey}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ profile: userProfile, log: todayLog, waterIntake, weeklyData, totals: currentTotals() })
         });
         if (!res.ok) throw new Error('Database write failed');
         setSyncStatus('Saved to Postgres', 'ok');
+        fetchHistory(); // Refresh streak/calendar when data changes
       } catch (error) {
         setSyncStatus('Offline mode: changes saved locally', 'warn');
       }
+    }
+
+    async function fetchHistory() {
+      if (!userProfile) return;
+      try {
+        const res = await fetch(`${API_BASE}/history/${encodeURIComponent(USER_ID)}?limit=40`);
+        if (res.ok) {
+          const data = await res.json();
+          historyDays = data.days || [];
+          calculateStreak();
+          renderCalendar();
+        }
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
+    }
+
+    function calculateStreak() {
+      let streak = 0;
+      let checkDate = new Date(todayKey);
+      
+      let foundToday = historyDays.some(d => d.log_date.startsWith(todayKey) && d.food_log && d.food_log.length > 0);
+      let foundYesterday = false;
+      
+      let yesterday = new Date(checkDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      let yesterdayStr = yesterday.toISOString().slice(0, 10);
+      
+      if (!foundToday) {
+         foundYesterday = historyDays.some(d => d.log_date.startsWith(yesterdayStr) && d.food_log && d.food_log.length > 0);
+         if (!foundYesterday) {
+           currentStreak = 0;
+           return;
+         }
+      }
+      
+      let currentCheckStr = foundToday ? todayKey : yesterdayStr;
+      let curr = new Date(currentCheckStr);
+      
+      while(true) {
+        let dateStr = curr.toISOString().slice(0,10);
+        let dayData = historyDays.find(d => d.log_date.startsWith(dateStr));
+        if (dayData && dayData.food_log && dayData.food_log.length > 0) {
+          streak++;
+          curr.setDate(curr.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      currentStreak = streak;
+    }
+
+    function renderCalendar() {
+      const container = document.getElementById('calendarContainer');
+      if (!container) return;
+      
+      const streakBadge = document.getElementById('streakBadge');
+      if (streakBadge) streakBadge.innerHTML = `🔥 ${currentStreak} Day Streak`;
+      
+      let html = '';
+      const daysToDisplay = 30;
+      
+      for (let i = daysToDisplay - 1; i >= 0; i--) {
+        const d = new Date(todayKey);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0,10);
+        const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayOfMonth = d.getDate();
+        
+        const isSelected = dateStr === viewDateKey;
+        const isToday = dateStr === todayKey;
+        
+        const dayData = historyDays.find(hd => hd.log_date.startsWith(dateStr));
+        const hasData = dayData && dayData.food_log && dayData.food_log.length > 0;
+        
+        const cardClass = isSelected 
+          ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+          : 'bg-slate-900/60 border-slate-700/50 hover:border-emerald-500/50 hover:bg-slate-800 text-slate-400';
+          
+        html += `
+          <button onclick="selectDate('${dateStr}')" class="flex-shrink-0 w-16 h-20 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 snap-center ${cardClass}">
+            <span class="text-[10px] uppercase font-bold tracking-wider ${isSelected ? 'text-emerald-400/80' : 'text-slate-500'}">${dayOfWeek}</span>
+            <span class="text-lg font-black ${isToday && !isSelected ? 'text-white' : ''}">${dayOfMonth}</span>
+            <div class="h-1.5 w-1.5 rounded-full ${hasData ? 'bg-emerald-400 neon' : 'bg-transparent'}"></div>
+          </button>
+        `;
+      }
+      container.innerHTML = html;
+      
+      setTimeout(() => {
+        const selectedEl = container.querySelector('.bg-emerald-500\\\\/20');
+        if (selectedEl) selectedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 100);
+    }
+    
+    async function selectDate(dateStr) {
+      if (viewDateKey === dateStr) return;
+      viewDateKey = dateStr;
+      
+      // Reset daily vars so old data doesn't persist while loading
+      todayLog = [];
+      waterIntake = 0;
+      
+      renderCalendar();
+      updateDashboard();
+      
+      document.getElementById('foodLog').innerHTML = '<div class="p-6 text-center text-slate-500"><div class="animate-pulse flex flex-col items-center gap-2"><div class="h-4 w-24 bg-slate-800 rounded"></div><div class="h-3 w-16 bg-slate-800 rounded"></div></div></div>';
+      
+      await loadDayFromDatabase();
+      updateDashboard();
+      renderFoodLog();
     }
 
     function renderGoals() {
@@ -1187,6 +1317,15 @@
     function clearLog() { todayLog = []; saveLocalState(); renderFoodLog(); updateDashboard(); }
     function updateDashboard() {
       const totals = currentTotals();
+      
+      const isToday = viewDateKey === todayKey;
+      const dateLabel = isToday ? '' : `(${new Date(viewDateKey).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+      
+      const dashLabelEl = document.getElementById('dashDateLabel');
+      const logLabelEl = document.getElementById('logDateLabel');
+      if (dashLabelEl) dashLabelEl.textContent = dateLabel;
+      if (logLabelEl) logLabelEl.textContent = dateLabel;
+
       document.getElementById('currentCals').textContent = Math.round(totals.cal);
       document.getElementById('currentProtein').textContent = totals.protein.toFixed(1);
       document.getElementById('currentCarbs').textContent = totals.carbs.toFixed(1);
@@ -2065,9 +2204,10 @@
         userProfile = JSON.parse(localProfile);
       }
       
-      loadTodayFromDatabase().finally(() => {
+      loadDayFromDatabase().finally(() => {
         if (userProfile) {
           updateHeaderProfileWidget(currentUser);
+          fetchHistory(); // Fetch calendar data on login
           initApp();
         } else {
           document.getElementById('onboarding').classList.remove('hidden');
@@ -2140,7 +2280,10 @@
         userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
         if (userProfile) {
           updateHeaderProfileWidget(currentUser);
-          loadTodayFromDatabase().finally(initApp);
+          loadDayFromDatabase().finally(() => {
+            fetchHistory(); // Fetch calendar data on start
+            initApp();
+          });
         } else {
           document.getElementById('onboarding').classList.remove('hidden');
         }

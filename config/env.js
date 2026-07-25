@@ -16,7 +16,6 @@ if (fs.existsSync(envPath)) {
         if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
           value = value.substring(1, value.length - 1);
         }
-        if (key === 'GOOGLE_CLIENT_ID') return;
         if (key && process.env[key] === undefined) {
           process.env[key] = value;
         }
