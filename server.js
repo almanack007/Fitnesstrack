@@ -19,7 +19,7 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
           value = value.substring(1, value.length - 1);
         }
         if (key === 'GOOGLE_CLIENT_ID') return;
-        if (key && process.env[key] === undefined) {
+        if (key) {
           process.env[key] = value;
         }
       }
@@ -28,6 +28,7 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
     console.error('Failed to read .env file:', err);
   }
 }
+console.log('Using DATABASE_URL:', process.env.DATABASE_URL);
 
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@localhost:5432/fittrack';
