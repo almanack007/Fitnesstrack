@@ -94,39 +94,41 @@
       }
     }
     /* Dynamic Water Bottle UI */
-    .water-bottle-container {
-      position: relative;
-      width: 52px;
-      height: 140px;
-      border: 3px solid #475569;
-      border-radius: 12px 12px 6px 6px;
-      overflow: hidden;
-      background: rgba(15, 23, 42, 0.8);
+    .water-bottle-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       transition: all 0.3s ease;
+      cursor: pointer;
     }
-    .water-bottle-container:hover {
-      border-color: #38bdf8;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    .water-bottle-wrapper:hover .water-bottle-container {
+      border-color: #f1f5f9;
+      box-shadow: 0 0 15px rgba(241, 245, 249, 0.2);
     }
     .water-bottle-cap {
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 22px;
-      height: 8px;
-      background: #475569;
+      width: 24px;
+      height: 12px;
+      background: #cbd5e1;
       border-radius: 4px 4px 0 0;
       z-index: 10;
+    }
+    .water-bottle-container {
+      position: relative;
+      width: 56px;
+      height: 140px;
+      border: 3px solid #cbd5e1;
+      border-radius: 12px 12px 8px 8px;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.4);
+      transition: all 0.3s ease;
     }
     .water-bottle-fill {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      background: #f8fafc;
       transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.2);
       z-index: 5;
     }
     .water-bottle-fill::before {
@@ -136,7 +138,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: rgba(255,255,255,0.4);
+      background: rgba(15, 23, 42, 0.15);
       border-radius: 50%;
     }
     /* Bottle grooves for aesthetic */
@@ -510,9 +512,9 @@
           <div class="glass rounded-2xl p-5 sm:p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-xl font-bold">Water Tracker</h2>
-              <span class="text-blue-300 font-bold"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2000</span> ml</span>
+              <span class="text-slate-300 font-bold"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2000</span> ml</span>
             </div>
-            <div id="waterBottles" class="flex flex-wrap gap-4 pt-2 cursor-pointer" onclick="openWaterModal()"></div>
+            <div id="waterBottles" class="flex flex-wrap justify-center gap-6 pt-2" onclick="openWaterModal()"></div>
           </div>
         </div>
 
@@ -1464,13 +1466,15 @@
       
       for(let i=0; i<fullBottles; i++) {
         bottlesHTML.push(`
-          <div class="water-bottle-container cursor-pointer" onclick="openWaterModal()">
+          <div class="water-bottle-wrapper">
             <div class="water-bottle-cap"></div>
-            <div class="bottle-groove" style="top: 30%"></div>
-            <div class="bottle-groove" style="top: 50%"></div>
-            <div class="bottle-groove" style="top: 70%"></div>
-            <div class="water-bottle-fill" style="height: 100%"></div>
-            <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white z-20" style="text-shadow: 0px 1px 3px rgba(0,0,0,0.8)">1 L</div>
+            <div class="water-bottle-container">
+              <div class="bottle-groove" style="top: 30%"></div>
+              <div class="bottle-groove" style="top: 50%"></div>
+              <div class="bottle-groove" style="top: 70%"></div>
+              <div class="water-bottle-fill" style="height: 100%"></div>
+              <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-slate-800 z-20 mix-blend-difference">1 L</div>
+            </div>
           </div>
         `);
       }
@@ -1478,13 +1482,15 @@
       if (waterIntake === 0 || remainingWater > 0 || fullBottles === 0) {
         const fillPercent = (remainingWater / bottleCapacity) * 100;
         bottlesHTML.push(`
-          <div class="water-bottle-container cursor-pointer opacity-90 hover:opacity-100" onclick="openWaterModal()">
+          <div class="water-bottle-wrapper opacity-90 hover:opacity-100">
             <div class="water-bottle-cap"></div>
-            <div class="bottle-groove" style="top: 30%"></div>
-            <div class="bottle-groove" style="top: 50%"></div>
-            <div class="bottle-groove" style="top: 70%"></div>
-            <div class="water-bottle-fill" style="height: ${fillPercent}%"></div>
-            <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] ${fillPercent > 50 ? 'text-white' : 'text-slate-400'} z-20" style="text-shadow: ${fillPercent > 50 ? '0px 1px 3px rgba(0,0,0,0.8)' : 'none'}">${remainingWater} ml</div>
+            <div class="water-bottle-container">
+              <div class="bottle-groove" style="top: 30%"></div>
+              <div class="bottle-groove" style="top: 50%"></div>
+              <div class="bottle-groove" style="top: 70%"></div>
+              <div class="water-bottle-fill" style="height: ${fillPercent}%"></div>
+              <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] ${fillPercent > 50 ? 'text-slate-800 mix-blend-difference' : 'text-slate-400'} z-20">${remainingWater} ml</div>
+            </div>
           </div>
         `);
       }
