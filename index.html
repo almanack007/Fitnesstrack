@@ -446,7 +446,7 @@
           <h2 class="text-xl font-bold flex items-center gap-2">
             History <span id="streakBadge" class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">🔥 0 Day Streak</span>
           </h2>
-          <button onclick="selectDate(todayKey)" class="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700">Today</button>
+          <button onclick="selectDate(new Date().toISOString().slice(0, 10))" class="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700">Today</button>
         </div>
         <div id="calendarContainer" class="flex gap-3 overflow-x-auto thin-scroll pb-2 snap-x">
           <!-- Calendar items injected here -->
