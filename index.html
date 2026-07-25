@@ -796,7 +796,8 @@
       apiBase: 'fittrack_api_base',
       user: 'fittrack_user'
     };
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const _localD = new Date();
+    const todayKey = _localD.getFullYear() + '-' + String(_localD.getMonth() + 1).padStart(2, '0') + '-' + String(_localD.getDate()).padStart(2, '0');
     let viewDateKey = todayKey;
     let historyDays = [];
     let currentStreak = 0;
@@ -1007,14 +1008,15 @@
 
     function calculateStreak() {
       let streak = 0;
-      let checkDate = new Date(todayKey);
+      const parts = todayKey.split('-');
+      let checkDate = new Date(parts[0], parts[1] - 1, parts[2]);
       
       let foundToday = historyDays.some(d => d.log_date.startsWith(todayKey) && d.food_log && d.food_log.length > 0);
       let foundYesterday = false;
       
       let yesterday = new Date(checkDate);
       yesterday.setDate(yesterday.getDate() - 1);
-      let yesterdayStr = yesterday.toISOString().slice(0, 10);
+      let yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
       
       if (!foundToday) {
          foundYesterday = historyDays.some(d => d.log_date.startsWith(yesterdayStr) && d.food_log && d.food_log.length > 0);
@@ -1025,10 +1027,11 @@
       }
       
       let currentCheckStr = foundToday ? todayKey : yesterdayStr;
-      let curr = new Date(currentCheckStr);
+      const currParts = currentCheckStr.split('-');
+      let curr = new Date(currParts[0], currParts[1] - 1, currParts[2]);
       
       while(true) {
-        let dateStr = curr.toISOString().slice(0,10);
+        let dateStr = curr.getFullYear() + '-' + String(curr.getMonth() + 1).padStart(2, '0') + '-' + String(curr.getDate()).padStart(2, '0');
         let dayData = historyDays.find(d => d.log_date.startsWith(dateStr));
         if (dayData && dayData.food_log && dayData.food_log.length > 0) {
           streak++;
@@ -1051,9 +1054,10 @@
       const daysToDisplay = 30;
       
       for (let i = daysToDisplay - 1; i >= 0; i--) {
-        const d = new Date(todayKey);
+        const parts = todayKey.split('-');
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
         d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().slice(0,10);
+        const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'short' });
         const dayOfMonth = d.getDate();
         
