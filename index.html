@@ -1068,7 +1068,7 @@
         const hasData = dayData && dayData.food_log && dayData.food_log.length > 0;
         
         const cardClass = isSelected 
-          ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+          ? 'selected-date bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
           : 'bg-slate-900/60 border-slate-700/50 hover:border-emerald-500/50 hover:bg-slate-800 text-slate-400';
           
         html += `
@@ -1082,7 +1082,7 @@
       container.innerHTML = html;
       
       setTimeout(() => {
-        const selectedEl = container.querySelector('.bg-emerald-500\\\\/20');
+        const selectedEl = container.querySelector('.selected-date');
         if (selectedEl) selectedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }, 100);
     }
