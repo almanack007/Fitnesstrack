@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/cli @capacitor/core @capacitor/android
+
+      - name: Prepare Capacitor Project
+        run: |
+          mkdir www
+          echo "<html><body>Loading Fitnesstrack...</body></html>" > www/index.html
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.almanack007.fitnesstrack",
+            "appName": "Fitnesstrack",
+            "webDir": "www",
+            "server": {
+              "url": "https://intelligent-oppenheimer-r1e4.onrender.com",
+              "cleartext": true
+            }
+          }
+          EOF
+          npx cap add android
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fitnesstrack-Android-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
