@@ -561,124 +561,159 @@
   </main>
 
   <!-- LensPro Camera & Image Scanner Modal -->
-  <div id="lensProModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
-    <div class="glass rounded-2xl p-5 w-full max-w-lg slide-up my-auto max-h-[95vh] overflow-y-auto thin-scroll">
-      <div class="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h2 class="text-2xl font-bold flex items-center gap-2">
-            <span class="text-emerald-400">📸</span> LensPro
-          </h2>
-          <p class="text-slate-400 text-sm mt-1">Scan or upload an image of food to log metrics</p>
-        </div>
-        <button onclick="closeLensPro()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Close</button>
+  <div id="lensProModal" class="fixed inset-0 z-50 hidden bg-black flex-col">
+    <!-- Viewfinder Container -->
+    <div class="absolute inset-0 w-full h-full">
+      <!-- Live Video Viewfinder -->
+      <video id="lensProVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
+      
+      <!-- Freeze-frame Canvas / Uploaded image preview -->
+      <canvas id="lensProCanvas" class="absolute inset-0 w-full h-full object-cover hidden"></canvas>
+
+      <!-- Scanning Laser Line Overlay -->
+      <div id="lensProScanLine" class="absolute left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_15px_#10b981] hidden pointer-events-none"></div>
+
+      <!-- Camera Off / Blocked / Uninitiated placeholder UI -->
+      <div id="lensProPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10 bg-slate-950/80">
+        <svg class="w-12 h-12 text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <p id="lensProStatusText" class="text-sm text-slate-400">Requesting camera access...</p>
+      </div>
+    </div>
+
+    <!-- Overlay UI container -->
+    <div class="relative z-10 flex flex-col h-full pointer-events-none">
+      
+      <!-- Top Header -->
+      <div class="flex items-center justify-between p-6 pointer-events-auto mt-4">
+        <button onclick="closeLensPro()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <span class="text-white font-bold text-lg drop-shadow-md">AI Camera</span>
+        <button class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </button>
       </div>
 
-      <!-- Viewfinder Container -->
-      <div class="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex flex-col items-center justify-center">
-        <!-- Live Video Viewfinder -->
-        <video id="lensProVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
-        
-        <!-- Freeze-frame Canvas / Uploaded image preview -->
-        <canvas id="lensProCanvas" class="absolute inset-0 w-full h-full object-cover hidden"></canvas>
-
-        <!-- Scanning Laser Line Overlay -->
-        <div id="lensProScanLine" class="absolute left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_15px_#10b981] hidden pointer-events-none"></div>
-
-        <!-- Camera Off / Blocked / Uninitiated placeholder UI -->
-        <div id="lensProPlaceholder" class="text-center p-4 z-10">
-          <svg class="w-12 h-12 text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <p id="lensProStatusText" class="text-sm text-slate-400">Requesting camera access...</p>
+      <!-- Center focus area -->
+      <div class="flex-1 flex flex-col items-center justify-center">
+        <!-- Target Bracket -->
+        <div class="w-64 h-64 relative mb-6">
+           <div class="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-white rounded-tl-3xl drop-shadow-md"></div>
+           <div class="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-white rounded-tr-3xl drop-shadow-md"></div>
+           <div class="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-white rounded-bl-3xl drop-shadow-md"></div>
+           <div class="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-white rounded-br-3xl drop-shadow-md"></div>
         </div>
+        <p class="text-white/90 text-sm font-medium drop-shadow-md">Place the food in the frame</p>
       </div>
 
-      <!-- Controls Panel -->
-      <div id="lensProControls" class="flex flex-col gap-3 mt-4">
-        <div class="flex gap-2">
-          <button id="lensProCaptureBtn" onclick="captureLensProPhoto()" class="flex-1 rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition flex items-center justify-center gap-2">
-            📸 Capture Photo
-          </button>
-          <button id="lensProUploadBtn" onclick="triggerLensProUpload()" class="rounded-xl border border-slate-700 bg-slate-900/55 px-4 py-3 text-slate-300 hover:border-slate-600 transition flex items-center justify-center" title="Upload Photo">
-            📁
-          </button>
+      <!-- Bottom Controls -->
+      <div id="lensProControls" class="p-8 pb-12 flex flex-col items-center gap-8 pointer-events-auto">
+        <!-- Hidden controls needed for JS to function -->
+        <div class="hidden">
           <input type="file" id="lensProFileInput" accept="image/*" class="hidden" onchange="handleLensProUpload(event)" />
+          <div id="lensProSwitchCameraContainer">
+            <button onclick="switchLensProCamera()">Switch Camera</button>
+          </div>
+          <button id="lensProUploadBtn" onclick="triggerLensProUpload()">Upload</button>
         </div>
-        <div id="lensProSwitchCameraContainer" class="hidden text-center">
-          <button onclick="switchLensProCamera()" class="text-xs text-emerald-400 underline hover:text-emerald-300">Switch Camera</button>
-        </div>
-      </div>
 
-      <!-- Analysis Result Panel (Initially Hidden) -->
-      <div id="lensProAnalysis" class="hidden mt-5 space-y-4">
+        <!-- Tab Bar -->
+        <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-2xl flex gap-1 items-center">
+           <button class="bg-white text-black px-4 py-2.5 rounded-xl text-xs font-bold shadow flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+             AI Camera
+           </button>
+           <button class="text-white hover:bg-white/10 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+             AI Barcode
+           </button>
+           <button onclick="triggerLensProUpload()" class="text-white hover:bg-white/10 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+             Gallery
+           </button>
+        </div>
+
+        <!-- Capture Button -->
+        <button id="lensProCaptureBtn" onclick="captureLensProPhoto()" class="w-[72px] h-[72px] rounded-full border-4 border-white/50 bg-transparent p-1 hover:scale-105 transition-transform flex items-center justify-center">
+          <div class="w-full h-full bg-white rounded-full"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Analysis Result Panel (Sliding Bottom Sheet) -->
+    <div id="lensProAnalysis" class="absolute inset-x-0 bottom-0 z-20 hidden flex-col justify-end">
+      <div class="bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 rounded-t-3xl p-6 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[85vh] thin-scroll slide-up w-full">
+        <!-- Drag Handle -->
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-6"></div>
         
         <!-- Mode A: Valid Food Result Panel -->
         <div id="lensProResultValid" class="space-y-4">
-          <div class="border-t border-slate-800 pt-4">
+          <div>
             <h3 class="text-lg font-bold text-emerald-400">Match Found!</h3>
-            <p id="lensProFoodName" class="text-xl font-extrabold mt-1"></p>
-            <p id="lensProIdentifiedAs" class="text-xs text-slate-500 mt-0.5 italic"></p>
-            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span id="lensProConfidenceBadge" class="text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 border border-emerald-500/30">
+            <p id="lensProFoodName" class="text-2xl font-extrabold mt-1"></p>
+            <p id="lensProIdentifiedAs" class="text-sm text-slate-400 mt-1 italic"></p>
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+              <span id="lensProConfidenceBadge" class="text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-1 border border-emerald-500/30">
                 Confidence: <span id="lensProConfidence">0%</span>
               </span>
-              <span id="lensProLowConfidenceWarning" class="hidden text-xs font-semibold rounded-full bg-amber-500/20 text-amber-300 px-2 py-0.5 border border-amber-500/30">⚠️ Low confidence — verify manually</span>
+              <span id="lensProLowConfidenceWarning" class="hidden text-xs font-semibold rounded-full bg-amber-500/20 text-amber-300 px-2 py-1 border border-amber-500/30">⚠️ Low confidence — verify manually</span>
             </div>
           </div>
 
           <!-- Alternatives suggestion box -->
-          <div class="bg-slate-900/60 rounded-xl p-3 border border-slate-800 space-y-2">
+          <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 space-y-2 mt-4">
             <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Not correct? Tap alternative matches:</span>
-            <div id="lensProAlternatives" class="flex flex-wrap gap-1.5">
-            </div>
-            <div class="pt-1.5 border-t border-slate-800/60 text-center">
+            <div id="lensProAlternatives" class="flex flex-wrap gap-2"></div>
+            <div class="pt-2 border-t border-slate-800/60 text-center">
               <span class="text-[10px] text-slate-400">Still not seeing it? <button onclick="switchToManualSearchLensPro()" class="text-emerald-400 hover:text-emerald-300 underline font-semibold transition">Search database manually</button></span>
             </div>
           </div>
 
           <!-- Serving size with stepper -->
-          <div>
-            <span class="text-sm text-slate-300">Serving size</span>
+          <div class="mt-4">
+            <span class="text-sm text-slate-300 font-semibold">Serving size</span>
             <div class="flex items-center gap-2 mt-2">
-              <button onclick="adjustLensProServing(-10)" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-xl font-bold text-slate-300 hover:bg-slate-700 transition flex-shrink-0">−</button>
-              <input id="lensProServingAmount" type="number" min="0" step="1" class="flex-1 rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-2.5 text-center text-lg font-bold" />
-              <button onclick="adjustLensProServing(10)" class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-xl font-bold text-slate-300 hover:bg-slate-700 transition flex-shrink-0">+</button>
+              <button onclick="adjustLensProServing(-10)" class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-2xl font-bold text-slate-300 hover:bg-slate-700 transition flex-shrink-0">−</button>
+              <input id="lensProServingAmount" type="number" min="0" step="1" class="flex-1 rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-center text-xl font-bold" />
+              <button onclick="adjustLensProServing(10)" class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-2xl font-bold text-slate-300 hover:bg-slate-700 transition flex-shrink-0">+</button>
             </div>
           </div>
 
           <!-- Serving Unit selection -->
-          <div id="lensProServingButtons" class="grid grid-cols-4 gap-2"></div>
+          <div id="lensProServingButtons" class="grid grid-cols-4 gap-2 mt-3"></div>
 
           <!-- Calculated Metrics Preview -->
-          <div class="grid grid-cols-4 gap-2 mt-3 text-center">
-            <div class="rounded-xl bg-slate-900/60 p-3"><p id="lensProPreviewCals" class="font-bold text-lg"></p><p class="text-xs text-slate-500">cal</p></div>
-            <div class="rounded-xl bg-blue-500/10 p-3"><p id="lensProPreviewProtein" class="font-bold text-lg text-blue-300"></p><p class="text-xs text-slate-500">protein</p></div>
-            <div class="rounded-xl bg-amber-500/10 p-3"><p id="lensProPreviewCarbs" class="font-bold text-lg text-amber-300"></p><p class="text-xs text-slate-500">carbs</p></div>
-            <div class="rounded-xl bg-red-500/10 p-3"><p id="lensProPreviewFats" class="font-bold text-lg text-red-300"></p><p class="text-xs text-slate-500">fats</p></div>
+          <div class="grid grid-cols-4 gap-3 mt-4 text-center">
+            <div class="rounded-xl bg-slate-950 p-3 border border-slate-800"><p id="lensProPreviewCals" class="font-bold text-xl"></p><p class="text-xs text-slate-500 mt-1">cal</p></div>
+            <div class="rounded-xl bg-blue-500/10 p-3 border border-blue-500/20"><p id="lensProPreviewProtein" class="font-bold text-xl text-blue-300"></p><p class="text-xs text-slate-500 mt-1">protein</p></div>
+            <div class="rounded-xl bg-amber-500/10 p-3 border border-amber-500/20"><p id="lensProPreviewCarbs" class="font-bold text-xl text-amber-300"></p><p class="text-xs text-slate-500 mt-1">carbs</p></div>
+            <div class="rounded-xl bg-red-500/10 p-3 border border-red-500/20"><p id="lensProPreviewFats" class="font-bold text-xl text-red-300"></p><p class="text-xs text-slate-500 mt-1">fats</p></div>
           </div>
 
           <!-- Action buttons -->
-          <div class="flex gap-3 pt-2">
-            <button onclick="retryLensPro()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
-              🔄 Retry
+          <div class="flex gap-3 pt-4">
+            <button onclick="retryLensPro()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-4 font-bold text-slate-300 hover:bg-slate-700 transition">
+              🔄 Retake
             </button>
-            <button onclick="confirmLensProAdd()" class="flex-1 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
+            <button onclick="confirmLensProAdd()" class="flex-1 rounded-xl bg-emerald-500 py-4 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
               ✅ Add to Log
             </button>
           </div>
         </div>
 
         <!-- Mode B: Non-Food / Unavailable Panel -->
-        <div id="lensProResultInvalid" class="hidden space-y-5 text-center py-4">
-          <div id="lensProInvalidIcon" class="w-16 h-16 bg-red-500/10 border border-red-500/35 rounded-full flex items-center justify-center mx-auto text-3xl">
+        <div id="lensProResultInvalid" class="hidden space-y-6 text-center py-6">
+          <div id="lensProInvalidIcon" class="w-20 h-20 bg-red-500/10 border border-red-500/35 rounded-full flex items-center justify-center mx-auto text-4xl">
             ⚠️
           </div>
           <div class="space-y-2">
-            <h3 id="lensProInvalidTitle" class="text-xl font-bold text-red-400">No Food Detected</h3>
-            <p id="lensProInvalidMessage" class="text-sm text-slate-400 max-w-sm mx-auto">We couldn't recognize any food item in this photo. Please try capturing or uploading an image of your meal.</p>
+            <h3 id="lensProInvalidTitle" class="text-2xl font-bold text-red-400">No Food Detected</h3>
+            <p id="lensProInvalidMessage" class="text-slate-400 max-w-sm mx-auto">We couldn't recognize any food item in this photo. Please try capturing or uploading an image of your meal.</p>
           </div>
-          <div class="flex gap-3 pt-4 justify-center">
+          <div class="flex gap-3 pt-6 justify-center">
             <button onclick="retryLensPro()" class="px-6 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
               🔄 Try Again
             </button>
