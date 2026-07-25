@@ -137,7 +137,7 @@ IMPORTANT: Output NOTHING except the raw JSON. DO NOT output your reasoning or t
       ],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 800,
+        maxOutputTokens: 2048,
         responseMimeType: "application/json",
         responseSchema: {
           type: "OBJECT",
