@@ -157,9 +157,11 @@ IMPORTANT: Output NOTHING except the raw JSON. DO NOT output your reasoning or t
                 fat: { type: "NUMBER" },
                 unit: { type: "STRING" },
                 per: { type: "INTEGER" }
-              }
+              },
+              required: ["cal", "protein", "carbs", "fat", "unit", "per"]
             }
-          }
+          },
+          required: ["is_food", "identified_as", "match", "food_confidence", "match_confidence", "rejection_message", "estimated_macros"]
         }
       }
     };
