@@ -197,10 +197,10 @@ app.post('/api/scan', async (req, res) => {
     const prompt = `You are a world-class food recognition AI with the same visual accuracy as Google Lens.
 Analyze this image carefully and thoroughly.
 
-STEP 1 — IDENTIFY: Identify the food name as specifically and accurately as possible using your complete visual and internet knowledge (colors, textures, ingredients, cooking style, plating context).
+IDENTIFY: Identify the food name as specifically and accurately as possible using your complete visual and internet knowledge (colors, textures, ingredients, cooking style, plating context).
 Examples of good answers: "white basmati rice", "banana", "butter chicken curry", "scrambled eggs", "aloo paratha", "masala dosa".
 
-STEP 2 — DECIDE: Is there actual VISIBLE, OPEN food in the image?
+DECIDE: Is there actual VISIBLE, OPEN food in the image?
 Rules:
 - If you can clearly see food (even if it is being held in someone's hand), set is_food to true
 - Sealed/closed container, jar, tin, bottle, or wrapped packet where food is NOT visible = NOT FOOD
@@ -209,12 +209,12 @@ Rules:
 - A hand or person holding food (e.g. holding a lemon, mango, apple) = FOOD — focus on the food item, not the hand
 - Clearly visible prepared, raw, plated, or held food = FOOD
 
-STEP 3 — MATCH: If FOOD, check if it matches any item in our database of tracked foods:
+MATCH: If FOOD, check if it matches any item in our database of tracked foods:
 ["Daal Chawal","Paneer Butter Masala","Butter Chicken","Chana Masala","Chicken Biryani","Veg Biryani","Choole Bhature","Dal Makhani","Palak Paneer","Rajma Chawal","Khichdi","Muttar Paneer","Aloo Gobi","Bhindi Masala","Basmati Rice Cooked","Brown Rice Cooked","Roti / Chapati","Tandoori Roti","Plain Paratha","Aloo Paratha","Butter Naan","Garlic Naan","Puri","Bhatura","Poha","Upma","Idli with Sambar","Masala Dosa","Moong Dal Cooked","Masoor Dal Cooked","Soya Chunks Cooked","Paneer Bhurji","Tandoori Chicken","Fish Tikka","Chicken Tikka","Egg Bhurji","Boiled Egg","Chicken Breast","Mutton Curry","Paneer raw","Whole Milk Curd / Dahi","Cow Milk","Buffalo Milk","Ghee","Sweet Lassi","Chaas / Buttermilk","Samosa","Dhokla","Medu Vada","Pani Puri","Bhel Puri","Pav Bhaji","Vada Pav","Roasted Chana","Roasted Makhana","Gulab Jamun","Rasgulla","Gajar ka Halwa","Jalebi","Besan Ladoo","Kheer","Masala Chai","Filter Coffee","Tender Coconut Water","Sugarcane Juice","Nimbu Pani","Banana","Apple","Mango","Orange","Papaya"]
 
 If it is a close visual match, set "match" to the exact string from the list above. If it does not match any item closely, set "match" to "" (empty string) and we will use the estimated macros.
 
-STEP 4 — MACROS: If FOOD, estimate the macronutrient profile per 100g (or per piece/cup if more natural for fruits/eggs/beverages) based on standard USDA/nutritional databases.
+MACROS: If FOOD, estimate the macronutrient profile per 100g (or per piece/cup if more natural for fruits/eggs/beverages) based on standard USDA/nutritional databases.
 Fields in estimated_macros:
 - cal: calories (kcal)
 - protein: protein in grams
@@ -223,13 +223,13 @@ Fields in estimated_macros:
 - unit: serving unit, either "g" (default), "cup" (for beverages/liquids), or "piece" (for fruits, boiled eggs, etc.)
 - per: serving size value (100 for "g", 1 for "piece" or "cup")
 
-STEP 5 — CONFIDENCE: Provide two separate confidence scores from 0 to 100:
+CONFIDENCE: Provide two separate confidence scores from 0 to 100:
 - food_confidence: How confident you are that the image contains a visible, open, and identifiable food item. (This should be very high, e.g., 95-100, for clear images of food like a green mango or chicken curry, regardless of whether it matches our database list).
-- match_confidence: How confident you are that the food item matches the specific database item you selected in STEP 3. If "match" is empty, this should be 0.
+- match_confidence: How confident you are that the food item matches the specific database item you selected. If "match" is empty, this should be 0.
 
-STEP 6 — REJECTION MESSAGE: If NOT FOOD, write one short friendly sentence saying what you actually see (e.g. "Looks like a laptop screen — point the camera at your meal instead.").
+REJECTION MESSAGE: If NOT FOOD, write one short friendly sentence saying what you actually see (e.g. "Looks like a laptop screen — point the camera at your meal instead.").
 
-Return ONLY raw JSON (no markdown, no backticks, no extra text):
+IMPORTANT: Output NOTHING except the raw JSON. DO NOT output your reasoning or thoughts. DO NOT use markdown code blocks. Just the raw JSON object:
 {
   "is_food": true or false,
   "identified_as": "specific food name if food, otherwise empty string",
@@ -248,6 +248,9 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
 }`;
 
     const body = {
+      systemInstruction: {
+        parts: [{ text: "You are an automated backend API. You must ONLY output a single, raw JSON object. Never include any reasoning, markdown formatting, explanations, or step-by-step text." }]
+      },
       contents: [{
         parts: [
           { text: prompt },
