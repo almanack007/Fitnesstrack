@@ -254,9 +254,15 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
           { inlineData: { mimeType: mimeType, data: base64Data } }
         ]
       }],
+      safetySettings: [
+        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 600,
+        maxOutputTokens: 800,
         responseMimeType: 'application/json'
       }
     };
@@ -460,7 +466,8 @@ async function startServer() {
       console.log('Database connected and tables initialized.');
     } catch (error) {
       console.warn('Database not available — running in offline mode.');
-      console.warn('Reason:', error.message);
+      console.warn('Reason:', error.message || error);
+      console.error('Full Database Error Details:', error);
       dbAvailable = false;
     }
   }
