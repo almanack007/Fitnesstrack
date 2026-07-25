@@ -265,7 +265,30 @@ IMPORTANT: Output NOTHING except the raw JSON. DO NOT output your reasoning or t
       ],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 800
+        maxOutputTokens: 800,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            is_food: { type: "BOOLEAN" },
+            identified_as: { type: "STRING" },
+            match: { type: "STRING" },
+            food_confidence: { type: "INTEGER" },
+            match_confidence: { type: "INTEGER" },
+            rejection_message: { type: "STRING" },
+            estimated_macros: {
+              type: "OBJECT",
+              properties: {
+                cal: { type: "INTEGER" },
+                protein: { type: "NUMBER" },
+                carbs: { type: "NUMBER" },
+                fat: { type: "NUMBER" },
+                unit: { type: "STRING" },
+                per: { type: "INTEGER" }
+              }
+            }
+          }
+        }
       }
     };
 
