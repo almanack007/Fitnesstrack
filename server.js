@@ -35,7 +35,7 @@ const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:password@l
 
 // Use Gemini REST API directly via fetch — avoids SDK network layer issues on some hosts
 const GEMINI_API_KEY = (process.env.GEMINI_API_KEY || '').trim();
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 const geminiEnabled = !!GEMINI_API_KEY;
 
 if (geminiEnabled) {
@@ -262,8 +262,7 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
       ],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 800,
-        responseMimeType: 'application/json'
+        maxOutputTokens: 800
       }
     };
 
@@ -286,8 +285,9 @@ Return ONLY raw JSON (no markdown, no backticks, no extra text):
     }
 
     const geminiJson = await geminiRes.json();
+    const finishReason = geminiJson?.candidates?.[0]?.finishReason || 'UNKNOWN';
     let text = geminiJson?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    console.log(`[LensPro /api/scan] Raw Gemini text: "${text}"`);
+    console.log(`[LensPro /api/scan] Raw Gemini text (finishReason: ${finishReason}): "${text}"`);
 
     // Clean any accidental markdown
     text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
