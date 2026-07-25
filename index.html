@@ -93,60 +93,62 @@
         display: none !important;
       }
     }
-    /* Water Cup Animation & Shapes */
-    .water-cup {
+    /* Dynamic Water Bottle UI */
+    .water-bottle-container {
       position: relative;
-      border-radius: 0.75rem;
-      border: 2px solid rgba(75, 85, 99, 0.4);
-      background: rgba(17, 24, 39, 0.6);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 52px;
+      height: 140px;
+      border: 3px solid #475569;
+      border-radius: 12px 12px 6px 6px;
       overflow: hidden;
-      cursor: pointer;
+      background: rgba(15, 23, 42, 0.8);
+      transition: all 0.3s ease;
     }
-    .water-cup::after {
+    .water-bottle-container:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+    .water-bottle-cap {
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 8px;
+      background: #475569;
+      border-radius: 4px 4px 0 0;
+      z-index: 10;
+    }
+    .water-bottle-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.2);
+      z-index: 5;
+    }
+    .water-bottle-fill::before {
       content: '';
       position: absolute;
-      top: 0;
+      top: -2px;
       left: 0;
       right: 0;
-      bottom: 0;
-      background: linear-gradient(180deg, transparent 40%, rgba(59, 130, 246, 0.15) 100%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      height: 4px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
     }
-    .water-cup:hover::after {
-      opacity: 1;
-    }
-    .water-cup.filled {
-      border-color: #60a5fa;
-      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
-    }
-    .water-cup.filled .wave-fill {
-      transform: translateY(0);
-    }
-    .water-cup .wave-fill {
+    /* Bottle grooves for aesthetic */
+    .bottle-groove {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 100%;
-      background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .water-cup .cup-handle {
-      position: absolute;
-      right: 4px;
-      top: 25%;
-      width: 6px;
-      height: 50%;
-      border: 2px solid rgba(75, 85, 99, 0.4);
-      border-left: none;
-      border-radius: 0 4px 4px 0;
-      transition: border-color 0.3s ease;
-    }
-    .water-cup.filled .cup-handle {
-      border-color: #60a5fa;
+      left: -2px;
+      right: -2px;
+      height: 8px;
+      border-top: 2px solid rgba(15, 23, 42, 0.3);
+      border-bottom: 2px solid rgba(15, 23, 42, 0.3);
+      z-index: 6;
+      border-radius: 50%;
     }
     @keyframes scanAnimation {
       0% { top: 0%; }
@@ -359,6 +361,10 @@
               <option value="1.9">Extreme</option>
             </select>
           </label>
+          <label class="block sm:col-span-2">
+            <span class="text-sm text-slate-300">Daily Water Goal (ml)</span>
+            <input id="setupWaterGoal" type="number" min="500" max="10000" step="100" value="2000" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+          </label>
         </div>
         <button onclick="goToStep2()" class="mt-7 w-full sm:w-auto rounded-xl bg-emerald-500 px-7 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Continue</button>
       </div>
@@ -501,12 +507,12 @@
           </div>
 
           <!-- Water Tracker -->
-          <div class="glass rounded-2xl p-5">
+          <div class="glass rounded-2xl p-5 sm:p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
               <h2 class="text-xl font-bold">Water Tracker</h2>
-              <span class="text-blue-300 font-bold"><span id="waterCount">0</span>/8 glasses</span>
+              <span class="text-blue-300 font-bold"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2000</span> ml</span>
             </div>
-            <div id="waterGlasses" class="grid grid-cols-4 sm:grid-cols-8 gap-3"></div>
+            <div id="waterBottles" class="flex flex-wrap gap-4 pt-2 cursor-pointer" onclick="openWaterModal()"></div>
           </div>
         </div>
 
@@ -775,11 +781,41 @@
             <input id="profilePhone" type="text" oninput="savePhone()" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2 text-slate-200 text-sm" placeholder="Not set" />
           </label>
         </div>
+        <div class="rounded-xl bg-slate-900/60 p-4 sm:col-span-2">
+          <label class="block">
+            <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Daily Water Goal (ml)</span>
+            <input id="profileWaterGoal" type="number" onchange="saveWaterGoal()" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2 text-slate-200 text-sm" placeholder="2000" />
+          </label>
+        </div>
       </div>
       
       <div class="flex gap-3 mt-5">
         <button onclick="signOut()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">Sign Out</button>
         <button onclick="resetProfile()" class="flex-1 rounded-xl bg-red-500/15 border border-red-400/35 py-3 font-bold text-red-200 hover:bg-red-500/25 transition text-slate-200">Reset Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Water Modal -->
+  <div id="waterModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-sm slide-up my-auto text-center">
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <h2 class="text-xl font-bold">Log Water</h2>
+        <button onclick="closeWaterModal()" class="text-slate-400 hover:text-slate-200">✕</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button onclick="addWater(250)" class="rounded-xl bg-blue-500/10 border border-blue-500/30 p-3 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center justify-center"><span class="text-xl">+ 250</span><span class="text-xs font-normal opacity-70">ml Glass</span></button>
+        <button onclick="addWater(500)" class="rounded-xl bg-blue-500/10 border border-blue-500/30 p-3 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center justify-center"><span class="text-xl">+ 500</span><span class="text-xs font-normal opacity-70">ml Bottle</span></button>
+      </div>
+      <label class="block text-left mt-4">
+        <span class="text-sm text-slate-300">Custom Amount (ml)</span>
+        <div class="flex gap-2 mt-2">
+          <input id="customWaterAmount" type="number" step="50" placeholder="e.g. 150" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2" />
+          <button onclick="addCustomWater()" class="rounded-xl bg-emerald-500 text-slate-950 px-4 font-bold neon">Add</button>
+        </div>
+      </label>
+      <div class="mt-4 pt-4 border-t border-slate-800">
+        <button onclick="resetWater()" class="text-sm text-red-400 hover:text-red-300 transition">Reset today's water</button>
       </div>
     </div>
   </div>
@@ -807,6 +843,7 @@
     let userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
     let todayLog = localStorage.getItem(store.logDate) === viewDateKey ? JSON.parse(localStorage.getItem(store.log) || '[]') : [];
     let waterIntake = localStorage.getItem(store.waterDate) === viewDateKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
+    if (waterIntake > 0 && waterIntake <= 20) waterIntake *= 250; // Legacy migration (glasses -> ml)
     let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
     let selectedGoal = null;
     let selectedFood = null;
@@ -967,7 +1004,9 @@
         // Only overwrite local data if the database actually has content
         if (data.profile) userProfile = data.profile;
         if (Array.isArray(data.log) && data.log.length > 0) todayLog = data.log;
-        if (Number.isInteger(data.waterIntake) && data.waterIntake > 0) waterIntake = data.waterIntake;
+        if (Number.isInteger(data.waterIntake) && data.waterIntake > 0) {
+          waterIntake = data.waterIntake <= 20 ? data.waterIntake * 250 : data.waterIntake; // Legacy migration
+        }
         if (data.weeklyData && typeof data.weeklyData === 'object' && Object.keys(data.weeklyData).length > 0) weeklyData = data.weeklyData;
         saveLocalState();
         setSyncStatus('Synced from Postgres', 'ok');
@@ -1143,6 +1182,7 @@
       userProfile = {
         gender, age, height, weight, activity, bmr, tdee,
         goal: selectedGoal, goalName: config.name, dietType: document.getElementById('dietType').value,
+        water_goal: parseInt(document.getElementById('setupWaterGoal').value || '2000', 10),
         targetCalories, targetProtein: Math.round(weight * config.proteinFactor),
         targetCarbs: Math.round((targetCalories * config.carbPct) / 4),
         targetFat: Math.round((targetCalories * config.fatPct) / 9)
@@ -1413,17 +1453,56 @@
       document.getElementById(textId).textContent = `${current.toFixed(1)}${unit} / ${target}${unit}`;
     }
     function initWaterTracker() {
-      document.getElementById('waterGlasses').innerHTML = Array.from({ length: 8 }, (_, i) => `
-        <button onclick="toggleWater(${i + 1})" class="water-cup h-14 ${i < waterIntake ? 'filled' : ''}">
-          <div class="wave-fill"></div>
-          <div class="cup-handle"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-xs font-bold z-10 ${i < waterIntake ? 'text-white' : 'text-slate-500'}">
-            ${i + 1}
-          </div>
-        </button>`).join('');
+      const goal = userProfile?.water_goal || 2000;
       document.getElementById('waterCount').textContent = waterIntake;
+      document.getElementById('waterGoalDisplay').textContent = goal;
+      
+      const bottlesHTML = [];
+      const bottleCapacity = 1000;
+      const fullBottles = Math.floor(waterIntake / bottleCapacity);
+      const remainingWater = waterIntake % bottleCapacity;
+      
+      for(let i=0; i<fullBottles; i++) {
+        bottlesHTML.push(`
+          <div class="water-bottle-container cursor-pointer" onclick="openWaterModal()">
+            <div class="water-bottle-cap"></div>
+            <div class="bottle-groove" style="top: 30%"></div>
+            <div class="bottle-groove" style="top: 50%"></div>
+            <div class="bottle-groove" style="top: 70%"></div>
+            <div class="water-bottle-fill" style="height: 100%"></div>
+            <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white z-20" style="text-shadow: 0px 1px 3px rgba(0,0,0,0.8)">1 L</div>
+          </div>
+        `);
+      }
+      
+      if (waterIntake === 0 || remainingWater > 0 || fullBottles === 0) {
+        const fillPercent = (remainingWater / bottleCapacity) * 100;
+        bottlesHTML.push(`
+          <div class="water-bottle-container cursor-pointer opacity-90 hover:opacity-100" onclick="openWaterModal()">
+            <div class="water-bottle-cap"></div>
+            <div class="bottle-groove" style="top: 30%"></div>
+            <div class="bottle-groove" style="top: 50%"></div>
+            <div class="bottle-groove" style="top: 70%"></div>
+            <div class="water-bottle-fill" style="height: ${fillPercent}%"></div>
+            <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] ${fillPercent > 50 ? 'text-white' : 'text-slate-400'} z-20" style="text-shadow: ${fillPercent > 50 ? '0px 1px 3px rgba(0,0,0,0.8)' : 'none'}">${remainingWater} ml</div>
+          </div>
+        `);
+      }
+      
+      document.getElementById('waterBottles').innerHTML = bottlesHTML.join('');
     }
-    function toggleWater(count) { waterIntake = waterIntake === count ? count - 1 : count; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); }
+    
+    function openWaterModal() { document.getElementById('waterModal').classList.remove('hidden'); document.getElementById('waterModal').classList.add('flex'); }
+    function closeWaterModal() { document.getElementById('waterModal').classList.add('hidden'); document.getElementById('waterModal').classList.remove('flex'); }
+    function addWater(amount) { waterIntake += amount; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); }
+    function addCustomWater() { const amt = parseInt(document.getElementById('customWaterAmount').value, 10); if(!isNaN(amt) && amt > 0) { addWater(amt); document.getElementById('customWaterAmount').value = ''; } }
+    function resetWater() { waterIntake = 0; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); }
+    function saveWaterGoal() {
+      if(!userProfile) return;
+      const wg = parseInt(document.getElementById('profileWaterGoal').value, 10);
+      if(!isNaN(wg) && wg >= 500) { userProfile.water_goal = wg; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); }
+    }
+
     function initChart() {
       const ctx = document.getElementById('weeklyChart').getContext('2d');
       weeklyChart = new Chart(ctx, {
@@ -1444,6 +1523,7 @@
       document.getElementById('profileGoal').textContent = userProfile.goalName;
       document.getElementById('profileDiet').textContent = userProfile.dietType;
       document.getElementById('profileTarget').textContent = `${userProfile.targetCalories} cal • ${userProfile.targetProtein}g protein • ${userProfile.targetCarbs}g carbs • ${userProfile.targetFat}g fats`;
+      document.getElementById('profileWaterGoal').value = userProfile.water_goal || 2000;
       
       // Populate user info inside modal
       if (currentUser) {
