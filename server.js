@@ -19,7 +19,7 @@ if (fs.existsSync(path.join(__dirname, '.env'))) {
           value = value.substring(1, value.length - 1);
         }
         if (key === 'GOOGLE_CLIENT_ID') return;
-        if (key) {
+        if (key && process.env[key] === undefined) {
           process.env[key] = value;
         }
       }
