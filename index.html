@@ -1297,6 +1297,18 @@
     </div>
   </div>
 
+  <!-- Weight Log Confirmation Modal -->
+  <div id="weightConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4">
+    <div class="glass rounded-2xl p-5 w-full max-w-sm slide-up my-auto text-left">
+      <h3 class="text-base font-bold text-slate-200 mb-2">Check Weight Entry</h3>
+      <p id="weightConfirmMessage" class="text-xs text-slate-400 mb-5">Are you sure this weight is correct?</p>
+      <div class="flex gap-3">
+        <button onclick="closeWeightConfirm()" class="flex-1 rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition">Cancel</button>
+        <button id="weightConfirmBtn" class="flex-1 rounded-xl bg-red-500 hover:bg-red-600 text-white py-2.5 text-xs font-bold transition neon">Yes, Record</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Exercise Modal -->
   <div id="exerciseModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
     <div class="glass rounded-2xl p-5 w-full max-w-sm slide-up my-auto text-left">
@@ -1325,6 +1337,27 @@
   </div>
 
   <script>
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg transition-all duration-300 z-50 transform translate-y-[-20px] opacity-0 flex items-center gap-2 border`;
+      if (type === 'success') {
+        toast.className += ' bg-emerald-500/10 border-emerald-500/30 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]';
+      } else if (type === 'error') {
+        toast.className += ' bg-red-500/10 border-red-500/30 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]';
+      } else {
+        toast.className += ' bg-slate-900 border-slate-700 text-slate-300';
+      }
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+      }, 50);
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-20px]', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
     const store = {
       profile: 'fittrack_profile',
       logDate: 'fittrack_log_date',
@@ -3425,6 +3458,40 @@
     /* ── Weight History Logging ── */
     let weightHistory = JSON.parse(localStorage.getItem('fittrack_weight_history') || '[]');
     
+    function closeWeightConfirm() {
+      const modal = document.getElementById('weightConfirmModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function saveWeightData(weight) {
+      const newEntry = {
+        weight: weight,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        timestamp: Date.now()
+      };
+      
+      weightHistory.unshift(newEntry);
+      localStorage.setItem('fittrack_weight_history', JSON.stringify(weightHistory));
+      
+      const input = document.getElementById('logWeightInput');
+      if (input) input.value = '';
+      
+      renderWeightHistory();
+      showToast(`Weight recorded: ${weight} kg`, 'success');
+      
+      if (userProfile) {
+        userProfile.weight = weight;
+        saveLocalState();
+        saveDailyToDatabase();
+        
+        const weightInput = document.getElementById('profileWeightInput');
+        if (weightInput) weightInput.value = weight;
+      }
+    }
+
     function logCurrentWeight() {
       const input = document.getElementById('logWeightInput');
       if (!input) return;
@@ -3434,28 +3501,33 @@
         return;
       }
       
-      const newEntry = {
-        weight: weight,
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        timestamp: Date.now()
-      };
+      const prevWeight = userProfile ? userProfile.weight : 70;
+      const diff = prevWeight - weight;
       
-      weightHistory.unshift(newEntry);
-      localStorage.setItem('fittrack_weight_history', JSON.stringify(weightHistory));
-      input.value = '';
-      
-      renderWeightHistory();
-      showToast(`Weight recorded: ${weight} kg`, 'success');
-      
-      // Update profile weight and save
-      if (userProfile) {
-        userProfile.weight = weight;
-        saveLocalState();
-        saveDailyToDatabase();
+      // If the weight change is very large (e.g. difference >= 15 kg), trigger confirmation check
+      if (Math.abs(diff) >= 15) {
+        const confirmMsg = `Woah! Did you ${diff > 0 ? 'lose' : 'gain'} like ${Math.abs(diff).toFixed(1)} kgs lol? That seems impossible and not good for your BMI! Are you sure you want to record ${weight} kg?`;
         
-        const weightInput = document.getElementById('profileWeightInput');
-        if (weightInput) weightInput.value = weight;
+        const msgEl = document.getElementById('weightConfirmMessage');
+        if (msgEl) msgEl.textContent = confirmMsg;
+        
+        const confirmBtn = document.getElementById('weightConfirmBtn');
+        if (confirmBtn) {
+          confirmBtn.onclick = () => {
+            saveWeightData(weight);
+            closeWeightConfirm();
+          };
+        }
+        
+        const modal = document.getElementById('weightConfirmModal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+        return;
       }
+      
+      saveWeightData(weight);
     }
 
     function renderWeightHistory() {
