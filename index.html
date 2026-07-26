@@ -972,6 +972,7 @@
     if (waterIntake > 0 && waterIntake <= 20) waterIntake *= 250; // Legacy migration (glasses -> ml)
     let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
     let weeklyCalsData = JSON.parse(localStorage.getItem('fittrack_weekly_cals') || '{}');
+    let lensProCapturedImageBase64 = null;
     let selectedGoal = null;
     let selectedFood = null;
     let currentCategory = 'all';
@@ -1131,11 +1132,18 @@
         const data = await res.json();
         // Only overwrite local data if the database actually has content
         if (data.profile) userProfile = data.profile;
-        if (Array.isArray(data.log) && data.log.length > 0) todayLog = data.log;
-        if (Number.isInteger(data.waterIntake) && data.waterIntake > 0) {
-          waterIntake = data.waterIntake <= 20 ? data.waterIntake * 250 : data.waterIntake; // Legacy migration
+        if (Array.isArray(data.log)) todayLog = data.log;
+        if (Number.isInteger(data.waterIntake)) {
+          waterIntake = (data.waterIntake <= 20 && data.waterIntake > 0) ? data.waterIntake * 250 : data.waterIntake;
         }
-        if (data.weeklyData && typeof data.weeklyData === 'object' && Object.keys(data.weeklyData).length > 0) weeklyData = data.weeklyData;
+        if (data.weeklyData && typeof data.weeklyData === 'object') {
+          if (data.weeklyData.proteins) {
+            weeklyData = data.weeklyData.proteins;
+            weeklyCalsData = data.weeklyData.cals || {};
+          } else {
+            weeklyData = data.weeklyData;
+          }
+        }
         saveLocalState();
         setSyncStatus('Synced from Postgres', 'ok');
       } catch (error) {
@@ -1491,25 +1499,121 @@
         updateDashboard();
       }
     }
+    function getMealPeriod(timeStr) {
+      if (!timeStr) return 'snacks';
+      let hour = 12;
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (match) {
+        hour = parseInt(match[1], 10);
+        const ampm = match[3];
+        if (ampm) {
+          if (ampm.toUpperCase() === 'PM' && hour < 12) hour += 12;
+          if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
+        }
+      }
+      if (hour >= 5 && hour < 11) return 'breakfast';
+      if (hour >= 11 && hour < 16) return 'lunch';
+      if (hour >= 16 && hour < 19) return 'snacks';
+      if (hour >= 19 && hour < 23) return 'dinner';
+      return 'snacks';
+    }
+
+    function getFoodEmoji(name, category) {
+      name = (name || '').toLowerCase();
+      category = (category || '').toLowerCase();
+      if (category.includes('rice') || name.includes('rice') || name.includes('chawal')) return '🍚';
+      if (category.includes('bread') || name.includes('roti') || name.includes('naan') || name.includes('paratha')) return '🍞';
+      if (category.includes('dal') || name.includes('dal') || name.includes('rajma') || name.includes('chhole')) return '🍲';
+      if (name.includes('egg') || name.includes('bhurji') || name.includes('boiled')) return '🍳';
+      if (name.includes('chicken') || name.includes('fish') || name.includes('meat') || name.includes('mutton') || name.includes('tikka')) return '🍗';
+      if (category.includes('dairy') || name.includes('milk') || name.includes('paneer') || name.includes('dahi') || name.includes('lassi')) return '🥛';
+      if (category.includes('beverage') || name.includes('tea') || name.includes('coffee') || name.includes('chai') || name.includes('chaas')) return '🥤';
+      if (category.includes('fruit') || name.includes('apple') || name.includes('banana') || name.includes('orange')) return '🍎';
+      if (category.includes('vegetable') || name.includes('aloo') || name.includes('gobi') || name.includes('bhindi') || name.includes('palak')) return '🥗';
+      return '🍽️';
+    }
+
     function renderFoodLog() {
       const container = document.getElementById('foodLog');
-      if (!todayLog.length) { container.innerHTML = '<p class="text-slate-500 text-center py-8">No food logged yet today</p>'; return; }
-      container.innerHTML = todayLog.map((item, i) => `<div class="flex items-center justify-between gap-3 bg-slate-900/55 rounded-xl p-3 border border-slate-800">
-        <div class="flex-grow min-w-0">
-          <p class="font-semibold text-sm truncate">${item.name}</p>
-          <p class="text-xs text-slate-400 mt-0.5">${item.cal} cal • ${item.protein.toFixed(1)}g P • ${item.time}</p>
-        </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <button onclick="decrementFood(${i})" class="btn-qty">-</button>
-          <span class="text-xs font-semibold text-slate-200 min-w-[45px] text-center">${item.amount}${item.unit}</span>
-          <button onclick="incrementFood(${i})" class="btn-qty">+</button>
-          <button onclick="removeFood(${i})" class="ml-1 text-slate-500 hover:text-red-400 p-1 rounded-lg transition" title="Delete">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-        </div>
-      </div>`).join('');
+      if (!todayLog.length) {
+        container.innerHTML = `<div class="empty-state">
+          <div class="empty-state-icon">🍽️</div>
+          <p class="font-semibold text-slate-400">No food logged yet</p>
+          <p class="text-xs text-slate-500">Search for a food item or use LensPro to scan your meal.</p>
+        </div>`;
+        return;
+      }
+
+      const groups = { breakfast: [], lunch: [], dinner: [], snacks: [] };
+      todayLog.forEach((item, i) => {
+        const period = getMealPeriod(item.time);
+        groups[period].push({ item, index: i });
+      });
+
+      const titles = {
+        breakfast: { name: 'Breakfast', icon: '🍳' },
+        lunch: { name: 'Lunch', icon: '🍲' },
+        snacks: { name: 'Snacks', icon: '🍿' },
+        dinner: { name: 'Dinner', icon: '🥗' }
+      };
+
+      let html = '<div class="space-y-4">';
+      for (const [key, group] of Object.entries(groups)) {
+        const info = titles[key];
+        html += `
+          <div class="border-l-2 border-slate-800/80 pl-3 py-0.5">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <span>${info.icon}</span> ${info.name}
+              </span>
+              <span class="text-[9px] text-slate-500 font-semibold">${group.length} items</span>
+            </div>
+            <div class="space-y-2">
+        `;
+
+        if (group.length === 0) {
+          html += `<p class="text-[10px] text-slate-600 italic pl-1">No ${info.name.toLowerCase()} logged</p>`;
+        } else {
+          html += group.map(({ item, index }) => {
+            const category = item.category || (foodDatabase[item.name.replace(' (LensPro)', '')] ? foodDatabase[item.name.replace(' (LensPro)', '')].category : 'AI Scanned');
+            const emoji = getFoodEmoji(item.name, category);
+            
+            // Image tag or emoji wrapper
+            const visual = item.image
+              ? `<img src="${item.image}" class="w-10 h-10 rounded-xl object-cover border border-slate-700/50 flex-shrink-0" alt="${item.name}" />`
+              : `<div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-lg flex-shrink-0 border border-slate-700/30">${emoji}</div>`;
+              
+            return `
+              <div class="log-row flex items-center justify-between gap-3 bg-slate-900/40 rounded-xl p-2.5 border border-slate-800/80 hover:border-emerald-500/20 transition-all">
+                <div class="flex items-center gap-2.5 min-w-0 flex-grow">
+                  ${visual}
+                  <div class="min-w-0">
+                    <p class="font-semibold text-xs text-slate-200 truncate">${item.name}</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">${item.cal} cal &bull; ${item.protein.toFixed(1)}g P &bull; ${item.time}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <button onclick="decrementFood(${index})" class="btn-qty" style="width:22px; height:22px; font-size:10px;">-</button>
+                  <span class="text-[10px] font-bold text-slate-300 min-w-[32px] text-center">${item.amount}${item.unit}</span>
+                  <button onclick="incrementFood(${index})" class="btn-qty" style="width:22px; height:22px; font-size:10px;">+</button>
+                  <button onclick="removeFood(${index})" class="ml-1 text-slate-600 hover:text-red-400 p-1 transition" title="Delete">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        html += `
+            </div>
+          </div>
+        `;
+      }
+      html += '</div>';
+      container.innerHTML = html;
     }
     function removeFood(index) { todayLog.splice(index, 1); saveLocalState(); renderFoodLog(); updateDashboard(); }
     function clearLog() { todayLog = []; saveLocalState(); renderFoodLog(); updateDashboard(); }
@@ -2015,6 +2119,7 @@
 
       const canvas = document.getElementById('lensProCanvas');
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      lensProCapturedImageBase64 = dataUrl;
 
       console.log(`[LensPro Client] Image captured. DataURL length: ${dataUrl.length} chars (~${Math.round(dataUrl.length * 0.75 / 1024)} KB)`);
 
@@ -2257,7 +2362,8 @@
         protein: lensProSelectedFood.data.protein * factor,
         carbs: lensProSelectedFood.data.carbs * factor,
         fat: lensProSelectedFood.data.fat * factor,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        image: lensProCapturedImageBase64
       });
       
       saveLocalState();

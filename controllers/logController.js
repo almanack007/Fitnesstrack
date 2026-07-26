@@ -1,11 +1,14 @@
 const db = require('../config/db');
 
 function toWeeklyData(rows) {
-  return rows.reduce((acc, row) => {
+  const proteins = {};
+  const cals = {};
+  rows.forEach(row => {
     const key = row.log_date instanceof Date ? row.log_date.toISOString().slice(0, 10) : String(row.log_date).slice(0, 10);
-    acc[key] = Number(row.protein || 0);
-    return acc;
-  }, {});
+    proteins[key] = Number(row.protein || 0);
+    cals[key] = Number(row.cal || 0);
+  });
+  return { proteins, cals };
 }
 
 exports.getDailyLog = async (req, res) => {
@@ -19,7 +22,9 @@ exports.getDailyLog = async (req, res) => {
       [userId, date]
     );
     const weeklyResult = await client.query(
-      `SELECT log_date, COALESCE((totals->>'protein')::numeric, 0) AS protein
+      `SELECT log_date, 
+              COALESCE((totals->>'protein')::numeric, 0) AS protein,
+              COALESCE((totals->>'cal')::numeric, 0) AS cal
        FROM fittrack_daily_logs
        WHERE user_id = $1 AND log_date BETWEEN ($2::date - INTERVAL '6 days') AND $2::date
        ORDER BY log_date`,
