@@ -274,22 +274,21 @@ Current User Context:
 - Today's Totals: ${context.totals ? JSON.stringify(context.totals) : '{}'}
 - Today's Burned Calories: ${context.burnedCal || 0} kcal
 
-Current message history:
-${messages.map(m => `${m.role === 'user' ? 'User' : 'Coach'}: ${m.content}`).join('\n')}
+Respond naturally like a real friendly personal trainer. Give complete, helpful answers. Keep them structured and easy to read.`;
 
-Respond naturally like a real friendly personal trainer. Keep answers relatively concise, structured, and easy to read.`;
+  const contents = messages.map(m => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content }]
+  }));
 
   const requestBody = {
-    contents: [
-      {
-        parts: [
-          { text: systemPrompt }
-        ]
-      }
-    ],
+    systemInstruction: {
+      parts: [{ text: systemPrompt }]
+    },
+    contents: contents,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 600
+      maxOutputTokens: 2048
     }
   };
 
