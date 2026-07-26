@@ -1,99 +1,73 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FitTrack Pro — AI-Powered Fitness & Nutrition</title>
+  <title>FitTrack Pro</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #070b14;
-      --bg-surface: rgba(15, 23, 42, 0.75);
-      --bg-surface-hover: rgba(30, 41, 59, 0.85);
-      --border-color: rgba(148, 163, 184, 0.14);
-      --border-glow: rgba(16, 185, 129, 0.35);
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      --accent-green: #10b981;
-      --accent-green-hover: #059669;
-      --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-      --bottle-fill: #f8fafc;
+      color-scheme: dark;
+      --bg-primary: #030712;
+      --bg-surface: rgba(17, 24, 39, 0.72);
+      --border-color: rgba(148, 163, 184, 0.12);
+      --text-primary: #f3f4f6;
     }
-    
     [data-theme="light"] {
+      color-scheme: light;
       --bg-primary: #f8fafc;
-      --bg-surface: rgba(255, 255, 255, 0.88);
-      --bg-surface-hover: rgba(241, 245, 249, 0.95);
+      --bg-surface: rgba(255, 255, 255, 0.9);
       --border-color: rgba(226, 232, 240, 0.9);
-      --border-glow: rgba(5, 150, 105, 0.35);
       --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #94a3b8;
-      --accent-green: #059669;
-      --accent-green-hover: #047857;
-      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      --bottle-fill: #3b82f6;
     }
-
     * { box-sizing: border-box; }
     body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-family: Inter, system-ui, sans-serif;
       background-color: var(--bg-primary);
-      color: var(--text-primary);
       min-height: 100vh;
+      color: var(--text-primary);
       transition: background-color 0.3s ease, color 0.3s ease;
     }
-
-    /* Glassmorphism Design Token */
     .glass {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--card-shadow);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+      background: rgba(17, 24, 39, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .glass:hover {
-      border-color: var(--border-glow);
+      border-color: rgba(16, 185, 129, 0.25);
     }
-
-    /* Neon & Animations */
-    .neon { box-shadow: 0 0 25px var(--border-glow); }
-    .slide-up { animation: slideUp .4s cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .fade-in { animation: fadeIn .3s ease both; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .tab-active {
-      border-color: var(--accent-green) !important;
-      background: rgba(16, 185, 129, 0.15) !important;
-      color: var(--accent-green) !important;
-      font-weight: 700;
+    .neon { box-shadow: 0 0 25px rgba(16, 185, 129, 0.35); }
+    .slide-up { animation: slideUp .45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .goal-card.selected, .tab-active, .serving-active {
+      border-color: #10b981 !important;
+      background: rgba(16, 185, 129, 0.12) !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      color: #a7f3d0;
     }
-
-    /* SVG Ring Animations */
     .ring {
       stroke-dasharray: 226;
       stroke-dashoffset: 226;
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
-      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .ring-glow {
-      filter: drop-shadow(0 0 6px var(--ring-glow-color, rgba(16, 185, 129, 0.5)));
+      filter: drop-shadow(0 0 4px var(--ring-glow-color, rgba(16, 185, 129, 0.5)));
     }
-
-    /* Scrollbars */
-    .thin-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
-    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 999px; }
+    .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.6); border-radius: 999px; }
     .thin-scroll::-webkit-scrollbar-track { background: transparent; }
-
-    /* Quantity buttons */
+    input, select { outline: none; }
+    .avatar-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
     .btn-qty {
       width: 28px;
       height: 28px;
@@ -101,18 +75,35 @@
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      background: var(--bg-surface-hover);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      transition: all 0.2s ease;
+      background: rgba(31, 41, 55, 0.8);
+      border: 1px solid rgba(156, 163, 175, 0.25);
+      color: #f3f4f6;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       font-weight: bold;
     }
     .btn-qty:hover {
-      background: var(--accent-green);
-      color: #000;
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #10b981;
       transform: scale(1.1);
     }
-
+    .account-row {
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      transition: all 0.25s ease;
+    }
+    .account-row:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(17, 24, 39, 0.85);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+    }
+    /* Mobile-first tab layout hidden helper */
+    @media (max-width: 767.98px) {
+      .hidden-mobile {
+        display: none !important;
+      }
+    }
     /* Dynamic Water Bottle UI */
     .water-bottle-wrapper {
       display: flex;
@@ -122,20 +113,20 @@
       cursor: pointer;
     }
     .water-bottle-wrapper:hover .water-bottle-container {
-      border-color: var(--accent-green);
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+      border-color: #f1f5f9;
+      box-shadow: 0 0 15px rgba(241, 245, 249, 0.2);
     }
     .water-bottle-cap {
-      width: 22px;
-      height: 10px;
+      width: 24px;
+      height: 12px;
       background: #cbd5e1;
       border-radius: 4px 4px 0 0;
       z-index: 10;
     }
     .water-bottle-container {
       position: relative;
-      width: 52px;
-      height: 130px;
+      width: 56px;
+      height: 140px;
       border: 3px solid #cbd5e1;
       border-radius: 12px 12px 8px 8px;
       overflow: hidden;
@@ -147,620 +138,728 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: var(--bottle-fill);
+      background: #f8fafc;
       transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 5;
     }
+    .water-bottle-fill::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(15, 23, 42, 0.15);
+      border-radius: 50%;
+    }
+    /* Bottle grooves for aesthetic */
     .bottle-groove {
       position: absolute;
       left: -2px;
       right: -2px;
-      height: 6px;
-      border-top: 2px solid rgba(15, 23, 42, 0.25);
-      border-bottom: 2px solid rgba(15, 23, 42, 0.25);
+      height: 8px;
+      border-top: 2px solid rgba(15, 23, 42, 0.3);
+      border-bottom: 2px solid rgba(15, 23, 42, 0.3);
       z-index: 6;
       border-radius: 50%;
     }
-
-    /* Camera scanner laser */
     @keyframes scanAnimation {
-      0% { top: 5%; }
-      50% { top: 90%; }
-      100% { top: 5%; }
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
     }
     .scanner-line {
       position: absolute;
-      left: 5%;
-      right: 5%;
+      left: 0;
+      right: 0;
       height: 3px;
-      background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
-      box-shadow: 0 0 12px var(--accent-green), 0 0 24px var(--accent-green);
-      animation: scanAnimation 2.2s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent, #10b981, transparent);
+      box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+      animation: scanAnimation 2.5s ease-in-out infinite;
     }
   </style>
 </head>
-<body>
-
-  <!-- Toast Alert Container -->
-  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-  <!-- LOGIN PAGE SECTION -->
+<body class="text-slate-100">
+  <!-- Login Page -->
   <section id="loginPage" class="min-h-screen flex items-center justify-center px-4 py-8">
-    <div class="w-full max-w-md glass rounded-3xl p-6 sm:p-8 slide-up text-center relative overflow-hidden">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold mb-4">
-        <span>✨ AI-Powered Fitness Platform</span>
-      </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">FitTrack Pro</h1>
-      <p class="text-slate-400 text-sm mb-6" data-i18n="tagline">Smart macro tracking, AI food scanning & community goals</p>
+    <div class="w-full max-w-md glass rounded-2xl p-6 sm:p-8 slide-up text-center">
+      <p class="text-emerald-400 font-bold tracking-[.25em] text-xs uppercase">muscle building nutrition</p>
+      <h1 class="text-3xl sm:text-4xl font-black mt-3 mb-4">FitTrack Pro</h1>
       
-      <!-- Login Tabs -->
-      <div class="flex bg-slate-900/60 p-1 rounded-2xl border border-slate-800 mb-6">
-        <button id="tabBtnSignIn" onclick="switchLoginTab('signin')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl transition bg-emerald-500 text-slate-950 neon">Sign In</button>
-        <button id="tabBtnSignUp" onclick="switchLoginTab('signup')" class="flex-1 py-2.5 text-sm font-semibold rounded-xl text-slate-400 hover:text-slate-200 transition">Sign Up</button>
+      <!-- Login Page Tabs -->
+      <div class="flex bg-slate-900/60 p-1.5 rounded-xl border border-slate-800 mb-6">
+        <button id="tabBtnSignIn" onclick="switchLoginTab('signin')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 bg-emerald-500 text-slate-950 neon">Sign In</button>
+        <button id="tabBtnSignUp" onclick="switchLoginTab('signup')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-300">Sign Up</button>
       </div>
 
-      <!-- Sign In Panel -->
+      <!-- Sign In Content Panel -->
       <div id="panelSignIn" class="space-y-4">
+        <p class="text-slate-400 text-sm mb-4">Track your macros, hit your goals</p>
+        <!-- Google Sign In Button Container (real Google SDK renders here) -->
         <div id="googleSignInBtn" class="flex justify-center min-h-[44px] mb-4"></div>
-        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="w-full flex items-center justify-center gap-3 rounded-2xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition">
+        
+        <!-- Fallback Google Login (visible when SDK not configured) -->
+        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="hidden w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          <span class="font-medium text-sm text-slate-200">Continue with Google</span>
+          <span class="font-medium text-sm text-slate-200">Sign in with Google</span>
         </button>
 
         <div class="relative flex py-2 items-center">
           <div class="flex-grow border-t border-slate-800"></div>
-          <span class="flex-shrink mx-4 text-slate-500 text-xs uppercase tracking-wider font-semibold">Or Email</span>
+          <span class="flex-shrink mx-4 text-slate-500 text-xs">or sign in with email</span>
           <div class="flex-grow border-t border-slate-800"></div>
         </div>
         
+        <!-- Email Login Form -->
         <form id="loginForm" onsubmit="handleCredentialsLogin(event)" class="space-y-3 text-left">
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Email Address</span>
-            <input id="loginEmail" type="email" required placeholder="you@example.com" class="mt-1 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 focus:border-emerald-500" />
+            <span class="text-sm text-slate-300">Email</span>
+            <input id="loginEmail" type="email" required placeholder="you@example.com" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
           </label>
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Password</span>
-            <input id="loginPassword" type="password" required placeholder="••••••••" class="mt-1 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 focus:border-emerald-500" />
+            <span class="text-sm text-slate-300">Password</span>
+            <input id="loginPassword" type="password" required placeholder="Any password works" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
           </label>
-          <button type="submit" class="w-full rounded-2xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition mt-2">Sign In to Dashboard</button>
+          <p class="text-[10px] text-slate-500 text-center">Your email becomes your user ID. Data is stored locally and synced to the cloud.</p>
+          <button type="submit" class="w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Sign In</button>
         </form>
       </div>
 
-      <!-- Sign Up Panel -->
+      <!-- Sign Up Content Panel (hidden by default) -->
       <div id="panelSignUp" class="hidden space-y-4">
+        <p class="text-slate-400 text-sm mb-4">Create a new account to start tracking</p>
+        <!-- Google Sign Up Button Container (real Google SDK renders here) -->
+        <div id="googleSignUpBtn" class="flex justify-center min-h-[44px] mb-4"></div>
+        
+        <!-- Fallback Google Sign Up (visible when SDK not configured) -->
+        <button id="googleSimSignUpBtn" onclick="openGoogleSimModal()" class="hidden w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <span class="font-medium text-sm text-slate-200">Sign up with Google</span>
+        </button>
+
+        <div class="relative flex py-2 items-center">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-4 text-slate-500 text-xs">or create an email account</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+        
+        <!-- Email Sign Up Form -->
         <form id="signUpForm" onsubmit="handleSignUpCredentials(event)" class="space-y-3 text-left">
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Email Address</span>
-            <input id="signUpEmail" type="email" required placeholder="you@example.com" class="mt-1 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 focus:border-emerald-500" />
+            <span class="text-sm text-slate-300">Email</span>
+            <input id="signUpEmail" type="email" required placeholder="you@example.com" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
           </label>
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Create Password</span>
-            <input id="signUpPassword" type="password" required placeholder="••••••••" class="mt-1 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100 focus:border-emerald-500" />
+            <span class="text-sm text-slate-300">Password</span>
+            <input id="signUpPassword" type="password" required placeholder="Create a password" class="mt-1.5 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-100" />
           </label>
-          <button type="submit" class="w-full rounded-2xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition mt-2">Create Account & Set Goals</button>
+          <p class="text-[10px] text-slate-500 text-center">Your email becomes your user ID. Your progress will be saved automatically.</p>
+          <button type="submit" class="w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Create Account & Onboard</button>
         </form>
       </div>
     </div>
   </section>
 
-  <!-- Google Simulation Modal -->
-  <div id="googleSimModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto backdrop-blur-sm">
-    <div class="glass rounded-3xl p-6 w-full max-w-md slide-up my-auto">
-      <div class="flex items-start justify-between gap-4 mb-4">
-        <div>
-          <h2 class="text-xl font-bold">Choose an Account</h2>
-          <p class="text-slate-400 text-xs">Simulated Google OAuth authentication</p>
+  <!-- Google Account Picker Modal (Demo Mode when no Client ID configured) -->
+  <div id="googleSimModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-6 w-full max-w-md slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4 mb-3">
+        <div class="text-left">
+          <h2 class="text-xl font-bold text-slate-200">Choose an Account</h2>
+          <p class="text-slate-400 text-sm mt-1">to continue to <span class="text-emerald-400 font-semibold">FitTrack Pro</span></p>
         </div>
-        <button onclick="closeGoogleSimModal()" class="rounded-xl bg-slate-800 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700">Cancel</button>
+        <button onclick="closeGoogleSimModal()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Cancel</button>
       </div>
+      
+      <!-- Info banner explaining demo mode -->
+      <div id="googleSimInfo" class="hidden rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 mb-4">
+        <p class="text-xs text-amber-200"><strong>Demo Mode:</strong> No Google Client ID is configured. These are sample accounts for testing. To enable real Google Sign-In, add your <code class="bg-slate-800 px-1 rounded">GOOGLE_CLIENT_ID</code> to <code class="bg-slate-800 px-1 rounded">.env</code>.</p>
+      </div>
+      
+      <!-- Account list -->
       <div class="space-y-2.5" id="simulatedAccountsList"></div>
+      
+      <div class="relative flex py-4 items-center">
+        <div class="flex-grow border-t border-slate-800"></div>
+        <span class="flex-shrink mx-3 text-slate-500 text-xs">or create a custom profile</span>
+        <div class="flex-grow border-t border-slate-800"></div>
+      </div>
+      
+      <!-- Custom User Login -->
+      <form onsubmit="handleCustomSimLogin(event)" class="space-y-3 text-left">
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block">
+            <span class="text-xs text-slate-400">Name</span>
+            <input id="simName" type="text" required placeholder="John Doe" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          </label>
+          <label class="block">
+            <span class="text-xs text-slate-400">Email</span>
+            <input id="simEmail" type="email" required placeholder="john@gmail.com" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          </label>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="block">
+            <span class="text-xs text-slate-400">Phone</span>
+            <input id="simPhone" type="text" placeholder="+1 (555) 012-3456" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          </label>
+          <label class="block">
+            <span class="text-xs text-slate-400">Avatar Color</span>
+            <select id="simColor" class="mt-1 w-full text-sm rounded-lg bg-slate-900 border border-slate-700 px-3 py-2">
+              <option value="emerald">Emerald Green</option>
+              <option value="blue">Royal Blue</option>
+              <option value="purple">Vibrant Purple</option>
+              <option value="rose">Rose Red</option>
+              <option value="amber">Amber Orange</option>
+            </select>
+          </label>
+        </div>
+        <button type="submit" class="w-full text-sm rounded-xl bg-emerald-500/15 border border-emerald-500/40 py-2.5 font-bold hover:bg-emerald-500/25 transition text-emerald-200">Create & Sign In</button>
+      </form>
     </div>
   </div>
 
-  <!-- ONBOARDING SECTION -->
+  <!-- Onboarding Section (hidden by default) -->
   <section id="onboarding" class="hidden min-h-screen flex items-center justify-center px-4 py-8">
-    <div class="w-full max-w-2xl">
-      <!-- Step 1: Personal Metrics -->
-      <div id="step1" class="glass rounded-3xl p-6 sm:p-8 slide-up">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Step 1 of 2</span>
-            <h2 class="text-2xl font-black mt-1">Personal Body Metrics</h2>
-          </div>
-          <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">1</div>
-        </div>
+    <div class="w-full max-w-5xl">
+      <div class="mb-8 text-center">
+        <p class="text-emerald-400 font-bold tracking-[.25em] text-xs uppercase">muscle building nutrition</p>
+        <h1 class="text-4xl sm:text-6xl font-black mt-3">FitTrack Pro</h1>
+      </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
+      <div id="step1" class="glass rounded-2xl p-5 sm:p-8 slide-up">
+        <div class="flex items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold">Build Your Profile</h2>
+            <p class="text-slate-400 mt-1">Step 1 of 2</p>
+          </div>
+          <div class="h-2 w-28 rounded-full bg-slate-700 overflow-hidden"><div class="h-full w-1/2 bg-emerald-500"></div></div>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase">Biological Sex</span>
-            <select id="gender" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200">
+            <span class="text-sm text-slate-300">Gender</span>
+            <select id="gender" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3">
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
           </label>
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase">Age (years)</span>
-            <input id="age" type="number" min="13" max="100" value="26" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200" />
+            <span class="text-sm text-slate-300">Age</span>
+            <input id="age" type="number" min="13" max="100" value="28" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
           </label>
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase">Height (cm)</span>
-            <input id="height" type="number" min="120" max="230" value="175" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200" />
+            <span class="text-sm text-slate-300">Height (cm)</span>
+            <input id="height" type="number" min="120" max="230" value="178" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
           </label>
           <label class="block">
-            <span class="text-xs text-slate-300 font-semibold uppercase">Current Weight (kg)</span>
-            <input id="weight" type="number" min="35" max="220" value="72" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200" />
+            <span class="text-sm text-slate-300">Weight (kg)</span>
+            <input id="weight" type="number" min="35" max="220" value="78" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
           </label>
           <label class="block sm:col-span-2">
-            <span class="text-xs text-slate-300 font-semibold uppercase">Activity Level</span>
-            <select id="activity" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200">
-              <option value="1.2">Sedentary (Desk job, little exercise)</option>
-              <option value="1.375" selected>Lightly Active (1-3 workouts/week)</option>
-              <option value="1.55">Moderately Active (3-5 workouts/week)</option>
-              <option value="1.725">Very Active (6-7 intense workouts/week)</option>
+            <span class="text-sm text-slate-300">Activity Level</span>
+            <select id="activity" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3">
+              <option value="1.2">Sedentary</option>
+              <option value="1.375">Lightly active</option>
+              <option value="1.55" selected>Moderately active</option>
+              <option value="1.725">Very active</option>
+              <option value="1.9">Extreme</option>
             </select>
           </label>
           <label class="block sm:col-span-2">
-            <span class="text-xs text-slate-300 font-semibold uppercase">Daily Water Goal (ml)</span>
-            <input id="setupWaterGoal" type="number" min="500" max="10000" step="250" value="2500" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200" />
+            <span class="text-sm text-slate-300">Daily Water Goal (ml)</span>
+            <input id="setupWaterGoal" type="number" min="500" max="10000" step="100" value="2000" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
           </label>
         </div>
-
-        <button onclick="goToStep2()" class="mt-6 w-full rounded-2xl bg-emerald-500 py-3.5 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Continue to Goal Selection →</button>
+        <button onclick="goToStep2()" class="mt-7 w-full sm:w-auto rounded-xl bg-emerald-500 px-7 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Continue</button>
       </div>
 
-      <!-- Step 2: Goal Selection -->
-      <div id="step2" class="glass rounded-3xl p-6 sm:p-8 hidden slide-up">
-        <div class="flex items-center justify-between mb-6">
+      <div id="step2" class="glass rounded-2xl p-5 sm:p-8 hidden">
+        <div class="flex items-center justify-between gap-4 mb-6">
           <div>
-            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Step 2 of 2</span>
-            <h2 class="text-2xl font-black mt-1">Select Your Primary Fitness Goal</h2>
+            <h2 class="text-2xl font-bold">Choose Your Goal</h2>
+            <p class="text-slate-400 mt-1">Step 2 of 2</p>
           </div>
-          <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">2</div>
+          <div class="h-2 w-28 rounded-full bg-slate-700 overflow-hidden"><div class="h-full w-full bg-emerald-500"></div></div>
         </div>
-
-        <div id="goalGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"></div>
-
-        <label class="block mb-6">
-          <span class="text-xs text-slate-300 font-semibold uppercase">Dietary Preference</span>
-          <select id="dietType" class="mt-1.5 w-full rounded-2xl bg-slate-900/80 border border-slate-700 px-4 py-3 text-slate-200">
-            <option value="balanced">Standard Balanced</option>
-            <option value="high_protein">High Protein Focus</option>
-            <option value="vegetarian">Vegetarian</option>
-            <option value="vegan">Vegan</option>
-            <option value="keto">Keto (Low Carb)</option>
+        <div id="goalGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <label class="block mt-6">
+          <span class="text-sm text-slate-300">Dietary Preference</span>
+          <select id="dietType" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3">
+            <option value="Vegetarian">Vegetarian (Pure Veg)</option>
+            <option value="Non-Vegetarian">Non-Vegetarian</option>
+            <option value="Eggetarian">Eggetarian (Ovo-Vegetarian)</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Jain">Jain Diet</option>
+            <option value="Keto">Indian Keto</option>
+            <option value="Balanced">Balanced Diet</option>
           </select>
         </label>
-
-        <div class="flex gap-4">
-          <button onclick="goBackToStep1()" class="rounded-2xl bg-slate-800 px-6 py-3.5 font-bold text-slate-300 hover:bg-slate-700 transition">← Back</button>
-          <button id="finishBtn" onclick="finishOnboarding()" disabled class="flex-1 rounded-2xl bg-slate-700 py-3.5 font-bold text-slate-400 transition disabled:opacity-50">Complete Setup & Launch Dashboard</button>
-        </div>
+        <button id="finishBtn" onclick="finishOnboarding()" disabled class="mt-7 w-full sm:w-auto rounded-xl bg-slate-700 px-7 py-3 font-bold text-slate-400 transition disabled:cursor-not-allowed">Start Tracking</button>
       </div>
     </div>
   </section>
 
-  <!-- MAIN APP CONTAINER -->
-  <main id="mainApp" class="hidden min-h-screen px-4 py-5 sm:px-6 lg:px-8 pb-28 md:pb-8">
-    
-    <!-- Top Header Bar -->
-    <header class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 mb-6 glass rounded-3xl p-4 sm:p-5">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-black text-xl shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-          ⚡
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-lg sm:text-xl font-black tracking-tight">FitTrack Pro</h1>
-            <span id="syncStatus" class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">Cloud Synced</span>
-          </div>
-          <p class="text-xs text-slate-400"><span data-i18n="goal">Goal</span>: <span id="userGoalDisplay" class="text-slate-200 font-semibold"></span></p>
-        </div>
+  <main id="mainApp" class="hidden min-h-screen px-4 py-5 sm:px-6 lg:px-8 pb-24 md:pb-6">
+    <header class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <p class="text-emerald-400 font-bold tracking-[.22em] text-xs uppercase">FitTrack Pro</p>
+        <h1 class="text-3xl sm:text-4xl font-black">Today’s Muscle Fuel</h1>
+        <p class="text-slate-400 mt-1">Goal: <span id="userGoalDisplay" class="text-slate-200"></span></p>
+        <p id="syncStatus" class="text-xs text-slate-500 mt-1">Database sync ready</p>
       </div>
-
-      <!-- Language & Theme Bar -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <!-- Language Switcher Dropdown -->
-        <select id="langSelect" onchange="setLanguage(this.value)" class="bg-slate-900/80 border border-slate-700 rounded-xl text-xs px-3 py-2 text-slate-200 focus:border-emerald-500">
-          <option value="en">🌐 English</option>
-          <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
-          <option value="mr">🇮🇳 मराठी (Marathi)</option>
-          <option value="gu">🇮🇳 ગુજરાતી (Gujarati)</option>
-          <option value="pa">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
-          <option value="bn">🇮🇳 বাংলা (Bengali)</option>
-          <option value="ta">🇮🇳 தமிழ் (Tamil)</option>
-          <option value="te">🇮🇳 తెలుగు (Telugu)</option>
-          <option value="kn">🇮🇳 ಕನ್ನಡ (Kannada)</option>
-          <option value="ml">🇮🇳 മലയാളം (Malayalam)</option>
+        <select id="langSelect" onchange="setLanguage(this.value)" class="bg-slate-900/80 border border-slate-700 rounded-xl text-xs px-2.5 py-2 text-slate-200 focus:border-emerald-500">
+          <option value="en">🌐 EN</option>
+          <option value="hi">🇮🇳 HI</option>
+          <option value="mr">🇮🇳 MR</option>
+          <option value="gu">🇮🇳 GU</option>
+          <option value="pa">🇮🇳 PA</option>
+          <option value="bn">🇮🇳 BN</option>
+          <option value="ta">🇮🇳 TA</option>
+          <option value="te">🇮🇳 TE</option>
+          <option value="kn">🇮🇳 KN</option>
+          <option value="ml">🇮🇳 ML</option>
         </select>
 
         <!-- Theme Switcher Button -->
-        <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl border border-slate-700 bg-slate-900/80 flex items-center justify-center text-slate-300 hover:text-emerald-400 transition" title="Toggle Light/Dark Theme">
+        <button onclick="toggleTheme()" class="rounded-xl border border-slate-700 bg-slate-900/55 p-2.5 hover:border-emerald-400/50 text-slate-300 transition flex items-center justify-center" title="Toggle Light/Dark Theme">
           <span id="themeIcon">🌙</span>
         </button>
 
-        <!-- Profile Widget -->
-        <button onclick="switchTab('profile')" class="flex items-center gap-2.5 rounded-xl border border-slate-700 bg-slate-900/60 p-1.5 pr-3 hover:border-emerald-500/50 transition">
-          <div id="headerUserAvatar" class="w-8 h-8 rounded-lg border border-slate-600 flex items-center justify-center font-bold text-xs text-slate-100 overflow-hidden bg-emerald-500">U</div>
-          <span id="headerUserName" class="text-xs font-semibold text-slate-200 hidden sm:inline">User</span>
+        <button onclick="showProfile()" class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/55 p-2 hover:border-emerald-400/50 transition">
+          <div id="headerUserAvatar" class="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center font-bold text-slate-100 overflow-hidden bg-emerald-500 flex-shrink-0">
+            U
+          </div>
+          <div class="text-left hidden sm:block">
+            <p id="headerUserName" class="font-semibold text-sm text-slate-200">User</p>
+            <p id="headerUserEmail" class="text-xs text-slate-400">user@domain.com</p>
+          </div>
+        </button>
+        <!-- Quick Sign Out Icon Button -->
+        <button onclick="signOut()" title="Sign Out" class="rounded-xl border border-slate-700 bg-slate-900/55 p-3 hover:border-red-500/50 text-slate-400 hover:text-red-400 transition flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
         </button>
       </div>
     </header>
 
-    <!-- Desktop Navigation Tab Bar -->
-    <nav class="max-w-7xl mx-auto mb-6 hidden md:flex items-center gap-2 bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800">
-      <button onclick="switchTab('dashboard')" id="navTabDashboard" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 tab-active">
-        <span>📊</span> <span data-i18n="dashboard">Dashboard</span>
+    <!-- Mobile Navigation Switcher (Only visible on screens < 768px) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 flex justify-around py-3 z-40">
+      <button id="navBtnDashboard" onclick="switchMobileTab('dashboard')" class="flex flex-col items-center gap-1 text-emerald-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+        </svg>
+        <span class="text-[10px] font-semibold">Dashboard</span>
       </button>
-      <button onclick="switchTab('progress')" id="navTabProgress" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-2">
-        <span>📈</span> <span data-i18n="progress">Progress</span>
+      <button id="navBtnLensPro" onclick="openLensPro()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="text-[10px] font-semibold">LensPro</span>
       </button>
-      <button onclick="switchTab('groups')" id="navTabGroups" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-2">
-        <span>👥</span> <span data-i18n="groups">Groups</span>
-      </button>
-      <button onclick="switchTab('foodlog')" id="navTabFoodlog" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-2">
-        <span>🥗</span> <span data-i18n="foodLog">Food Log</span>
-      </button>
-      <button onclick="openLensPro()" id="navTabScanner" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-2">
-        <span>📸</span> <span data-i18n="lensPro">LensPro AI</span>
-      </button>
-      <button onclick="switchTab('profile')" id="navTabProfile" class="flex-1 py-2.5 px-4 text-xs sm:text-sm font-bold rounded-xl text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center gap-2">
-        <span>⚙️</span> <span data-i18n="settings">Settings</span>
-      </button>
-    </nav>
-
-    <!-- Mobile Bottom Navigation Bar -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-md border-t border-slate-800 flex justify-around py-2.5 z-40">
-      <button onclick="switchTab('dashboard')" id="mNavDashboard" class="flex flex-col items-center gap-1 text-emerald-400">
-        <span class="text-lg">📊</span>
-        <span class="text-[10px] font-semibold" data-i18n="dashboard">Dashboard</span>
-      </button>
-      <button onclick="switchTab('progress')" id="mNavProgress" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-lg">📈</span>
-        <span class="text-[10px] font-semibold" data-i18n="progress">Progress</span>
-      </button>
-      <button onclick="openLensPro()" class="flex flex-col items-center gap-1 text-emerald-400 transform -translate-y-2">
-        <div class="w-12 h-12 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xl shadow-lg neon">📸</div>
-      </button>
-      <button onclick="switchTab('groups')" id="mNavGroups" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-lg">👥</span>
-        <span class="text-[10px] font-semibold" data-i18n="groups">Groups</span>
-      </button>
-      <button onclick="switchTab('foodlog')" id="mNavFoodlog" class="flex flex-col items-center gap-1 text-slate-400">
-        <span class="text-lg">🥗</span>
-        <span class="text-[10px] font-semibold" data-i18n="foodLog">Log</span>
+      <button id="navBtnTracker" onclick="switchMobileTab('tracker')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span class="text-[10px] font-semibold">Add Food</span>
       </button>
     </div>
 
-    <!-- MAIN VIEW CONTAINER -->
-    <div class="max-w-7xl mx-auto">
+    <!-- Calendar & Streak Section -->
+    <div id="calendarSection" class="max-w-[1600px] mx-auto mb-6">
+      <div class="glass rounded-2xl p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold flex items-center gap-2">
+            History <span id="streakBadge" class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">🔥 0 Day Streak</span>
+          </h2>
+          <button onclick="selectDate(new Date().toISOString().slice(0, 10))" class="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700">Today</button>
+        </div>
+        <div id="calendarContainer" class="flex gap-3 overflow-x-auto thin-scroll pb-2 snap-x">
+          <!-- Calendar items injected here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Responsive Grid -->
+    <div class="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
       
-      <!-- ================= 1. DASHBOARD VIEW ================= -->
-      <div id="viewDashboard" class="tab-view slide-up space-y-6">
+      <!-- Panel A: Dashboard & Log (dashboardPanel) -->
+      <!-- Spans 8 columns on desktop (lg), 6 columns on tablet (md), full width on mobile -->
+      <div id="dashboardPanel" class="md:col-span-6 lg:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <!-- Streak & Calendar Bar -->
-        <div class="glass rounded-3xl p-4 sm:p-5">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <h2 class="text-base sm:text-lg font-bold" data-i18n="history">History</h2>
-              <span id="streakBadge" class="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-full border border-emerald-500/30 font-bold shadow-sm">🔥 0 Day Streak</span>
+        <!-- Dashboard Left: Stats, Macros, Water -->
+        <div class="space-y-6">
+          <!-- Stats Dashboard -->
+          <div class="glass rounded-2xl p-5">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <h2 class="text-xl font-bold">Dashboard <span id="dashDateLabel" class="text-sm text-slate-400 font-normal ml-2"></span></h2>
+              <span class="text-xs text-slate-400">Targets update from your profile</span>
             </div>
-            <button onclick="selectDate(todayKey)" class="text-xs font-semibold text-slate-300 hover:text-emerald-400 transition bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700" data-i18n="today">Today</button>
-          </div>
-          <div id="calendarContainer" class="flex gap-2.5 overflow-x-auto thin-scroll pb-2 snap-x"></div>
-        </div>
-
-        <!-- AI Insights Banner -->
-        <div class="glass rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-emerald-950/40 via-slate-900/60 to-blue-950/30 border-emerald-500/30 flex items-start gap-4">
-          <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg flex-shrink-0">💡</div>
-          <div>
-            <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">AI Daily Nutrition Insight</h3>
-            <p id="aiInsightText" class="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-              "Your protein target is on track! Hitting 2.0g/kg will optimize muscle synthesis following your workouts."
-            </p>
-          </div>
-        </div>
-
-        <!-- Macro Progress Rings Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div class="md:col-span-7 glass rounded-3xl p-5 sm:p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-bold">Daily Macro Progress</h3>
-              <span id="dashDateLabel" class="text-xs text-slate-400 font-medium"></span>
+            <div id="motivationalSummary" class="text-emerald-400 font-medium text-xs sm:text-sm mb-4 border-l-2 border-emerald-500/50 pl-3 py-1.5 italic bg-emerald-500/5 rounded-r-lg text-left">
+              Start your engine! Add your first meal to fuel your muscles today. 🚀
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="ringGrid"></div>
+            <div class="grid grid-cols-2 gap-4" id="ringGrid"></div>
+            <div class="grid grid-cols-2 gap-3 mt-5 text-center">
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">BMI</p><p id="bmiValue" class="text-xl font-bold"></p><p id="bmiCategory" class="text-xs text-slate-500"></p></div>
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">BMR</p><p id="bmrValue" class="text-xl font-bold"></p><p class="text-xs text-slate-500">cal/day</p></div>
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">TDEE</p><p id="tdeeValue" class="text-xl font-bold"></p><p class="text-xs text-slate-500">cal/day</p></div>
+              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">Protein/kg</p><p id="proteinPerKg" class="text-xl font-bold"></p><p class="text-xs text-slate-500">g/kg</p></div>
+            </div>
           </div>
 
-          <!-- Dynamic Water Bottle Tracker Card -->
-          <div class="md:col-span-5 glass rounded-3xl p-5 sm:p-6 flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-3">
+          <!-- Macro Breakdown -->
+          <div class="glass rounded-2xl p-5">
+            <h2 class="text-xl font-bold mb-4">Macro Breakdown</h2>
+            <div class="space-y-4">
               <div>
-                <h3 class="text-lg font-bold" data-i18n="waterTracker">Water Tracker</h3>
-                <p class="text-xs text-slate-400">1000ml auto-spawning bottles</p>
+                <div class="flex justify-between text-sm mb-2"><span class="text-blue-300 font-medium">Protein</span><span id="proteinBarText" class="text-slate-400 text-xs"></span></div>
+                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="proteinBar" class="h-full rounded-full bg-blue-500 transition-all"></div></div>
               </div>
-              <span class="text-sm font-bold text-emerald-400"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2500</span> ml</span>
-            </div>
-            
-            <div id="waterBottles" class="flex flex-wrap justify-center gap-5 my-4 cursor-pointer" onclick="openWaterModal()"></div>
-            
-            <button onclick="openWaterModal()" class="w-full py-2.5 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 text-xs font-bold text-slate-200 border border-slate-700 transition flex items-center justify-center gap-2">
-              <span>💧</span> <span>Log / Edit Water Intake</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Recent Meals Log -->
-        <div class="glass rounded-3xl p-5 sm:p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold" data-i18n="recentMeals">Logged Meals & Foods</h3>
-            <button onclick="switchTab('foodlog')" class="text-xs font-semibold text-emerald-400 hover:underline">+ Add Food</button>
-          </div>
-          <div id="foodLog" class="space-y-3"></div>
-        </div>
-
-      </div>
-
-      <!-- ================= 2. PROGRESS VIEW ================= -->
-      <div id="viewProgress" class="tab-view slide-up hidden space-y-6">
-        
-        <!-- Weight History Header Card -->
-        <div class="glass rounded-3xl p-6">
-          <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div>
-              <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Analytics & Body Trajectory</span>
-              <h2 class="text-2xl font-black mt-1" data-i18n="weightHistory">Weight & Goal History</h2>
-            </div>
-            
-            <!-- Time Filter Pills -->
-            <div class="flex bg-slate-900/80 p-1 rounded-2xl border border-slate-800 text-xs font-semibold">
-              <button onclick="setTrendFilter('7d')" id="tf7d" class="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold">7D</button>
-              <button onclick="setTrendFilter('30d')" id="tf30d" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200">30D</button>
-              <button onclick="setTrendFilter('90d')" id="tf90d" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200">90D</button>
-              <button onclick="setTrendFilter('all')" id="tfall" class="px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-200">All</button>
-            </div>
-          </div>
-
-          <!-- Weight Log Input -->
-          <div class="flex gap-3 mb-6 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
-            <input id="newWeightInput" type="number" step="0.1" placeholder="Log today's weight (kg)" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2 text-sm text-slate-100" />
-            <button onclick="logWeightEntry()" class="rounded-xl bg-emerald-500 px-5 py-2 text-sm font-bold text-slate-950 neon hover:bg-emerald-400 transition">Log Weight</button>
-          </div>
-
-          <!-- SVG Weight Chart Container -->
-          <div id="svgChartContainer" class="w-full h-56 relative flex items-end">
-            <!-- Rendered dynamically -->
-          </div>
-        </div>
-
-        <!-- BMI & Achievement Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-          <div class="md:col-span-5 glass rounded-3xl p-6 text-center flex flex-col justify-between">
-            <div>
-              <h3 class="text-base font-bold text-slate-300 uppercase tracking-wider mb-2">BMI & Body Composition</h3>
-              <div id="bmiValue" class="text-4xl font-black text-emerald-400">22.4</div>
-              <p id="bmiCategory" class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Normal Weight Range</p>
-            </div>
-            
-            <div class="w-full bg-slate-800/80 h-3 rounded-full overflow-hidden my-4">
-              <div id="bmiBar" class="h-full bg-emerald-400 transition-all duration-500" style="width: 55%"></div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 text-xs">
-              <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
-                <span class="text-slate-400">Target Weight</span>
-                <p id="targetWeightVal" class="font-bold text-sm text-slate-200 mt-1">70.0 kg</p>
+              <div>
+                <div class="flex justify-between text-sm mb-2"><span class="text-amber-300 font-medium font-medium">Carbs</span><span id="carbBarText" class="text-slate-400 text-xs"></span></div>
+                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="carbBar" class="h-full rounded-full bg-amber-400 transition-all"></div></div>
               </div>
-              <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
-                <span class="text-slate-400">Est. Body Fat</span>
-                <p id="bodyFatVal" class="font-bold text-sm text-slate-200 mt-1">16.5%</p>
+              <div>
+                <div class="flex justify-between text-sm mb-2"><span class="text-red-300 font-medium font-medium">Fats</span><span id="fatBarText" class="text-slate-400 text-xs"></span></div>
+                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="fatBar" class="h-full rounded-full bg-red-500 transition-all"></div></div>
               </div>
             </div>
           </div>
 
-          <!-- Achievements Badges Card -->
-          <div class="md:col-span-7 glass rounded-3xl p-6">
-            <h3 class="text-lg font-bold mb-4" data-i18n="achievements">Achievements & Milestones</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="badgesGrid"></div>
+          <!-- Water Tracker -->
+          <div class="glass rounded-2xl p-5 sm:p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold">Water Tracker</h2>
+              <span class="text-slate-300 font-bold"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2000</span> ml</span>
+            </div>
+            <div id="waterBottles" class="flex flex-wrap justify-center gap-6 pt-2" onclick="openWaterModal()"></div>
+          </div>
+        </div>
+
+        <!-- Dashboard Right: Weekly Chart, Today's Log -->
+        <div class="space-y-6">
+          <!-- Weekly Chart -->
+          <div class="glass rounded-2xl p-5">
+            <h2 class="text-xl font-bold mb-4">Weekly Protein Progress</h2>
+            <div class="h-64"><canvas id="weeklyChart"></canvas></div>
+          </div>
+
+          <!-- Food Log -->
+          <div class="glass rounded-2xl p-5 flex flex-col min-h-[350px]">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-bold">Food Log <span id="logDateLabel" class="text-sm text-slate-400 font-normal ml-2"></span></h2>
+              <button onclick="clearLog()" class="rounded-lg border border-red-400/30 px-3 py-1.5 text-sm text-red-300 hover:bg-red-500/10 transition">Clear all</button>
+            </div>
+            <div id="foodLog" class="space-y-3 flex-grow overflow-auto max-h-[320px] thin-scroll"></div>
           </div>
         </div>
 
       </div>
 
-      <!-- ================= 3. GROUPS VIEW ================= -->
-      <div id="viewGroups" class="tab-view slide-up hidden space-y-6">
-        <div class="glass rounded-3xl p-6">
-          <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div>
-              <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Fitness Communities</span>
-              <h2 class="text-2xl font-black mt-1" data-i18n="groups">Community Squads & Challenges</h2>
+      <!-- Panel B: Search & Add Food (trackerPanel) -->
+      <!-- Spans 4 columns on desktop (lg), 6 columns on tablet (md), full width on mobile -->
+      <div id="trackerPanel" class="md:col-span-6 lg:col-span-4 space-y-6">
+        <div class="glass rounded-2xl p-5">
+          <div class="flex flex-col gap-4 mb-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xl font-bold">Food Tracking</h2>
+              <button onclick="openLensPro()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/10 border border-emerald-500/35 hover:bg-emerald-500/20 text-emerald-300 transition duration-300">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                LensPro
+              </button>
             </div>
-            <button onclick="showToast('Create Group feature coming soon!')" class="rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 px-4 py-2 text-xs font-bold hover:bg-emerald-500/30 transition">+ Create Squad</button>
-          </div>
-
-          <!-- Group Cards Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="groupsGrid"></div>
-        </div>
-
-        <!-- Community Leaderboard -->
-        <div class="glass rounded-3xl p-6">
-          <h3 class="text-lg font-bold mb-4" data-i18n="leaderboard">Weekly Community Leaderboard</h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="text-slate-400 uppercase border-b border-slate-800">
-                <tr>
-                  <th class="py-3 px-2">Rank</th>
-                  <th class="py-3 px-2">Member</th>
-                  <th class="py-3 px-2">Streak</th>
-                  <th class="py-3 px-2">Water</th>
-                  <th class="py-3 px-2">Score</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboardBody" class="divide-y divide-slate-800/50"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= 4. FOOD LOG VIEW ================= -->
-      <div id="viewFoodLog" class="tab-view slide-up hidden space-y-6">
-        <div class="glass rounded-3xl p-6">
-          <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div>
-              <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Nutrition Database</span>
-              <h2 class="text-2xl font-black mt-1" data-i18n="foodLog">Search & Log Foods</h2>
-            </div>
-            <button onclick="openLensPro()" class="rounded-2xl bg-emerald-500 px-4 py-2 text-xs font-bold text-slate-950 neon hover:bg-emerald-400 transition">📸 Scan with AI Lens</button>
-          </div>
-
-          <!-- Search Bar -->
-          <div class="relative mb-4">
-            <input id="foodSearchInput" type="text" oninput="filterFoodDatabase()" placeholder="Search Paneer, Chicken Biryani, Roti, Oats..." class="w-full rounded-2xl bg-slate-900/80 border border-slate-700 pl-11 pr-4 py-3.5 text-sm text-slate-100 focus:border-emerald-500" />
-            <span class="absolute left-4 top-3.5 text-slate-400 text-lg">🔍</span>
-          </div>
-
-          <!-- Category Filter Pills -->
-          <div class="flex gap-2 overflow-x-auto thin-scroll pb-2 mb-4" id="foodCatPills"></div>
-
-          <!-- Food Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="foodGrid"></div>
-        </div>
-      </div>
-
-      <!-- ================= 5. PROFILE & SETTINGS VIEW ================= -->
-      <div id="viewProfile" class="tab-view slide-up hidden space-y-6">
-        <div class="glass rounded-3xl p-6 max-w-2xl mx-auto">
-          <h2 class="text-2xl font-black mb-6" data-i18n="settings">Account Settings & Profile</h2>
-          
-          <div class="space-y-4">
-            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
-              <label class="block">
-                <span class="text-xs text-slate-400 uppercase font-bold">Daily Water Target (ml)</span>
-                <input id="profileWaterGoal" type="number" onchange="saveWaterGoal()" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2.5 text-sm text-slate-200" placeholder="2500" />
-              </label>
-            </div>
-
-            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
-              <label class="block">
-                <span class="text-xs text-slate-400 uppercase font-bold">Phone Number</span>
-                <input id="profilePhone" type="text" placeholder="+1 (555) 000-0000" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2.5 text-sm text-slate-200" />
-              </label>
-            </div>
-
-            <div class="flex gap-3 pt-4">
-              <button onclick="exportUserData()" class="flex-1 rounded-2xl bg-slate-800 border border-slate-700 py-3 font-bold text-xs text-slate-200 hover:bg-slate-700 transition">📥 Export Data (JSON)</button>
-              <button onclick="signOut()" class="flex-1 rounded-2xl bg-red-500/20 border border-red-500/40 py-3 font-bold text-xs text-red-300 hover:bg-red-500/30 transition">Sign Out</button>
+            <div class="relative">
+              <input id="foodSearch" oninput="renderFoodGrid()" type="search" placeholder="Search roti, paneer, dal, chai..." class="w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3 pl-10 text-slate-100" />
+              <svg class="w-5 h-5 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
+          <div id="categoryTabs" class="flex gap-2 overflow-x-auto thin-scroll pb-3 mb-4"></div>
+          <div id="foodGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[70vh] overflow-y-auto thin-scroll pr-1"></div>
         </div>
       </div>
 
     </div>
   </main>
 
-  <!-- WATER MODAL -->
-  <div id="waterModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
-    <div class="glass rounded-3xl p-6 w-full max-w-sm slide-up text-center">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold">Log Water Intake</h3>
+  <!-- LensPro Camera & Image Scanner Modal -->
+  <div id="lensProModal" class="fixed inset-0 z-50 hidden bg-black flex-col">
+    <!-- Viewfinder Container -->
+    <div class="absolute inset-0 w-full h-full">
+      <!-- Live Video Viewfinder -->
+      <video id="lensProVideo" autoplay playsinline class="absolute inset-0 w-full h-full object-cover hidden"></video>
+      
+      <!-- Freeze-frame Canvas / Uploaded image preview -->
+      <canvas id="lensProCanvas" class="absolute inset-0 w-full h-full object-cover hidden"></canvas>
+
+      <!-- Scanning Laser Line Overlay -->
+      <div id="lensProScanLine" class="absolute left-0 right-0 h-1 bg-emerald-500 shadow-[0_0_15px_#10b981] hidden pointer-events-none"></div>
+
+      <!-- Camera Off / Blocked / Uninitiated placeholder UI -->
+      <div id="lensProPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center p-4 z-10 bg-slate-950/80">
+        <svg class="w-12 h-12 text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <p id="lensProStatusText" class="text-sm text-slate-400">Requesting camera access...</p>
+      </div>
+    </div>
+
+    <!-- Overlay UI container -->
+    <div class="relative z-10 flex flex-col h-full pointer-events-none">
+      
+      <!-- Top Header -->
+      <div class="flex items-center justify-between p-6 pointer-events-auto mt-4">
+        <button onclick="closeLensPro()" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+        <span class="text-white font-bold text-lg drop-shadow-md">AI Camera</span>
+        <button class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </button>
+      </div>
+
+      <!-- Center focus area -->
+      <div class="flex-1 flex flex-col items-center justify-center">
+        <!-- Target Bracket -->
+        <div class="w-64 h-64 relative mb-6">
+           <div class="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-white rounded-tl-3xl drop-shadow-md"></div>
+           <div class="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-white rounded-tr-3xl drop-shadow-md"></div>
+           <div class="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-white rounded-bl-3xl drop-shadow-md"></div>
+           <div class="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-white rounded-br-3xl drop-shadow-md"></div>
+        </div>
+        <p class="text-white/90 text-sm font-medium drop-shadow-md">Place the food in the frame</p>
+      </div>
+
+      <!-- Bottom Controls -->
+      <div id="lensProControls" class="p-8 pb-12 flex flex-col items-center gap-8 pointer-events-auto">
+        <!-- Hidden controls needed for JS to function -->
+        <div class="hidden">
+          <input type="file" id="lensProFileInput" accept="image/*" class="hidden" onchange="handleLensProUpload(event)" />
+          <div id="lensProSwitchCameraContainer">
+            <button onclick="switchLensProCamera()">Switch Camera</button>
+          </div>
+          <button id="lensProUploadBtn" onclick="triggerLensProUpload()">Upload</button>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="bg-white/20 backdrop-blur-md p-1.5 rounded-2xl flex gap-1 items-center">
+           <button class="bg-white text-black px-4 py-2.5 rounded-xl text-xs font-bold shadow flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+             AI Camera
+           </button>
+           <button onclick="triggerLensProUpload()" class="text-white hover:bg-white/10 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+             Gallery
+           </button>
+        </div>
+
+        <!-- Capture Button -->
+        <button id="lensProCaptureBtn" onclick="captureLensProPhoto()" class="w-[72px] h-[72px] rounded-full border-4 border-white/50 bg-transparent p-1 hover:scale-105 transition-transform flex items-center justify-center">
+          <div class="w-full h-full bg-white rounded-full"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Analysis Result Panel (Sliding Bottom Sheet) -->
+    <div id="lensProAnalysis" class="absolute inset-x-0 bottom-0 z-20 hidden flex-col justify-end">
+      <div class="bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 rounded-t-3xl p-6 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-y-auto max-h-[85vh] thin-scroll slide-up w-full">
+        <!-- Drag Handle -->
+        <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-6"></div>
+        
+        <!-- Mode A: Valid Food Result Panel -->
+        <div id="lensProResultValid" class="space-y-4">
+          <div>
+            <h3 class="text-lg font-bold text-emerald-400">Match Found!</h3>
+            <p id="lensProFoodName" class="text-2xl font-extrabold mt-1"></p>
+            <p id="lensProIdentifiedAs" class="text-sm text-slate-400 mt-1 italic"></p>
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+              <span id="lensProConfidenceBadge" class="text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-1 border border-emerald-500/30">
+                Confidence: <span id="lensProConfidence">0%</span>
+              </span>
+              <span id="lensProLowConfidenceWarning" class="hidden text-xs font-semibold rounded-full bg-amber-500/20 text-amber-300 px-2 py-1 border border-amber-500/30">⚠️ Low confidence — verify manually</span>
+            </div>
+          </div>
+
+          <!-- Alternatives suggestion box -->
+          <div class="bg-slate-950/60 rounded-xl p-3 border border-slate-800 space-y-2 mt-4">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Not correct? Tap alternative matches:</span>
+            <div id="lensProAlternatives" class="flex flex-wrap gap-2"></div>
+            <div class="pt-2 border-t border-slate-800/60 text-center">
+              <span class="text-[10px] text-slate-400">Still not seeing it? <button onclick="switchToManualSearchLensPro()" class="text-emerald-400 hover:text-emerald-300 underline font-semibold transition">Search database manually</button></span>
+            </div>
+          </div>
+
+          <!-- Serving size with stepper -->
+          <div class="mt-4">
+            <span class="text-sm text-slate-300 font-semibold">Serving size</span>
+            <div class="flex items-center gap-2 mt-2">
+              <button onclick="adjustLensProServing(-10)" class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-2xl font-bold text-slate-300 hover:bg-slate-700 transition flex-shrink-0">−</button>
+              <input id="lensProServingAmount" type="number" min="0" step="1" class="flex-1 rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-center text-xl font-bold" />
+              <button onclick="adjustLensProServing(10)" class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-2xl font-bold text-slate-300 hover:bg-slate-700 transition flex-shrink-0">+</button>
+            </div>
+          </div>
+
+          <!-- Serving Unit selection -->
+          <div id="lensProServingButtons" class="grid grid-cols-4 gap-2 mt-3"></div>
+
+          <!-- Calculated Metrics Preview -->
+          <div class="grid grid-cols-4 gap-3 mt-4 text-center">
+            <div class="rounded-xl bg-slate-950 p-3 border border-slate-800"><p id="lensProPreviewCals" class="font-bold text-xl"></p><p class="text-xs text-slate-500 mt-1">cal</p></div>
+            <div class="rounded-xl bg-blue-500/10 p-3 border border-blue-500/20"><p id="lensProPreviewProtein" class="font-bold text-xl text-blue-300"></p><p class="text-xs text-slate-500 mt-1">protein</p></div>
+            <div class="rounded-xl bg-amber-500/10 p-3 border border-amber-500/20"><p id="lensProPreviewCarbs" class="font-bold text-xl text-amber-300"></p><p class="text-xs text-slate-500 mt-1">carbs</p></div>
+            <div class="rounded-xl bg-red-500/10 p-3 border border-red-500/20"><p id="lensProPreviewFats" class="font-bold text-xl text-red-300"></p><p class="text-xs text-slate-500 mt-1">fats</p></div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex gap-3 pt-4">
+            <button onclick="retryLensPro()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-4 font-bold text-slate-300 hover:bg-slate-700 transition">
+              🔄 Retake
+            </button>
+            <button onclick="confirmLensProAdd()" class="flex-1 rounded-xl bg-emerald-500 py-4 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
+              ✅ Add to Log
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode B: Non-Food / Unavailable Panel -->
+        <div id="lensProResultInvalid" class="hidden space-y-6 text-center py-6">
+          <div id="lensProInvalidIcon" class="w-20 h-20 bg-red-500/10 border border-red-500/35 rounded-full flex items-center justify-center mx-auto text-4xl">
+            ⚠️
+          </div>
+          <div class="space-y-2">
+            <h3 id="lensProInvalidTitle" class="text-2xl font-bold text-red-400">No Food Detected</h3>
+            <p id="lensProInvalidMessage" class="text-slate-400 max-w-sm mx-auto">We couldn't recognize any food item in this photo. Please try capturing or uploading an image of your meal.</p>
+          </div>
+          <div class="flex gap-3 pt-6 justify-center">
+            <button onclick="retryLensPro()" class="px-6 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">
+              🔄 Try Again
+            </button>
+            <button id="lensProInvalidSearchBtn" onclick="switchToManualSearchLensPro()" class="px-6 rounded-xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">
+              Search manually
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="addFoodModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-lg slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4">
+        <div><h2 id="modalFoodName" class="text-2xl font-bold"></h2><p id="modalFoodMacros" class="text-slate-400 mt-1"></p></div>
+        <button onclick="closeModal()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Close</button>
+      </div>
+      <label class="block mt-5">
+        <span class="text-sm text-slate-300">Serving size</span>
+        <input id="servingAmount" type="number" min="0" step="1" class="mt-2 w-full rounded-xl bg-slate-900/80 border border-slate-700 px-4 py-3" />
+      </label>
+      <div id="servingButtons" class="grid grid-cols-4 gap-2 mt-4"></div>
+      <div class="grid grid-cols-4 gap-2 mt-5 text-center">
+        <div class="rounded-xl bg-slate-900/60 p-3"><p id="previewCals" class="font-bold text-lg"></p><p class="text-xs text-slate-500">cal</p></div>
+        <div class="rounded-xl bg-blue-500/10 p-3"><p id="previewProtein" class="font-bold text-lg text-blue-300"></p><p class="text-xs text-slate-500">protein</p></div>
+        <div class="rounded-xl bg-amber-500/10 p-3"><p id="previewCarbs" class="font-bold text-lg text-amber-300"></p><p class="text-xs text-slate-500">carbs</p></div>
+        <div class="rounded-xl bg-red-500/10 p-3"><p id="previewFats" class="font-bold text-lg text-red-300"></p><p class="text-xs text-slate-500">fats</p></div>
+      </div>
+      <button onclick="confirmAddFood()" class="mt-5 w-full rounded-xl bg-emerald-500 px-5 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Add to Log</button>
+    </div>
+  </div>
+
+  <div id="profileModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-xl slide-up my-auto max-h-[90vh] overflow-y-auto thin-scroll">
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div><h2 class="text-2xl font-bold">Profile</h2><p class="text-slate-400">Your current nutrition setup</p></div>
+        <button onclick="closeProfile()" class="rounded-lg bg-slate-800 px-3 py-2 text-slate-300 hover:bg-slate-700">Close</button>
+      </div>
+      
+      <!-- User Profile Header Card -->
+      <div class="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/40 border border-slate-800 rounded-xl p-4 mb-5">
+        <div id="modalUserAvatar" class="w-16 h-16 rounded-full border-2 border-emerald-500 flex items-center justify-center font-bold text-2xl text-slate-100 overflow-hidden bg-emerald-500">
+          U
+        </div>
+        <div class="text-center sm:text-left">
+          <h3 id="modalUserName" class="text-lg font-bold text-slate-100">User</h3>
+          <p id="modalUserEmail" class="text-sm text-slate-400">user@domain.com</p>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Height</p><p id="profileHeight" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Weight</p><p id="profileWeight" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Goal</p><p id="profileGoal" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4"><p class="text-xs text-slate-400">Diet</p><p id="profileDiet" class="font-bold"></p></div>
+        <div class="rounded-xl bg-slate-900/60 p-4 sm:col-span-2"><p class="text-xs text-slate-400">Targets</p><p id="profileTarget" class="font-bold"></p></div>
+        <!-- Phone Number Input -->
+        <div class="rounded-xl bg-slate-900/60 p-4 sm:col-span-2">
+          <label class="block">
+            <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Phone Number</span>
+            <input id="profilePhone" type="text" oninput="savePhone()" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2 text-slate-200 text-sm" placeholder="Not set" />
+          </label>
+        </div>
+        <div class="rounded-xl bg-slate-900/60 p-4 sm:col-span-2">
+          <label class="block">
+            <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Daily Water Goal (ml)</span>
+            <input id="profileWaterGoal" type="number" onchange="saveWaterGoal()" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-2 text-slate-200 text-sm" placeholder="2000" />
+          </label>
+        </div>
+      </div>
+      
+      <div class="flex gap-3 mt-5">
+        <button onclick="signOut()" class="flex-1 rounded-xl bg-slate-800 border border-slate-700 py-3 font-bold text-slate-300 hover:bg-slate-700 transition">Sign Out</button>
+        <button onclick="resetProfile()" class="flex-1 rounded-xl bg-red-500/15 border border-red-400/35 py-3 font-bold text-red-200 hover:bg-red-500/25 transition text-slate-200">Reset Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Water Modal -->
+  <div id="waterModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
+    <div class="glass rounded-2xl p-5 w-full max-w-sm slide-up my-auto text-center">
+      <div class="flex items-center justify-between gap-4 mb-4">
+        <h2 class="text-xl font-bold">Log Water</h2>
         <button onclick="closeWaterModal()" class="text-slate-400 hover:text-slate-200">✕</button>
       </div>
-
       <div class="grid grid-cols-2 gap-3 mb-4">
-        <button onclick="addWater(250)" class="rounded-2xl bg-blue-500/10 border border-blue-500/30 p-4 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center">
-          <span class="text-xl">+ 250ml</span>
-          <span class="text-[10px] text-slate-400 font-normal">Glass</span>
-        </button>
-        <button onclick="addWater(500)" class="rounded-2xl bg-blue-500/10 border border-blue-500/30 p-4 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center">
-          <span class="text-xl">+ 500ml</span>
-          <span class="text-[10px] text-slate-400 font-normal">Bottle</span>
-        </button>
+        <button onclick="addWater(250)" class="rounded-xl bg-blue-500/10 border border-blue-500/30 p-3 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center justify-center"><span class="text-xl">+ 250</span><span class="text-xs font-normal opacity-70">ml Glass</span></button>
+        <button onclick="addWater(500)" class="rounded-xl bg-blue-500/10 border border-blue-500/30 p-3 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center justify-center"><span class="text-xl">+ 500</span><span class="text-xs font-normal opacity-70">ml Bottle</span></button>
       </div>
-
-      <div class="text-left space-y-3 border-t border-slate-800 pt-4">
-        <label class="block">
-          <span class="text-xs text-slate-300 font-semibold">Custom Add Amount (ml)</span>
-          <div class="flex gap-2 mt-1">
-            <input id="customWaterAmount" type="number" step="50" placeholder="150" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100" />
-            <button onclick="addCustomWater()" class="rounded-xl bg-emerald-500 text-slate-950 font-bold px-4 text-xs neon">Add</button>
-          </div>
-        </label>
-
-        <label class="block">
-          <span class="text-xs text-slate-300 font-semibold">Edit Today's Total Water (ml)</span>
-          <div class="flex gap-2 mt-1">
-            <input id="editTotalWaterAmount" type="number" step="50" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100" />
-            <button onclick="editTotalWater()" class="rounded-xl bg-slate-800 text-slate-200 font-bold px-4 text-xs border border-slate-700">Update</button>
-          </div>
-        </label>
+      <label class="block text-left mt-4">
+        <span class="text-sm text-slate-300">Custom Amount (ml)</span>
+        <div class="flex gap-2 mt-2">
+          <input id="customWaterAmount" type="number" step="50" placeholder="e.g. 150" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2" />
+          <button onclick="addCustomWater()" class="rounded-xl bg-emerald-500 text-slate-950 px-4 font-bold neon">Add</button>
+        </div>
+      </label>
+      <div class="mt-4 pt-4 border-t border-slate-800 text-left">
+        <span class="text-sm text-slate-300">Edit Today's Total (ml)</span>
+        <div class="flex gap-2 mt-2">
+          <input id="editTotalWaterAmount" type="number" step="50" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2" />
+          <button onclick="editTotalWater()" class="rounded-xl bg-slate-800 text-slate-300 px-4 font-bold border border-slate-700 hover:bg-slate-700 transition">Update</button>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-800">
+        <button onclick="resetWater()" class="text-sm text-red-400 hover:text-red-300 transition">Reset today's water</button>
       </div>
     </div>
   </div>
 
-  <!-- LENSPRO AI CAMERA SCANNER MODAL -->
-  <div id="lensProModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md">
-    <div class="glass rounded-3xl p-6 w-full max-w-md slide-up relative overflow-hidden text-center">
-      <button onclick="closeLensPro()" class="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center">✕</button>
-
-      <h3 class="text-xl font-bold mb-1">AI Food Lens Scanner</h3>
-      <p class="text-xs text-slate-400 mb-4">Point your camera or upload a photo of your meal</p>
-
-      <!-- Viewfinder Box -->
-      <div class="w-full h-56 rounded-2xl bg-slate-900 border-2 border-dashed border-emerald-500/50 relative overflow-hidden flex items-center justify-center mb-4">
-        <div class="scanner-line"></div>
-        <div id="lensScannerOverlay" class="text-center p-4">
-          <span class="text-4xl">🥗</span>
-          <p class="text-xs text-emerald-400 font-bold mt-2">Scanning Food Item...</p>
-          <p class="text-[10px] text-slate-500">Gemini 1.5 Flash Vision Engine</p>
-        </div>
-      </div>
-
-      <!-- Recognized Results Breakdown -->
-      <div id="lensScanResult" class="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-left mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="font-bold text-sm text-emerald-400">Identified: Paneer Tikka Grill</span>
-          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold">95% Match</span>
-        </div>
-        <p class="text-xs text-slate-400">Est. 240 kcal • 18.0g Protein • 6.7g Carbs • 14.0g Fat per serving</p>
-      </div>
-
-      <button onclick="confirmLensProScan()" class="w-full rounded-2xl bg-emerald-500 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition">Log Scanned Meal to Dashboard</button>
-    </div>
-  </div>
-
-  <!-- JAVASCRIPT APP LOGIC -->
-  <script>
-    // State Store
-    const store = {
-      profile: 'fittrack_profile',
-      logDate: 'fittrack_log_date',
-      log: 'fittrack_log',
-      waterDate: 'fittrack_water_date',
-      water: 'fittrack_water',
-      weekly: 'fittrack_weekly',
-      user: 'fittrack_user',
-      theme: 'fittrack_theme',
-      lang: 'fittrack_lang'
-    };
-
-    const _localD = new Date();
-    const todayKey = _localD.getFullYear() + '-' + String(_localD.getMonth() + 1).padStart(2, '0') + '-' + String(_localD.getDate()).padStart(2, '0');
-    let viewDateKey = todayKey;
-    let currentStreak = 0;
-    let currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
-    let USER_ID = currentUser ? currentUser.id : 'demo-user-123';
-    let userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
-    let todayLog = localStorage.getItem(store.logDate) === viewDateKey ? JSON.parse(localStorage.getItem(store.log) || '[]') : [];
-    let waterIntake = localStorage.getItem(store.waterDate) === viewDateKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
-    if (waterIntake > 0 && waterIntake <= 20) waterIntake *= 250;
-    let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
-    let selectedGoal = null;
-    let weightHistory = JSON.parse(localStorage.getItem('fittrack_weights') || '[{"date":"2026-07-20","weight":74.0},{"date":"2026-07-25","weight":72.5}]');
-
-    // i18n Translation Dictionary
+    // i18n Translation Engine (10 Languages)
     const i18n = {
       en: { tagline: "Smart macro tracking, AI food scanning & community goals", dashboard: "Dashboard", progress: "Progress", groups: "Groups", foodLog: "Food Log", lensPro: "LensPro AI", settings: "Settings", history: "History", today: "Today", waterTracker: "Water Tracker", recentMeals: "Logged Meals & Foods", weightHistory: "Weight & Goal History", achievements: "Achievements & Milestones", leaderboard: "Weekly Community Leaderboard", goal: "Goal" },
       hi: { tagline: "स्मार्ट मैक्रो ट्रैकिंग और एआई भोजन स्कैनर", dashboard: "डैशबोर्ड", progress: "प्रगति", groups: "समूह", foodLog: "भोजन लॉग", lensPro: "एआई स्कैनर", settings: "सेटिंग्स", history: "इतिहास", today: "आज", waterTracker: "पानी ट्रैकर", recentMeals: "हाल का भोजन", weightHistory: "वजन इतिहास", achievements: "उपलब्धियां", leaderboard: "लीडरबोर्ड", goal: "लक्ष्य" },
@@ -769,467 +868,1614 @@
       pa: { tagline: "ਸਮਾਰਟ ਮੈਕਰੋ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਏਆਈ ਫੂਡ ਸਕੈਨਰ", dashboard: "ਡੈਸ਼ਬੋਰਡ", progress: "ਤਰੱਕੀ", groups: "ਗਰੁੱਪ", foodLog: "ਖੁਰਾਕ ਲੌਗ", lensPro: "ਏਆਈ ਸਕੈਨਰ", settings: "ਸੈਟਿੰਗਾਂ", history: "ਇਤਿਹਾਸ", today: "ਅੱਜ", waterTracker: "ਪਾਣੀ ਟ੍ਰੈਕਰ", recentMeals: "ਹਾਲ ਹੀ ਦੇ ਖਾਣੇ", weightHistory: "ਵਜ਼ਨ ਇਤਿਹਾਸ", achievements: "ਪ੍ਰਾਪਤੀਆਂ", leaderboard: "ਲੀਡਰਬੋਰਡ", goal: "ਨਿਸ਼ਾਨਾ" },
       bn: { tagline: "স্মার্ট ম্যাক্রো ট্র্যাকিং এবং এআই ফুড স্ক্যানার", dashboard: "ড্যাশবোর্ড", progress: "অগ্রগতি", groups: "গ্রুপ", foodLog: "খাবার লগ", lensPro: "এআই স্ক্যানার", settings: "সেটিংস", history: "ইতিহাস", today: "আজ", waterTracker: "পানি ট্র্যাকার", recentMeals: "সাম্প্রতিক খাবার", weightHistory: "ওজন ইতিহাস", achievements: "অর্জনসমূহ", leaderboard: "লিডারবোর্ড", goal: "লক্ষ্য" },
       ta: { tagline: "ஸ்மார்ட் மேக்ரோ கண்காணிப்பு & ஏஐ உணவு ஸ்கேனர்", dashboard: "டேஷ்போர்டு", progress: "முன்னேற்றம்", groups: "குழுக்கள்", foodLog: "உணவு பதிவு", lensPro: "ஏஐ ஸ்கேனர்", settings: "அமைப்புகள்", history: "வரலாறு", today: "இன்று", waterTracker: "நீர் டிராக்கர்", recentMeals: "சமீபத்திய உணவு", weightHistory: "எடை வரலாறு", achievements: "சாதனைகள்", leaderboard: "முன்னணி பட்டியல்", goal: "இலக்கு" },
-      te: { tagline: "స్మార్ట్ మాక్రో ట్రాకింగ్ మరియు ఏఐ ఫుడ్ స్కానర్", dashboard: "డాష్‌బోర్డ్", progress: "పురోగతి", groups: "గ్రూప్‌లు", foodLog: "ఆహార లాగ్", lensPro: "ఏఐ స్కానర్", settings: "సెట్టింగ్‌లు", history: "చరిత్ర", today: "ఈ రోజు", waterTracker: "వాటర్ ట్రాకర్", recentMeals: "ఇటీవలి భోజనం", weightHistory: "బరువు చరిత్ర", achievements: "సాధనలు", leaderboard: "లీడర్‌బోర్డ్", goal: "లక్ష్యం" },
+      te: { tagline: "స్మార్ట్ మాక్రో ట్రాకింగ్ మరియు ఏఐ ఫుడ్ స్కానర్", dashboard: "డాష్‌బోర్డ్", progress: "పురోగతి", groups: "గ్రూప్‌లు", foodLog: "ఆహార లాగ్", lensPro: "ఏఐ స్కానర్", settings: "సెట్టింగ్‌లు", history: "చరిత్ర", today: "ఈ రోజు", waterTracker: "వాటర్ ట్రాకర్", recentMeals: "ఇటీవలి భోజനം", weightHistory: "బరువు చరిత్ర", achievements: "సాధనలు", leaderboard: "లీడర్‌బోర్డ్", goal: "లక్ష్యం" },
       kn: { tagline: "ಸ್ಮಾರ್ಟ್ ಮ್ಯಾಕ್ರೋ ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಎಐ ಫುಡ್ ಸ್ಕ್ಯಾನರ್", dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್", progress: "ಪ್ರಗತಿ", groups: "ಗುಂಪುಗಳು", foodLog: "ಆಹಾರ ಲಾಗ್", lensPro: "ಎಐ ಸ್ಕ್ಯಾನರ್", settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು", history: "ಇತಿಹಾಸ", today: "ಇಂದು", waterTracker: "ವಾಟರ್ ಟ್ರ್ಯಾಕರ್", recentMeals: "ಇತ್ತೀಚಿನ ಊಟ", weightHistory: "ತೂಕದ ಇತಿಹಾಸ", achievements: "ಸಾಧನೆಗಳು", leaderboard: "ಲೀಡರ್‌ಬೋರ್ಡ್", goal: "ಗುರಿ" },
       ml: { tagline: "സ്മാർട്ട് മാക്രോ ട്രെയ്ക്കിംഗും എഐ ഫുഡ് സ്കാനറും", dashboard: "ഡാഷ്‌ബോർഡ്", progress: "പുരോഗതി", groups: "ഗ്രൂപ്പുകൾ", foodLog: "ഭക്ഷണ ലോഗ്", lensPro: "എഐ സ്കാനർ", settings: "ക്രമീകരണങ്ങൾ", history: "ചരിത്രം", today: "ഇന്ന്", waterTracker: "വാട്ടർ ട്രാക്കർ", recentMeals: "സമീപകാല ഭക്ഷണം", weightHistory: "ഭാരം ചരിത്രം", achievements: "നേട്ടങ്ങൾ", leaderboard: "ലീഡർബോർഡ്", goal: "ലക്ഷ്യം" }
     };
+
+    function setLanguage(lang) {
+      localStorage.setItem('fittrack_lang', lang);
+      const dict = i18n[lang] || i18n.en;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      const selectEl = document.getElementById('langSelect');
+      if (selectEl) selectEl.value = lang;
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('fittrack_theme', next);
+      const icon = document.getElementById('themeIcon');
+      if (icon) icon.textContent = next === 'dark' ? '🌙' : '☀️';
+    }
+    const _localD = new Date();
+    const todayKey = _localD.getFullYear() + '-' + String(_localD.getMonth() + 1).padStart(2, '0') + '-' + String(_localD.getDate()).padStart(2, '0');
+    let viewDateKey = todayKey;
+    let historyDays = [];
+    let currentStreak = 0;
+    const API_BASE = localStorage.getItem(store.apiBase) || `${window.location.origin}/api`;
+    let currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
+    let USER_ID = currentUser ? currentUser.id : getOrCreateUserId();
+    let userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
+    let todayLog = localStorage.getItem(store.logDate) === viewDateKey ? JSON.parse(localStorage.getItem(store.log) || '[]') : [];
+    let waterIntake = localStorage.getItem(store.waterDate) === viewDateKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
+    if (waterIntake > 0 && waterIntake <= 20) waterIntake *= 250; // Legacy migration (glasses -> ml)
+    let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
+    let selectedGoal = null;
+    let selectedFood = null;
+    let currentCategory = 'all';
+    let servingType = 'g';
+    let weeklyChart = null;
 
     const goalConfigs = {
       lean_muscle: { name: 'Lean & Toned', note: '-10% deficit', multiplier: 0.9, proteinFactor: 2.0, carbPct: 0.35, fatPct: 0.25 },
       bulk: { name: 'Muscle Bulk', note: '+20% surplus', multiplier: 1.2, proteinFactor: 2.2, carbPct: 0.45, fatPct: 0.25 },
       athletic: { name: 'Athletic Performance', note: 'maintenance', multiplier: 1.0, proteinFactor: 1.8, carbPct: 0.40, fatPct: 0.25 },
       shred: { name: 'Shredded Cut', note: '-20% deficit', multiplier: 0.8, proteinFactor: 2.2, carbPct: 0.25, fatPct: 0.25 },
-      recomp: { name: 'Body Recomposition', note: '-5% deficit', multiplier: 0.95, proteinFactor: 2.0, carbPct: 0.30, fatPct: 0.25 }
+      power: { name: 'Power Building', note: '+15% surplus', multiplier: 1.15, proteinFactor: 2.0, carbPct: 0.40, fatPct: 0.30 },
+      recomp: { name: 'Body Recomposition', note: '-5% deficit, high protein', multiplier: 0.95, proteinFactor: 2.0, carbPct: 0.30, fatPct: 0.25 }
     };
-
+    const categories = ['All','Meals','Breads & Rice','Proteins & Dals','Dairy','Fruits','Snacks','Sweets','Beverages'];
+    const conversions = { g: 1, oz: 28.35, cup: 240, piece: 1 };
     const baseFoods = [
+      // Meals category
+      ['Daal Chawal', 'meals', 120, 3.6, 21.6, 2.0],
       ['Paneer Butter Masala', 'meals', 240, 8.0, 6.7, 20.0],
+      ['Butter Chicken', 'meals', 253, 18.7, 5.3, 17.3],
+      ['Chana Masala', 'meals', 120, 4.7, 18.7, 2.7],
       ['Chicken Biryani', 'meals', 180, 9.6, 22.4, 5.6],
-      ['Roti / Chapati', 'breads', 70, 2.5, 15.0, 0.5],
-      ['Dal Tadka', 'meals', 120, 5.0, 16.0, 3.0],
-      ['Boiled Egg', 'proteins', 78, 6.3, 0.6, 5.3],
-      ['Whey Protein Shake', 'proteins', 120, 24.0, 3.0, 1.5],
-      ['Oats with Milk', 'meals', 220, 10.0, 34.0, 4.5],
-      ['Grilled Salmon', 'proteins', 206, 22.0, 0.0, 12.0],
-      ['Greek Yogurt', 'dairy', 100, 10.0, 3.6, 0.4],
-      ['Banana', 'fruits', 105, 1.3, 27.0, 0.3]
+      ['Veg Biryani', 'meals', 140, 3.2, 23.2, 4.0],
+      ['Choole Bhature', 'meals', 275, 6.0, 37.5, 11.0],
+      ['Dal Makhani', 'meals', 167, 5.3, 14.7, 10.0],
+      ['Palak Paneer', 'meals', 147, 6.7, 5.3, 10.7],
+      ['Rajma Chawal', 'meals', 124, 4.0, 22.4, 2.0],
+      ['Khichdi', 'meals', 105, 3.0, 19.0, 2.0],
+      ['Muttar Paneer', 'meals', 160, 6.7, 8.0, 10.7],
+      ['Aloo Gobi', 'meals', 93, 2.0, 10.7, 4.7],
+      ['Bhindi Masala', 'meals', 80, 2.0, 9.3, 4.0],
+
+      // Breads & Rice category
+      ['Basmati Rice Cooked', 'breads & rice', 130, 2.7, 28.0, 0.3],
+      ['Brown Rice Cooked', 'breads & rice', 112, 2.6, 24.0, 0.9],
+      ['Roti / Chapati', 'breads & rice', 70, 2.5, 15.0, 0.5, 'piece'],
+      ['Tandoori Roti', 'breads & rice', 110, 4.0, 22.0, 1.0, 'piece'],
+      ['Plain Paratha', 'breads & rice', 220, 4.0, 35.0, 7.0, 'piece'],
+      ['Aloo Paratha', 'breads & rice', 290, 6.0, 45.0, 10.0, 'piece'],
+      ['Butter Naan', 'breads & rice', 310, 9.0, 50.0, 8.0, 'piece'],
+      ['Garlic Naan', 'breads & rice', 320, 9.0, 52.0, 8.5, 'piece'],
+      ['Puri', 'breads & rice', 100, 2.0, 15.0, 5.0, 'piece'],
+      ['Bhatura', 'breads & rice', 210, 4.0, 30.0, 8.0, 'piece'],
+      ['Poha', 'breads & rice', 180, 3.0, 36.0, 3.0],
+      ['Upma', 'breads & rice', 190, 4.0, 34.0, 4.5],
+      ['Idli with Sambar', 'breads & rice', 180, 6.0, 34.0, 2.0, 'piece'],
+      ['Masala Dosa', 'breads & rice', 320, 6.0, 50.0, 11.0, 'piece'],
+
+      // Proteins & Dals category
+      ['Moong Dal Cooked', 'proteins & dals', 105, 7.0, 19.0, 0.3],
+      ['Masoor Dal Cooked', 'proteins & dals', 116, 9.0, 20.0, 0.4],
+      ['Soya Chunks Cooked', 'proteins & dals', 120, 15.0, 8.0, 0.5],
+      ['Paneer Bhurji', 'proteins & dals', 210, 12.0, 6.0, 15.0],
+      ['Tandoori Chicken', 'proteins & dals', 173, 20.0, 1.3, 9.3],
+      ['Fish Tikka', 'proteins & dals', 140, 16.0, 1.3, 8.0],
+      ['Chicken Tikka', 'proteins & dals', 150, 18.0, 1.5, 8.0],
+      ['Egg Bhurji', 'proteins & dals', 147, 8.7, 2.7, 10.7],
+      ['Boiled Egg', 'proteins & dals', 78, 6.3, 0.6, 5.3, 'piece'],
+      ['Chicken Breast', 'proteins & dals', 165, 31.0, 0.0, 3.6],
+      ['Mutton Curry', 'proteins & dals', 213, 17.3, 4.0, 14.7],
+
+      // Dairy category
+      ['Paneer raw', 'dairy', 265, 18.0, 1.2, 20.0],
+      ['Whole Milk Curd / Dahi', 'dairy', 60, 3.2, 4.3, 3.4],
+      ['Cow Milk', 'dairy', 65, 3.2, 4.7, 3.6, 'cup'],
+      ['Buffalo Milk', 'dairy', 100, 3.8, 5.2, 6.9, 'cup'],
+      ['Ghee', 'dairy', 900, 0.0, 0.0, 100.0],
+      ['Sweet Lassi', 'dairy', 100, 2.5, 15.0, 3.0, 'cup'],
+      ['Chaas / Buttermilk', 'dairy', 22, 1.0, 2.0, 0.75, 'cup'],
+
+      // Fruits category
+      ['Banana', 'fruits', 89, 1.1, 22.8, 0.3, 'piece'],
+      ['Apple', 'fruits', 52, 0.3, 13.8, 0.2, 'piece'],
+      ['Mango', 'fruits', 60, 0.8, 15.0, 0.4, 'piece'],
+      ['Orange', 'fruits', 47, 0.9, 12.0, 0.1, 'piece'],
+      ['Papaya', 'fruits', 43, 0.5, 11.0, 0.3],
+
+      // Snacks category
+      ['Samosa', 'snacks', 250, 4.0, 32.0, 12.0, 'piece'],
+      ['Dhokla', 'snacks', 75, 3.0, 12.0, 1.5, 'piece'],
+      ['Medu Vada', 'snacks', 140, 3.0, 16.0, 7.5, 'piece'],
+      ['Pani Puri', 'snacks', 30, 0.5, 4.6, 1.0, 'piece'],
+      ['Bhel Puri', 'snacks', 185, 4.0, 32.0, 4.5],
+      ['Pav Bhaji', 'snacks', 400, 8.0, 60.0, 14.0, 'piece'],
+      ['Vada Pav', 'snacks', 300, 6.0, 44.0, 11.0, 'piece'],
+      ['Roasted Chana', 'snacks', 360, 19.0, 58.0, 6.0],
+      ['Roasted Makhana', 'snacks', 367, 10.0, 73.3, 6.7],
+
+      // Sweets category
+      ['Gulab Jamun', 'sweets', 150, 2.0, 24.0, 6.0, 'piece'],
+      ['Rasgulla', 'sweets', 125, 2.5, 26.0, 1.0, 'piece'],
+      ['Gajar ka Halwa', 'sweets', 200, 3.3, 28.0, 8.0],
+      ['Jalebi', 'sweets', 150, 1.0, 30.0, 3.0, 'piece'],
+      ['Besan Ladoo', 'sweets', 180, 3.0, 24.0, 8.0, 'piece'],
+      ['Kheer', 'sweets', 160, 4.0, 24.0, 5.3],
+
+      // Beverages category
+      ['Masala Chai', 'beverages', 75, 2.0, 12.0, 2.0, 'cup'],
+      ['Filter Coffee', 'beverages', 80, 2.5, 12.0, 2.5, 'cup'],
+      ['Tender Coconut Water', 'beverages', 19, 0.7, 3.7, 0.2, 'cup'],
+      ['Sugarcane Juice', 'beverages', 90, 0.25, 22.5, 0.0, 'cup'],
+      ['Nimbu Pani', 'beverages', 30, 0.0, 7.5, 0.0, 'cup']
     ];
+    const generatedNames = ['Homemade','Spicy','Butter','Masala','Tandoori','Healthy','Low Calorie','High Protein','Dhaba Style','Classic','Less Oil','Special'];
+    const foodDatabase = {};
+    baseFoods.forEach((f) => foodDatabase[f[0]] = toFood(f));
+    baseFoods.slice(0, 59).forEach((f, index) => {
+      const label = generatedNames[index % generatedNames.length] + ' ' + f[0];
+      if (!foodDatabase[label]) foodDatabase[label] = toFood([label, f[1], Math.round(f[2] * (0.92 + (index % 5) * .035)), +(f[3] * (0.95 + (index % 4) * .03)).toFixed(1), +(f[4] * (0.9 + (index % 6) * .035)).toFixed(1), +(f[5] * (0.9 + (index % 5) * .04)).toFixed(1), f[6]]);
+    });
+    function toFood(f) { return { category: f[1], cal: f[2], protein: f[3], carbs: f[4], fat: f[5], unit: f[6] || 'g', per: f[6] ? 1 : 100 }; }
 
-    // Helper: Toast Notifications
-    function showToast(msg) {
-      const container = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      toast.className = 'glass rounded-2xl px-4 py-3 text-xs font-bold text-emerald-400 border-emerald-500/40 slide-up pointer-events-auto flex items-center gap-2';
-      toast.innerHTML = `<span>⚡</span> <span>${msg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+    function getOrCreateUserId() {
+      const existing = localStorage.getItem(store.userId);
+      if (existing) return existing;
+      const id = crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+      localStorage.setItem(store.userId, id);
+      return id;
     }
-
-    // Theme Engine
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem(store.theme, next);
-      document.getElementById('themeIcon').textContent = next === 'dark' ? '🌙' : '☀️';
+    function setSyncStatus(message, tone = 'muted') {
+      const el = document.getElementById('syncStatus');
+      if (!el) return;
+      
+      let displayMessage = message;
+      if (message === 'Synced from Postgres') {
+        displayMessage = 'Synced progress 💪';
+      } else if (message === 'Saved to Postgres') {
+        displayMessage = 'Saved progress 💪';
+      } else if (message === 'Database sync ready') {
+        displayMessage = 'Cloud sync ready 💪';
+      } else if (message === 'Offline — data saved in browser') {
+        displayMessage = 'Saved locally (Offline) ✓';
+      } else if (message === 'Offline mode: changes saved locally') {
+        displayMessage = 'Saved locally (Offline) ✓';
+      }
+      
+      el.textContent = displayMessage;
+      el.className = 'text-xs mt-1 font-medium ' + (tone === 'ok' ? 'text-emerald-400' : tone === 'warn' ? 'text-amber-400' : 'text-slate-500');
     }
-
-    // i18n Engine
-    function setLanguage(lang) {
-      localStorage.setItem(store.lang, lang);
-      const dict = i18n[lang] || i18n.en;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.textContent = dict[key];
-      });
+    function currentTotals() {
+      return todayLog.reduce((a, x) => ({ cal: a.cal + x.cal, protein: a.protein + x.protein, carbs: a.carbs + x.carbs, fat: a.fat + x.fat }), { cal: 0, protein: 0, carbs: 0, fat: 0 });
     }
-
-    // Tab Navigation
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
-      const target = document.getElementById('view' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-      if (target) target.classList.remove('hidden');
-
-      // Update Desktop Nav Pills
-      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('tab-active'));
-      const activeBtn = document.getElementById('navTab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
-      if (activeBtn) activeBtn.classList.add('tab-active');
-
-      if (tabName === 'progress') renderWeightChart();
-      if (tabName === 'groups') renderGroups();
-      if (tabName === 'foodlog') filterFoodDatabase();
+    function saveLocalState() {
+      localStorage.setItem(store.profile, JSON.stringify(userProfile));
+      localStorage.setItem(store.logDate, viewDateKey);
+      localStorage.setItem(store.waterDate, viewDateKey);
+      localStorage.setItem(store.log, JSON.stringify(todayLog));
+      localStorage.setItem(store.water, waterIntake);
+      localStorage.setItem(store.weekly, JSON.stringify(weeklyData));
     }
-
-    // Auth & Navigation
-    function switchLoginTab(tab) {
-      if (tab === 'signin') {
-        document.getElementById('panelSignIn').classList.remove('hidden');
-        document.getElementById('panelSignUp').classList.add('hidden');
-        document.getElementById('tabBtnSignIn').className = 'flex-1 py-2.5 text-sm font-semibold rounded-xl transition bg-emerald-500 text-slate-950 neon';
-        document.getElementById('tabBtnSignUp').className = 'flex-1 py-2.5 text-sm font-semibold rounded-xl text-slate-400 hover:text-slate-200 transition';
-      } else {
-        document.getElementById('panelSignIn').classList.add('hidden');
-        document.getElementById('panelSignUp').classList.remove('hidden');
-        document.getElementById('tabBtnSignUp').className = 'flex-1 py-2.5 text-sm font-semibold rounded-xl transition bg-emerald-500 text-slate-950 neon';
-        document.getElementById('tabBtnSignIn').className = 'flex-1 py-2.5 text-sm font-semibold rounded-xl text-slate-400 hover:text-slate-200 transition';
+    async function loadDayFromDatabase() {
+      try {
+        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${viewDateKey}`);
+        if (!res.ok) throw new Error('Database read failed');
+        const data = await res.json();
+        // Only overwrite local data if the database actually has content
+        if (data.profile) userProfile = data.profile;
+        if (Array.isArray(data.log) && data.log.length > 0) todayLog = data.log;
+        if (Number.isInteger(data.waterIntake) && data.waterIntake > 0) {
+          waterIntake = data.waterIntake <= 20 ? data.waterIntake * 250 : data.waterIntake; // Legacy migration
+        }
+        if (data.weeklyData && typeof data.weeklyData === 'object' && Object.keys(data.weeklyData).length > 0) weeklyData = data.weeklyData;
+        saveLocalState();
+        setSyncStatus('Synced from Postgres', 'ok');
+      } catch (error) {
+        setSyncStatus('Offline — data saved in browser', 'warn');
+      }
+    }
+    async function saveDailyToDatabase() {
+      if (!userProfile) return;
+      try {
+        const res = await fetch(`${API_BASE}/daily/${encodeURIComponent(USER_ID)}/${viewDateKey}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: userProfile, log: todayLog, waterIntake, weeklyData, totals: currentTotals() })
+        });
+        if (!res.ok) throw new Error('Database write failed');
+        setSyncStatus('Saved to Postgres', 'ok');
+        fetchHistory(); // Refresh streak/calendar when data changes
+      } catch (error) {
+        setSyncStatus('Offline mode: changes saved locally', 'warn');
       }
     }
 
-    function initGoogleAuth() {}
-    function openGoogleSimModal() { document.getElementById('googleSimModal').classList.remove('hidden'); document.getElementById('googleSimModal').classList.add('flex'); }
-    function closeGoogleSimModal() { document.getElementById('googleSimModal').classList.add('hidden'); document.getElementById('googleSimModal').classList.remove('flex'); }
-
-    function handleCredentialsLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      currentUser = { id: email, name: email.split('@')[0], email };
-      localStorage.setItem(store.user, JSON.stringify(currentUser));
-      USER_ID = email;
-      document.getElementById('loginPage').classList.add('hidden');
-      if (userProfile) initApp(); else document.getElementById('onboarding').classList.remove('hidden');
+    async function fetchHistory() {
+      if (!userProfile) return;
+      try {
+        const res = await fetch(`${API_BASE}/history/${encodeURIComponent(USER_ID)}?limit=40`);
+        if (res.ok) {
+          const data = await res.json();
+          historyDays = data.days || [];
+          calculateStreak();
+          renderCalendar();
+        }
+      } catch (err) {
+        console.error("Failed to fetch history:", err);
+      }
     }
 
-    function handleSignUpCredentials(e) {
-      e.preventDefault();
-      const email = document.getElementById('signUpEmail').value;
-      currentUser = { id: email, name: email.split('@')[0], email };
-      localStorage.setItem(store.user, JSON.stringify(currentUser));
-      USER_ID = email;
-      document.getElementById('loginPage').classList.add('hidden');
-      document.getElementById('onboarding').classList.remove('hidden');
-      renderGoalGrid();
+    function calculateStreak() {
+      let streak = 0;
+      const parts = todayKey.split('-');
+      let checkDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      
+      let foundToday = historyDays.some(d => d.log_date.startsWith(todayKey) && d.food_log && d.food_log.length > 0);
+      let foundYesterday = false;
+      
+      let yesterday = new Date(checkDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      let yesterdayStr = yesterday.getFullYear() + '-' + String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + String(yesterday.getDate()).padStart(2, '0');
+      
+      if (!foundToday) {
+         foundYesterday = historyDays.some(d => d.log_date.startsWith(yesterdayStr) && d.food_log && d.food_log.length > 0);
+         if (!foundYesterday) {
+           currentStreak = 0;
+           return;
+         }
+      }
+      
+      let currentCheckStr = foundToday ? todayKey : yesterdayStr;
+      const currParts = currentCheckStr.split('-');
+      let curr = new Date(currParts[0], currParts[1] - 1, currParts[2]);
+      
+      while(true) {
+        let dateStr = curr.getFullYear() + '-' + String(curr.getMonth() + 1).padStart(2, '0') + '-' + String(curr.getDate()).padStart(2, '0');
+        let dayData = historyDays.find(d => d.log_date.startsWith(dateStr));
+        if (dayData && dayData.food_log && dayData.food_log.length > 0) {
+          streak++;
+          curr.setDate(curr.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      currentStreak = streak;
     }
 
-    function renderGoalGrid() {
-      const icons = ['◒','▲','◆','◇','⬢'];
+    function renderCalendar() {
+      const container = document.getElementById('calendarContainer');
+      if (!container) return;
+      
+      const streakBadge = document.getElementById('streakBadge');
+      if (streakBadge) streakBadge.innerHTML = `🔥 ${currentStreak} Day Streak`;
+      
+      let html = '';
+      const daysToDisplay = 30;
+      
+      for (let i = daysToDisplay - 1; i >= 0; i--) {
+        const parts = todayKey.split('-');
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const dayOfWeek = d.toLocaleDateString('en-US', { weekday: 'short' });
+        const dayOfMonth = d.getDate();
+        
+        const isSelected = dateStr === viewDateKey;
+        const isToday = dateStr === todayKey;
+        
+        const dayData = historyDays.find(hd => hd.log_date.startsWith(dateStr));
+        const hasData = dayData && dayData.food_log && dayData.food_log.length > 0;
+        
+        const cardClass = isSelected 
+          ? 'selected-date bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+          : 'bg-slate-900/60 border-slate-700/50 hover:border-emerald-500/50 hover:bg-slate-800 text-slate-400';
+          
+        html += `
+          <button onclick="selectDate('${dateStr}')" class="flex-shrink-0 w-16 h-20 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-200 snap-center ${cardClass}">
+            <span class="text-[10px] uppercase font-bold tracking-wider ${isSelected ? 'text-emerald-400/80' : 'text-slate-500'}">${dayOfWeek}</span>
+            <span class="text-lg font-black ${isToday && !isSelected ? 'text-white' : ''}">${dayOfMonth}</span>
+            <div class="h-1.5 w-1.5 rounded-full ${hasData ? 'bg-emerald-400 neon' : 'bg-transparent'}"></div>
+          </button>
+        `;
+      }
+      container.innerHTML = html;
+      
+      setTimeout(() => {
+        const selectedEl = container.querySelector('.selected-date');
+        if (selectedEl) selectedEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }, 100);
+    }
+    
+    async function selectDate(dateStr) {
+      if (viewDateKey === dateStr) return;
+      viewDateKey = dateStr;
+      
+      // Reset daily vars so old data doesn't persist while loading
+      todayLog = [];
+      waterIntake = 0;
+      
+      renderCalendar();
+      updateDashboard();
+      
+      document.getElementById('foodLog').innerHTML = '<div class="p-6 text-center text-slate-500"><div class="animate-pulse flex flex-col items-center gap-2"><div class="h-4 w-24 bg-slate-800 rounded"></div><div class="h-3 w-16 bg-slate-800 rounded"></div></div></div>';
+      
+      await loadDayFromDatabase();
+      updateDashboard();
+      renderFoodLog();
+    }
+
+    function renderGoals() {
+      const icons = ['◒','▲','◆','◇','⬢','◈'];
       document.getElementById('goalGrid').innerHTML = Object.entries(goalConfigs).map(([key, g], i) => `
-        <button onclick="selectGoal('${key}')" class="goal-card text-left rounded-2xl border border-slate-700 bg-slate-900/55 p-4 hover:border-emerald-400 transition">
-          <div class="text-2xl text-emerald-300">${icons[i]}</div>
-          <h4 class="font-bold mt-2 text-sm">${g.name}</h4>
-          <p class="text-xs text-slate-400 mt-1">${g.note}</p>
+        <button data-goal="${key}" onclick="selectGoal('${key}')" class="goal-card text-left rounded-2xl border border-slate-700 bg-slate-900/55 p-4 hover:-translate-y-1 hover:border-emerald-400/60 transition">
+          <div class="text-3xl text-emerald-300">${icons[i]}</div>
+          <h3 class="font-bold mt-3">${g.name}</h3>
+          <p class="text-sm text-slate-400 mt-1">${g.note}</p>
+          <p class="text-xs text-slate-500 mt-3">${g.proteinFactor}g protein/kg</p>
         </button>`).join('');
     }
 
-    function selectGoal(key) {
-      selectedGoal = key;
-      document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('border-emerald-500', 'bg-emerald-500/10'));
-      document.getElementById('finishBtn').disabled = false;
-      document.getElementById('finishBtn').classList.replace('bg-slate-700', 'bg-emerald-500');
+    function goToStep2() {
+      if (!document.getElementById('age').value || !document.getElementById('height').value || !document.getElementById('weight').value) return;
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+      document.getElementById('step2').classList.add('slide-up');
     }
-
-    function goToStep2() { document.getElementById('step1').classList.add('hidden'); document.getElementById('step2').classList.remove('hidden'); renderGoalGrid(); }
-    function goBackToStep1() { document.getElementById('step2').classList.add('hidden'); document.getElementById('step1').classList.remove('hidden'); }
-
+    function selectGoal(goal) {
+      selectedGoal = goal;
+      document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'));
+      document.querySelector(`[data-goal="${goal}"]`).classList.add('selected');
+      const btn = document.getElementById('finishBtn');
+      btn.disabled = false;
+      btn.className = 'mt-7 w-full sm:w-auto rounded-xl bg-emerald-500 px-7 py-3 font-bold text-slate-950 neon hover:bg-emerald-400 transition';
+    }
     function finishOnboarding() {
       const gender = document.getElementById('gender').value;
-      const age = parseInt(document.getElementById('age').value, 10);
-      const height = parseInt(document.getElementById('height').value, 10);
-      const weight = parseInt(document.getElementById('weight').value, 10);
-      const activity = parseFloat(document.getElementById('activity').value);
+      const age = +document.getElementById('age').value;
+      const height = +document.getElementById('height').value;
+      const weight = +document.getElementById('weight').value;
+      const activity = +document.getElementById('activity').value;
       const bmr = Math.round(gender === 'male' ? (10 * weight + 6.25 * height - 5 * age + 5) : (10 * weight + 6.25 * height - 5 * age - 161));
       const tdee = Math.round(bmr * activity);
       const config = goalConfigs[selectedGoal];
       const targetCalories = Math.round(tdee * config.multiplier);
-
       userProfile = {
         gender, age, height, weight, activity, bmr, tdee,
         goal: selectedGoal, goalName: config.name, dietType: document.getElementById('dietType').value,
-        water_goal: parseInt(document.getElementById('setupWaterGoal').value || '2500', 10),
+        water_goal: parseInt(document.getElementById('setupWaterGoal').value || '2000', 10),
         targetCalories, targetProtein: Math.round(weight * config.proteinFactor),
         targetCarbs: Math.round((targetCalories * config.carbPct) / 4),
         targetFat: Math.round((targetCalories * config.fatPct) / 9)
       };
-      localStorage.setItem(store.profile, JSON.stringify(userProfile));
-      document.getElementById('onboarding').classList.add('hidden');
+      saveLocalState();
+      if (currentUser) updateHeaderProfileWidget(currentUser);
       initApp();
     }
 
-    // App Startup & Core Render
-    function initApp() {
-      document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('userGoalDisplay').textContent = userProfile.goalName;
-      document.getElementById('headerUserName').textContent = currentUser?.name || 'User';
-      
-      initCalendar();
-      updateDashboard();
-      initWaterTracker();
-      renderFoodLog();
-      renderBadges();
-      setLanguage(localStorage.getItem(store.lang) || 'en');
-    }
-
-    function initCalendar() {
-      const container = document.getElementById('calendarContainer');
-      const dates = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().slice(0, 10));
-      }
-      container.innerHTML = dates.map(d => {
-        const isSelected = d === viewDateKey;
-        const dayNum = new Date(d).getDate();
-        const dayName = new Date(d).toLocaleDateString('en-US', { weekday: 'short' });
-        return `<button onclick="selectDate('${d}')" class="px-4 py-2.5 rounded-2xl flex flex-col items-center border transition ${isSelected ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold' : 'bg-slate-900/60 border-slate-800 text-slate-400'}">
-          <span class="text-[10px] uppercase">${dayName}</span>
-          <span class="text-sm font-black mt-0.5">${dayNum}</span>
-        </button>`;
-      }).join('');
-    }
-
-    function selectDate(d) {
-      viewDateKey = d;
-      initCalendar();
-      updateDashboard();
-      initWaterTracker();
-      renderFoodLog();
-    }
-
-    // Dashboard Calculations
-    function updateDashboard() {
-      const totals = todayLog.reduce((acc, item) => ({
-        cal: acc.cal + item.cal,
-        protein: acc.protein + item.protein,
-        carbs: acc.carbs + item.carbs,
-        fat: acc.fat + item.fat
-      }), { cal: 0, protein: 0, carbs: 0, fat: 0 });
-
-      document.getElementById('dashDateLabel').textContent = viewDateKey === todayKey ? 'Today' : viewDateKey;
-
-      const ringGrid = document.getElementById('ringGrid');
-      ringGrid.innerHTML = `
-        ${ring('Calories', totals.cal, userProfile.targetCalories, '#10b981')}
-        ${ring('Protein', totals.protein, userProfile.targetProtein, '#3b82f6')}
-        ${ring('Carbs', totals.carbs, userProfile.targetCarbs, '#f59e0b')}
-        ${ring('Fats', totals.fat, userProfile.targetFat, '#ef4444')}
-      `;
-    }
-
-    function ring(label, current, target, color) {
-      const pct = Math.min(Math.round((current / (target || 1)) * 100), 100);
-      const dash = 226 - (226 * pct) / 100;
-      return `<div class="glass rounded-2xl p-4 text-center">
-        <div class="relative w-20 h-20 mx-auto">
+    function ring(label, currentId, targetId, ringId, percentId, color) {
+      return `<div class="glass rounded-2xl p-4 text-center hover:border-emerald-500/30 transition-all duration-300">
+        <div class="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto">
           <svg viewBox="0 0 90 90" class="w-full h-full">
-            <circle cx="45" cy="45" r="36" stroke="rgba(255,255,255,0.08)" stroke-width="7" fill="none"/>
-            <circle class="ring" cx="45" cy="45" r="36" stroke="${color}" stroke-width="7" stroke-dashoffset="${dash}" stroke-linecap="round" fill="none"/>
+            <circle cx="45" cy="45" r="36" stroke="#1f2937" stroke-width="7" fill="none"/>
+            <circle id="${ringId}" class="ring ring-glow" cx="45" cy="45" r="36" stroke="${color}" stroke-width="7" stroke-linecap="round" fill="none" style="--ring-glow-color: ${color}80"/>
           </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <span class="font-black text-sm">${pct}%</span>
-            <span class="text-[9px] text-slate-400 font-bold uppercase">${label}</span>
-          </div>
+          <div class="absolute inset-0 grid place-items-center"><div><p id="${percentId}" class="font-black text-base sm:text-lg">0%</p><p class="text-[9px] sm:text-[10px] text-slate-400 font-medium">${label}</p></div></div>
         </div>
-        <p class="mt-2 text-xs font-bold text-slate-300">${Math.round(current)} / ${target}</p>
+        <p class="mt-3 text-xs sm:text-sm font-bold text-slate-300"><span id="${currentId}">0</span><span class="text-slate-500 font-normal"> / </span><span id="${targetId}">0</span></p>
       </div>`;
     }
+    let currentMobileTab = 'dashboard';
+    function switchMobileTab(tab) {
+      currentMobileTab = tab;
+      const dashboardPanel = document.getElementById('dashboardPanel');
+      const trackerPanel = document.getElementById('trackerPanel');
+      const navBtnDashboard = document.getElementById('navBtnDashboard');
+      const navBtnTracker = document.getElementById('navBtnTracker');
+      
+      if (!dashboardPanel || !trackerPanel) return;
+      
+      if (tab === 'dashboard') {
+        dashboardPanel.classList.remove('hidden-mobile');
+        trackerPanel.classList.add('hidden-mobile');
+        if (navBtnDashboard) {
+          navBtnDashboard.classList.add('text-emerald-400');
+          navBtnDashboard.classList.remove('text-slate-400');
+        }
+        if (navBtnTracker) {
+          navBtnTracker.classList.remove('text-emerald-400');
+          navBtnTracker.classList.add('text-slate-400');
+        }
+      } else {
+        dashboardPanel.classList.add('hidden-mobile');
+        trackerPanel.classList.remove('hidden-mobile');
+        if (navBtnDashboard) {
+          navBtnDashboard.classList.remove('text-emerald-400');
+          navBtnDashboard.classList.add('text-slate-400');
+        }
+        if (navBtnTracker) {
+          navBtnTracker.classList.add('text-emerald-400');
+          navBtnTracker.classList.remove('text-slate-400');
+        }
+      }
+    }
+    function initApp() {
+      saveLocalState();
+      document.getElementById('onboarding').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('userGoalDisplay').textContent = userProfile.goalName;
+      document.getElementById('ringGrid').innerHTML =
+        ring('Calories','currentCals','targetCals','calRing','calPercent','#10b981') +
+        ring('Protein','currentProtein','targetProtein','proteinRing','proteinPercent','#3b82f6') +
+        ring('Carbs','currentCarbs','targetCarbs','carbRing','carbPercent','#f59e0b') +
+        ring('Fats','currentFat','targetFat','fatRing','fatPercent','#ef4444');
+      document.getElementById('targetCals').textContent = userProfile.targetCalories;
+      document.getElementById('targetProtein').textContent = userProfile.targetProtein;
+      document.getElementById('targetCarbs').textContent = userProfile.targetCarbs;
+      document.getElementById('targetFat').textContent = userProfile.targetFat;
+      const bmi = userProfile.weight / Math.pow(userProfile.height / 100, 2);
+      document.getElementById('bmiValue').textContent = bmi.toFixed(1);
+      document.getElementById('bmiCategory').textContent = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+      document.getElementById('bmrValue').textContent = userProfile.bmr;
+      document.getElementById('tdeeValue').textContent = userProfile.tdee;
+      document.getElementById('proteinPerKg').textContent = (userProfile.targetProtein / userProfile.weight).toFixed(1);
+      renderCategories();
+      initWaterTracker();
+      renderFoodGrid();
+      renderFoodLog();
+      initChart();
+      updateDashboard();
+      switchMobileTab('dashboard');
+    }
 
-    // Water Tracker Logic
+    function renderCategories() {
+      document.getElementById('categoryTabs').innerHTML = categories.map(c => `<button data-cat="${c.toLowerCase()}" onclick="setFoodCategory('${c.toLowerCase()}')" class="food-tab whitespace-nowrap rounded-xl border border-slate-700 bg-slate-900/55 px-3 py-2 text-sm transition ${c === 'All' ? 'tab-active' : ''}">${c}</button>`).join('');
+    }
+    function setFoodCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.food-tab').forEach(t => t.classList.remove('tab-active'));
+      document.querySelector(`[data-cat="${cat}"]`).classList.add('tab-active');
+      renderFoodGrid();
+    }
+    function renderFoodGrid() {
+      const search = document.getElementById('foodSearch').value.toLowerCase();
+      const foods = Object.entries(foodDatabase).filter(([name, f]) => (currentCategory === 'all' || f.category === currentCategory) && name.toLowerCase().includes(search));
+      document.getElementById('foodGrid').innerHTML = foods.map(([name, f]) => `
+        <button onclick="openAddModal('${escapeName(name)}')" class="text-left rounded-xl bg-slate-900/55 border border-slate-800 p-4 hover:-translate-y-1 hover:border-emerald-400/50 hover:bg-slate-800/70 transition">
+          <div class="flex justify-between gap-3"><h3 class="font-bold">${name}</h3><span class="text-xs rounded-full bg-slate-800 px-2 py-1 text-slate-300">${f.category}</span></div>
+          <p class="text-sm text-slate-400 mt-3">${f.cal} cal • ${f.protein}g P • ${f.carbs}g C • ${f.fat}g F</p>
+          <p class="text-xs text-slate-500 mt-2">per ${f.per}${f.unit}</p>
+        </button>`).join('') || '<p class="text-slate-500 col-span-full py-10 text-center">No foods found</p>';
+    }
+    function escapeName(name) { return name.replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+    function openAddModal(foodName) {
+      selectedFood = { name: foodName, data: foodDatabase[foodName] };
+      servingType = selectedFood.data.unit === 'scoop' || selectedFood.data.unit === 'bottle' ? 'piece' : selectedFood.data.unit;
+      document.getElementById('modalFoodName').textContent = foodName;
+      document.getElementById('modalFoodMacros').textContent = `${selectedFood.data.cal} cal • ${selectedFood.data.protein}g P • ${selectedFood.data.carbs}g C • ${selectedFood.data.fat}g F`;
+      document.getElementById('servingAmount').value = selectedFood.data.per;
+      renderServingButtons();
+      updatePreview();
+      document.getElementById('addFoodModal').classList.remove('hidden');
+      document.getElementById('addFoodModal').classList.add('flex');
+    }
+    function renderServingButtons() {
+      document.getElementById('servingButtons').innerHTML = ['g','oz','cup','piece'].map(u => `<button onclick="setServingType('${u}')" class="serving-btn rounded-xl border border-slate-700 px-3 py-2 text-sm ${u === servingType ? 'serving-active' : ''}">${u}</button>`).join('');
+    }
+    function setServingType(type) { servingType = type; renderServingButtons(); updatePreview(); }
+    function updatePreview() {
+      if (!selectedFood) return;
+      const amount = +document.getElementById('servingAmount').value || 0;
+      const factor = (amount * conversions[servingType]) / (selectedFood.data.per * (conversions[selectedFood.data.unit] || 1));
+      document.getElementById('previewCals').textContent = Math.round(selectedFood.data.cal * factor);
+      document.getElementById('previewProtein').textContent = (selectedFood.data.protein * factor).toFixed(1) + 'g';
+      document.getElementById('previewCarbs').textContent = (selectedFood.data.carbs * factor).toFixed(1) + 'g';
+      document.getElementById('previewFats').textContent = (selectedFood.data.fat * factor).toFixed(1) + 'g';
+    }
+    function confirmAddFood() {
+      const amount = +document.getElementById('servingAmount').value;
+      if (!amount || !selectedFood) return;
+      const factor = (amount * conversions[servingType]) / (selectedFood.data.per * (conversions[selectedFood.data.unit] || 1));
+      todayLog.push({ name: selectedFood.name, amount, unit: servingType, cal: Math.round(selectedFood.data.cal * factor), protein: selectedFood.data.protein * factor, carbs: selectedFood.data.carbs * factor, fat: selectedFood.data.fat * factor, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      saveLocalState();
+      closeModal();
+      renderFoodLog();
+      updateDashboard();
+    }
+    function closeModal() {
+      document.getElementById('addFoodModal').classList.add('hidden');
+      document.getElementById('addFoodModal').classList.remove('flex');
+      selectedFood = null;
+    }
+    function getStepSize(unit) {
+      switch (unit) {
+        case 'g': return 25;
+        case 'oz': return 1;
+        case 'cup': return 0.25;
+        default: return 1;
+      }
+    }
+    function scaleFoodMacros(item, oldAmount, newAmount) {
+      const ratio = newAmount / oldAmount;
+      item.amount = Math.round(newAmount * 100) / 100;
+      item.cal = Math.round(item.cal * ratio);
+      item.protein = item.protein * ratio;
+      item.carbs = item.carbs * ratio;
+      item.fat = item.fat * ratio;
+    }
+    function incrementFood(index) {
+      const item = todayLog[index];
+      if (!item) return;
+      const step = getStepSize(item.unit);
+      const oldAmount = item.amount;
+      const newAmount = oldAmount + step;
+      scaleFoodMacros(item, oldAmount, newAmount);
+      saveLocalState();
+      renderFoodLog();
+      updateDashboard();
+    }
+    function decrementFood(index) {
+      const item = todayLog[index];
+      if (!item) return;
+      const step = getStepSize(item.unit);
+      const oldAmount = item.amount;
+      const newAmount = oldAmount - step;
+      if (newAmount <= 0) {
+        removeFood(index);
+      } else {
+        scaleFoodMacros(item, oldAmount, newAmount);
+        saveLocalState();
+        renderFoodLog();
+        updateDashboard();
+      }
+    }
+    function renderFoodLog() {
+      const container = document.getElementById('foodLog');
+      if (!todayLog.length) { container.innerHTML = '<p class="text-slate-500 text-center py-8">No food logged yet today</p>'; return; }
+      container.innerHTML = todayLog.map((item, i) => `<div class="flex items-center justify-between gap-3 bg-slate-900/55 rounded-xl p-3 border border-slate-800">
+        <div class="flex-grow min-w-0">
+          <p class="font-semibold text-sm truncate">${item.name}</p>
+          <p class="text-xs text-slate-400 mt-0.5">${item.cal} cal • ${item.protein.toFixed(1)}g P • ${item.time}</p>
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button onclick="decrementFood(${i})" class="btn-qty">-</button>
+          <span class="text-xs font-semibold text-slate-200 min-w-[45px] text-center">${item.amount}${item.unit}</span>
+          <button onclick="incrementFood(${i})" class="btn-qty">+</button>
+          <button onclick="removeFood(${i})" class="ml-1 text-slate-500 hover:text-red-400 p-1 rounded-lg transition" title="Delete">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>`).join('');
+    }
+    function removeFood(index) { todayLog.splice(index, 1); saveLocalState(); renderFoodLog(); updateDashboard(); }
+    function clearLog() { todayLog = []; saveLocalState(); renderFoodLog(); updateDashboard(); }
+    function updateDashboard() {
+      const totals = currentTotals();
+      
+      const isToday = viewDateKey === todayKey;
+      const dateLabel = isToday ? '' : `(${new Date(viewDateKey).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+      
+      const dashLabelEl = document.getElementById('dashDateLabel');
+      const logLabelEl = document.getElementById('logDateLabel');
+      if (dashLabelEl) dashLabelEl.textContent = dateLabel;
+      if (logLabelEl) logLabelEl.textContent = dateLabel;
+
+      document.getElementById('currentCals').textContent = Math.round(totals.cal);
+      document.getElementById('currentProtein').textContent = totals.protein.toFixed(1);
+      document.getElementById('currentCarbs').textContent = totals.carbs.toFixed(1);
+      document.getElementById('currentFat').textContent = totals.fat.toFixed(1);
+      updateRing('calRing', 'calPercent', totals.cal, userProfile.targetCalories);
+      updateRing('proteinRing', 'proteinPercent', totals.protein, userProfile.targetProtein);
+      updateRing('carbRing', 'carbPercent', totals.carbs, userProfile.targetCarbs);
+      updateRing('fatRing', 'fatPercent', totals.fat, userProfile.targetFat);
+      updateBar('proteinBar', 'proteinBarText', totals.protein, userProfile.targetProtein, 'g');
+      updateBar('carbBar', 'carbBarText', totals.carbs, userProfile.targetCarbs, 'g');
+      updateBar('fatBar', 'fatBarText', totals.fat, userProfile.targetFat, 'g');
+      weeklyData[todayKey] = +totals.protein.toFixed(1);
+      saveLocalState();
+      updateChart();
+      updateMotivationalMessage(totals);
+      saveDailyToDatabase();
+    }
+    
+    function updateMotivationalMessage(totals) {
+      const el = document.getElementById('motivationalSummary');
+      if (!el) return;
+      if (!userProfile) return;
+      
+      const calPct = Math.round((totals.cal / userProfile.targetCalories) * 100);
+      const proteinPct = Math.round((totals.protein / userProfile.targetProtein) * 100);
+      
+      let message = "";
+      if (totals.cal === 0) {
+        message = "Start your engine! Add your first meal to fuel your muscles today. 🚀";
+      } else if (proteinPct < 40) {
+        message = `Keep pushing! You've hit ${proteinPct}% of your protein goal. Let's get those gains! 💪`;
+      } else if (proteinPct < 75) {
+        message = `Looking solid! Protein is at ${proteinPct}%. You're building solid muscle! 🍗🔥`;
+      } else if (proteinPct < 100) {
+        message = `Almost there! You're at ${proteinPct}% of your protein goal. Finish strong! ⚡🏋️`;
+      } else if (proteinPct >= 100 && proteinPct <= 120) {
+        message = "Superb! Protein target unlocked. Muscle recovery mode: ACTIVE! 🛡️💪";
+      } else {
+        message = "Protein surplus achieved! You are a beast today! 🦍⚡";
+      }
+      el.textContent = message;
+    }
+    function updateRing(ringId, percentId, current, target) {
+      const percent = Math.min((current / target) * 100, 100);
+      document.getElementById(ringId).style.strokeDashoffset = 226 - (226 * percent / 100);
+      document.getElementById(percentId).textContent = Math.round(percent) + '%';
+    }
+    function updateBar(barId, textId, current, target, unit) {
+      document.getElementById(barId).style.width = Math.min((current / target) * 100, 100) + '%';
+      document.getElementById(textId).textContent = `${current.toFixed(1)}${unit} / ${target}${unit}`;
+    }
     function initWaterTracker() {
-      const goal = userProfile?.water_goal || 2500;
+      const goal = userProfile?.water_goal || 2000;
       document.getElementById('waterCount').textContent = waterIntake;
       document.getElementById('waterGoalDisplay').textContent = goal;
       
       const bottlesHTML = [];
-      const capacity = 1000;
-      const full = Math.floor(waterIntake / capacity);
-      const rem = waterIntake % capacity;
+      const bottleCapacity = 1000;
+      const fullBottles = Math.floor(waterIntake / bottleCapacity);
+      const remainingWater = waterIntake % bottleCapacity;
       
-      for (let i = 0; i < full; i++) {
+      for(let i=0; i<fullBottles; i++) {
         bottlesHTML.push(`
           <div class="water-bottle-wrapper">
             <div class="water-bottle-cap"></div>
             <div class="water-bottle-container">
+              <div class="bottle-groove" style="top: 30%"></div>
+              <div class="bottle-groove" style="top: 50%"></div>
+              <div class="bottle-groove" style="top: 70%"></div>
               <div class="water-bottle-fill" style="height: 100%"></div>
-              <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-slate-800 mix-blend-difference z-20">1 L</div>
+              <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-slate-800 z-20 mix-blend-difference">1 L</div>
             </div>
           </div>
         `);
       }
       
-      if (waterIntake === 0 || rem > 0 || full === 0) {
-        const pct = (rem / capacity) * 100;
+      if (waterIntake === 0 || remainingWater > 0 || fullBottles === 0) {
+        const fillPercent = (remainingWater / bottleCapacity) * 100;
         bottlesHTML.push(`
-          <div class="water-bottle-wrapper opacity-90">
+          <div class="water-bottle-wrapper opacity-90 hover:opacity-100">
             <div class="water-bottle-cap"></div>
             <div class="water-bottle-container">
-              <div class="water-bottle-fill" style="height: ${pct}%"></div>
-              <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-slate-400 z-20">${rem} ml</div>
+              <div class="bottle-groove" style="top: 30%"></div>
+              <div class="bottle-groove" style="top: 50%"></div>
+              <div class="bottle-groove" style="top: 70%"></div>
+              <div class="water-bottle-fill" style="height: ${fillPercent}%"></div>
+              <div class="absolute inset-0 flex items-center justify-center font-bold text-[10px] ${fillPercent > 50 ? 'text-slate-800 mix-blend-difference' : 'text-slate-400'} z-20">${remainingWater} ml</div>
             </div>
           </div>
         `);
       }
+      
       document.getElementById('waterBottles').innerHTML = bottlesHTML.join('');
     }
-
+    
     function openWaterModal() { document.getElementById('editTotalWaterAmount').value = waterIntake; document.getElementById('waterModal').classList.remove('hidden'); document.getElementById('waterModal').classList.add('flex'); }
     function closeWaterModal() { document.getElementById('waterModal').classList.add('hidden'); document.getElementById('waterModal').classList.remove('flex'); }
-    function addWater(amt) { waterIntake += amt; saveWaterState(); }
-    function addCustomWater() { const amt = parseInt(document.getElementById('customWaterAmount').value, 10); if (amt > 0) { addWater(amt); document.getElementById('customWaterAmount').value = ''; } }
-    function editTotalWater() { const amt = parseInt(document.getElementById('editTotalWaterAmount').value, 10); if (amt >= 0) { waterIntake = amt; saveWaterState(); } }
-    function saveWaterState() { localStorage.setItem(store.waterDate, viewDateKey); localStorage.setItem(store.water, waterIntake); initWaterTracker(); closeWaterModal(); showToast('Water updated!'); }
+    function addWater(amount) { waterIntake += amount; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); }
+    function addCustomWater() { const amt = parseInt(document.getElementById('customWaterAmount').value, 10); if(!isNaN(amt) && amt > 0) { addWater(amt); document.getElementById('customWaterAmount').value = ''; } }
+    function editTotalWater() { const amt = parseInt(document.getElementById('editTotalWaterAmount').value, 10); if(!isNaN(amt) && amt >= 0) { waterIntake = amt; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); } }
+    function resetWater() { waterIntake = 0; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); closeWaterModal(); }
+    function saveWaterGoal() {
+      if(!userProfile) return;
+      const wg = parseInt(document.getElementById('profileWaterGoal').value, 10);
+      if(!isNaN(wg) && wg >= 500) { userProfile.water_goal = wg; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); }
+    }
 
-    // Recent Meals Log
-    function renderFoodLog() {
-      const container = document.getElementById('foodLog');
-      if (!todayLog.length) {
-        container.innerHTML = '<p class="text-slate-500 text-center py-6 text-xs">No meals logged for this date yet.</p>';
+    function initChart() {
+      const ctx = document.getElementById('weeklyChart').getContext('2d');
+      weeklyChart = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: lastSeven().labels, datasets: [{ data: lastSeven().data, backgroundColor: 'rgba(16, 185, 129, 0.25)', borderColor: '#10b981', borderWidth: 1.5, borderRadius: 6 }] },
+        options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+      });
+    }
+    function lastSeven() {
+      const labels = [], data = [];
+      for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().slice(0, 10); labels.push(d.toLocaleDateString('en', { weekday: 'short' })); data.push(weeklyData[key] || 0); }
+      return { labels, data };
+    }
+    function updateChart() { if (!weeklyChart) return; weeklyChart.data.datasets[0].data = lastSeven().data; weeklyChart.update(); }
+    function showProfile() {
+      document.getElementById('profileHeight').textContent = userProfile.height + ' cm';
+      document.getElementById('profileWeight').textContent = userProfile.weight + ' kg';
+      document.getElementById('profileGoal').textContent = userProfile.goalName;
+      document.getElementById('profileDiet').textContent = userProfile.dietType;
+      document.getElementById('profileTarget').textContent = `${userProfile.targetCalories} cal • ${userProfile.targetProtein}g protein • ${userProfile.targetCarbs}g carbs • ${userProfile.targetFat}g fats`;
+      document.getElementById('profileWaterGoal').value = userProfile.water_goal || 2000;
+      
+      // Populate user info inside modal
+      if (currentUser) {
+        document.getElementById('profilePhone').value = currentUser.phone || '';
+        
+        const avatar = document.getElementById('modalUserAvatar');
+        if (currentUser.picture) {
+          avatar.innerHTML = `<img src="${currentUser.picture}" class="w-full h-full object-cover" alt="${currentUser.name}" referrerPolicy="no-referrer" />`;
+          avatar.className = "w-16 h-16 rounded-full border-2 border-emerald-500 overflow-hidden bg-slate-800 flex-shrink-0 flex items-center justify-center";
+        } else {
+          const initial = (currentUser.name || currentUser.email || 'U').charAt(0).toUpperCase();
+          const colors = {
+            emerald: 'bg-emerald-500 border-emerald-400/40',
+            blue: 'bg-blue-500 border-blue-400/40',
+            purple: 'bg-purple-500 border-purple-400/40',
+            rose: 'bg-red-500 border-red-400/40',
+            amber: 'bg-amber-500 border-amber-400/40'
+          };
+          const bgClass = colors[currentUser.color] || 'bg-slate-700 border-slate-600';
+          avatar.innerHTML = `<span>${initial}</span>`;
+          avatar.className = `w-16 h-16 rounded-full border-2 flex items-center justify-center font-bold text-slate-100 overflow-hidden flex-shrink-0 ${bgClass}`;
+        }
+        document.getElementById('modalUserName').textContent = currentUser.name || 'User';
+        document.getElementById('modalUserEmail').textContent = currentUser.email || 'user@domain.com';
+      }
+
+      document.getElementById('profileModal').classList.remove('hidden');
+      document.getElementById('profileModal').classList.add('flex');
+    }
+    function closeProfile() { document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); }
+    async function resetProfile() {
+      if (!confirm('Reset all FitTrack Pro data?')) return;
+      try { await fetch(`${API_BASE}/users/${encodeURIComponent(USER_ID)}`, { method: 'DELETE' }); } catch (error) {}
+      Object.values(store).forEach(k => localStorage.removeItem(k));
+      location.reload();
+    }
+
+    // --- LensPro Camera & Image Scanner Functions ---
+    let lensProStream = null;
+    let currentFacingMode = 'environment';
+    let lensProSelectedFood = null;
+    let lensProServingType = 'g';
+
+    async function openLensPro() {
+      const modal = document.getElementById('lensProModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      document.getElementById('lensProVideo').classList.add('hidden');
+      document.getElementById('lensProCanvas').classList.add('hidden');
+      document.getElementById('lensProScanLine').classList.add('hidden');
+      document.getElementById('lensProAnalysis').classList.add('hidden');
+      document.getElementById('lensProControls').classList.remove('hidden');
+      document.getElementById('lensProPlaceholder').classList.remove('hidden');
+      document.getElementById('lensProStatusText').textContent = 'Requesting camera access...';
+
+      startLensProStream();
+    }
+
+    async function startLensProStream() {
+      stopLensProStream();
+      
+      const video = document.getElementById('lensProVideo');
+      const placeholder = document.getElementById('lensProPlaceholder');
+      const statusText = document.getElementById('lensProStatusText');
+      const switchBtnContainer = document.getElementById('lensProSwitchCameraContainer');
+
+      try {
+        const constraints = {
+          video: { facingMode: currentFacingMode }
+        };
+        
+        lensProStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = lensProStream;
+        
+        video.onloadedmetadata = () => {
+          video.play();
+          video.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+        };
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        if (videoDevices.length > 1) {
+          switchBtnContainer.classList.remove('hidden');
+        } else {
+          switchBtnContainer.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error("Camera access failed:", error);
+        video.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        statusText.innerHTML = `Camera access unavailable.<br><span class="text-xs text-slate-500">Please upload a picture instead.</span>`;
+        switchBtnContainer.classList.add('hidden');
+      }
+    }
+
+    function stopLensProStream() {
+      if (lensProStream) {
+        lensProStream.getTracks().forEach(track => track.stop());
+        lensProStream = null;
+      }
+      const video = document.getElementById('lensProVideo');
+      if (video) {
+        video.srcObject = null;
+      }
+    }
+
+    function closeLensPro() {
+      stopLensProStream();
+      const modal = document.getElementById('lensProModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function switchLensProCamera() {
+      currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+      startLensProStream();
+    }
+
+    function triggerLensProUpload() {
+      document.getElementById('lensProFileInput').click();
+    }
+
+    function handleLensProUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      stopLensProStream();
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.getElementById('lensProCanvas');
+          const ctx = canvas.getContext('2d');
+          
+          document.getElementById('lensProVideo').classList.add('hidden');
+          document.getElementById('lensProPlaceholder').classList.add('hidden');
+          canvas.classList.remove('hidden');
+          
+          canvas.width = 640;
+          canvas.height = 360;
+          
+          const hRatio = canvas.width / img.width;
+          const vRatio = canvas.height / img.height;
+          const ratio  = Math.min(hRatio, vRatio);
+          const centerShift_x = (canvas.width - img.width * ratio) / 2;
+          const centerShift_y = (canvas.height - img.height * ratio) / 2;  
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, img.width, img.height,
+                             centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
+          
+          document.getElementById('lensProControls').classList.add('hidden');
+          runLensProAnalysis();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function captureLensProPhoto() {
+      const video = document.getElementById('lensProVideo');
+      const canvas = document.getElementById('lensProCanvas');
+      const placeholder = document.getElementById('lensProPlaceholder');
+      
+      if (video.classList.contains('hidden')) {
+        triggerLensProUpload();
         return;
       }
-      container.innerHTML = todayLog.map((item, i) => `
-        <div class="flex items-center justify-between gap-3 bg-slate-900/60 rounded-2xl p-3.5 border border-slate-800">
-          <div>
-            <p class="font-bold text-sm text-slate-200">${item.name}</p>
-            <p class="text-xs text-slate-400 mt-0.5">${item.cal} cal • ${item.protein}g Protein</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="changeFoodQty(${i}, -1)" class="btn-qty">-</button>
-            <span class="text-xs font-bold text-slate-300 min-w-[35px] text-center">${item.amount}</span>
-            <button onclick="changeFoodQty(${i}, 1)" class="btn-qty">+</button>
-            <button onclick="removeFood(${i})" class="text-slate-500 hover:text-red-400 ml-2">✕</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function changeFoodQty(i, delta) {
-      if (todayLog[i]) {
-        todayLog[i].amount += delta * 50;
-        if (todayLog[i].amount <= 0) todayLog.splice(i, 1);
-        saveLogState();
-      }
-    }
-    function removeFood(i) { todayLog.splice(i, 1); saveLogState(); }
-    function saveLogState() { localStorage.setItem(store.logDate, viewDateKey); localStorage.setItem(store.log, JSON.stringify(todayLog)); updateDashboard(); renderFoodLog(); }
-
-    // Progress & Weight Chart (SVG)
-    function renderWeightChart() {
-      const container = document.getElementById('svgChartContainer');
-      if (!weightHistory.length) return;
-      const pts = weightHistory.map(w => w.weight);
-      const min = Math.min(...pts) - 2;
-      const max = Math.max(...pts) + 2;
-      const range = max - min || 1;
       
-      const width = container.clientWidth || 600;
-      const height = 180;
-      const stepX = width / Math.max(pts.length - 1, 1);
-
-      const points = pts.map((val, idx) => {
-        const x = idx * stepX;
-        const y = height - ((val - min) / range) * (height - 40) - 20;
-        return `${x},${y}`;
-      }).join(' ');
-
-      container.innerHTML = `
-        <svg class="w-full h-full overflow-visible">
-          <polyline fill="none" stroke="#10b981" stroke-width="3" points="${points}" />
-          ${pts.map((val, idx) => {
-            const x = idx * stepX;
-            const y = height - ((val - min) / range) * (height - 40) - 20;
-            return `<circle cx="${x}" cy="${y}" r="5" fill="#10b981" class="hover:r-7 transition-all cursor-pointer" />`;
-          }).join('')}
-        </svg>
-      `;
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+      
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      video.classList.add('hidden');
+      placeholder.classList.add('hidden');
+      canvas.classList.remove('hidden');
+      
+      stopLensProStream();
+      document.getElementById('lensProControls').classList.add('hidden');
+      
+      runLensProAnalysis();
     }
 
-    function logWeightEntry() {
-      const input = document.getElementById('newWeightInput');
-      const val = parseFloat(input.value);
-      if (val > 0) {
-        weightHistory.push({ date: todayKey, weight: val });
-        localStorage.setItem('fittrack_weights', JSON.stringify(weightHistory));
-        input.value = '';
-        renderWeightChart();
-        showToast('Weight logged!');
+    const colorGroups = {
+      green: {
+        matches: ['Palak Paneer', 'Bhindi Masala', 'Chaas / Buttermilk', 'Tender Coconut Water'],
+        display: 'Green Vegetables / Beverages'
+      },
+      yellow: {
+        matches: ['Banana', 'Mango', 'Papaya', 'Khichdi', 'Moong Dal Cooked', 'Paneer Butter Masala', 'Chana Masala', 'Poha'],
+        display: 'Dal / Curry / Yellow Produce'
+      },
+      brown: {
+        matches: ['Roti / Chapati', 'Plain Paratha', 'Aloo Paratha', 'Samosa', 'Vada Pav', 'Chicken Biryani'],
+        display: 'Breads / Fried Snacks / Rice'
+      },
+      white: {
+        matches: ['Apple', 'Orange', 'Basmati Rice Cooked', 'Whole Milk Curd / Dahi', 'Idli with Sambar', 'Boiled Egg'],
+        display: 'Fruits / Rice / Light Foods'
+      }
+    };
+
+    function analyzeCanvasPixels(canvas) {
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+      
+      let rSum = 0, gSum = 0, bSum = 0;
+      let count = 0;
+      
+      for (let i = 0; i < data.length; i += 40) {
+        rSum += data[i];
+        gSum += data[i+1];
+        bSum += data[i+2];
+        count++;
+      }
+      
+      const r = rSum / count;
+      const g = gSum / count;
+      const b = bSum / count;
+      
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const d = max - min;
+      const s = max === 0 ? 0 : d / max;
+      const v = max / 255;
+      
+      let h = 0;
+      if (max !== min) {
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+        else if (max === g) h = (b - r) / d + 2;
+        else if (max === b) h = (r - g) / d + 4;
+        h *= 60;
+      }
+      
+      const saturationPct = s * 100;
+      const brightnessPct = v * 100;
+      
+      console.log(`[LensPro Heuristics] Saturation: ${saturationPct.toFixed(1)}%, Brightness: ${brightnessPct.toFixed(1)}%, Hue: ${h.toFixed(1)}°`);
+      
+      if (saturationPct < 7 || brightnessPct < 10 || brightnessPct > 98) {
+        return { match: 'not_food', confidence: 0 };
+      }
+      
+      let matchedFood = 'Banana';
+      let groupKey = 'yellow';
+      
+      if (saturationPct < 25 && brightnessPct > 65) {
+        matchedFood = 'Apple';
+        groupKey = 'white';
+      } else if (h >= 75 && h <= 150) {
+        matchedFood = 'Palak Paneer';
+        groupKey = 'green';
+      } else if (h >= 25 && h <= 65) {
+        matchedFood = 'Banana';
+        groupKey = 'yellow';
+      } else if (h < 25 || h > 340) {
+        matchedFood = 'Roti / Chapati';
+        groupKey = 'brown';
+      } else {
+        matchedFood = 'Banana';
+        groupKey = 'yellow';
+      }
+      
+      return { match: matchedFood, confidence: Math.round(75 + Math.random() * 15), groupKey };
+    }
+
+    function switchToManualSearchLensPro() {
+      closeLensPro();
+      switchMobileTab('tracker');
+      
+      const search = document.getElementById('foodSearch');
+      if (search) {
+        search.value = '';
+        renderFoodGrid();
+        setTimeout(() => {
+          search.focus();
+        }, 150);
       }
     }
 
-    function renderBadges() {
-      const badges = [
-        { icon: '🔥', title: 'Streak Master', desc: '7+ Day Streak', unlocked: true },
-        { icon: '💧', title: 'Hydration Hero', desc: '2500ml Water Goal', unlocked: waterIntake >= 2500 },
-        { icon: '🥗', title: 'Macro Wizard', desc: 'Hit Protein Target', unlocked: true },
-        { icon: '🏋️', title: 'Iron Lifter', desc: 'Workout Logged', unlocked: false },
-        { icon: '⚡', title: 'Century Cal', desc: 'Logged 1000+ Cals', unlocked: true },
-        { icon: '🎯', title: 'Goal Setter', desc: 'Profile Complete', unlocked: true }
-      ];
-      document.getElementById('badgesGrid').innerHTML = badges.map(b => `
-        <div class="glass rounded-2xl p-3.5 text-center ${b.unlocked ? 'border-emerald-500/40 bg-emerald-500/5' : 'opacity-50'}">
-          <span class="text-2xl">${b.icon}</span>
-          <h4 class="font-bold text-xs mt-1">${b.title}</h4>
-          <p class="text-[10px] text-slate-400 mt-0.5">${b.desc}</p>
-        </div>
-      `).join('');
+    async function runLensProAnalysis() {
+      const scanLine = document.getElementById('lensProScanLine');
+      scanLine.classList.remove('hidden');
+      scanLine.classList.add('scanner-line');
+
+      const canvas = document.getElementById('lensProCanvas');
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      console.log(`[LensPro Client] Image captured. DataURL length: ${dataUrl.length} chars (~${Math.round(dataUrl.length * 0.75 / 1024)} KB)`);
+
+      // Pre-flight: check server config to know scanner state before sending image
+      try {
+        const configRes = await fetch(`${API_BASE}/config`);
+        if (configRes.ok) {
+          const cfg = await configRes.json();
+          console.log(`[LensPro Client] Server config → scanner_enabled: ${cfg.scanner_enabled}, gemini_key_hint: "${cfg.gemini_key_hint}"`);
+          if (!cfg.scanner_enabled) {
+            console.error('[LensPro Client] ❌ scanner_enabled=false — GEMINI_API_KEY is not loaded on server. Key hint:', cfg.gemini_key_hint);
+            processScanResult({
+              scanner_unavailable: true,
+              message: `Gemini API key not active on server (key hint: ${cfg.gemini_key_hint}). Please verify the GEMINI_API_KEY env var on Render.`
+            });
+            return;
+          }
+        }
+      } catch (cfgErr) {
+        console.warn('[LensPro Client] Could not fetch /api/config (non-fatal):', cfgErr.message);
+      }
+
+      try {
+        console.log('[LensPro Client] Sending POST to /api/scan...');
+        const res = await fetch(`${API_BASE}/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl })
+        });
+
+        console.log(`[LensPro Client] API response status: ${res.status}`);
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error(`[LensPro Client] API returned error ${res.status}:`, errBody);
+          processScanResult({ scanner_unavailable: true, message: `Server error ${res.status} — ${errBody.substring(0, 100)}` });
+          return;
+        }
+        const data = await res.json();
+        console.log('[LensPro Client] API response body:', JSON.stringify(data));
+
+        if (data.scanner_unavailable) {
+          console.warn('[LensPro Client] ⚠️ Scanner unavailable — API key not configured.');
+          processScanResult({ scanner_unavailable: true, message: data.message });
+        } else {
+          console.log(`[LensPro Client] ✅ GEMINI RESULT: is_food=${data.is_food}, match="${data.match}", confidence=${data.confidence}, identified_as="${data.identified_as}"`);
+          processScanResult(data);
+        }
+      } catch (err) {
+        console.error('[LensPro Client] ❌ FETCH FAILED (network error):', err.message);
+        processScanResult({ scanner_unavailable: true, message: 'Network error — check your connection and try again.' });
+      }
     }
 
-    // Community Groups
-    function renderGroups() {
-      const groups = [
-        { name: 'Indian Fitness Warriors', members: '1.2k', desc: 'High Protein & Weight Loss Goals' },
-        { name: 'Hyderabad Runners Squad', members: '840', desc: 'Morning Cardio & 10k Daily Steps' },
-        { name: 'Mumbai Gym Rats', members: '2.1k', desc: 'Heavy Compound Lifting & Recomp' }
-      ];
-      document.getElementById('groupsGrid').innerHTML = groups.map(g => `
-        <div class="glass rounded-2xl p-4 flex flex-col justify-between">
-          <div>
-            <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">Active Squad</span>
-            <h4 class="font-bold text-base mt-2">${g.name}</h4>
-            <p class="text-xs text-slate-400 mt-1">${g.desc}</p>
-          </div>
-          <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
-            <span class="text-xs text-slate-400 font-medium">👥 ${g.members} members</span>
-            <button onclick="showToast('Joined ${g.name}!')" class="rounded-xl bg-emerald-500 px-3 py-1.5 text-xs font-bold text-slate-950 neon">Join</button>
-          </div>
-        </div>
-      `).join('');
+    function processScanResult(result) {
+      const scanLine = document.getElementById('lensProScanLine');
+      scanLine.classList.add('hidden');
+      scanLine.classList.remove('scanner-line');
 
-      const leaderboard = [
-        { rank: '🥇', name: 'Rahul Sharma', streak: '14 Days', water: '3000ml', score: '980' },
-        { rank: '🥈', name: 'Priya Patel', streak: '10 Days', water: '2500ml', score: '920' },
-        { rank: '🥉', name: 'Ananya Roy', streak: '8 Days', water: '2250ml', score: '870' }
-      ];
-      document.getElementById('leaderboardBody').innerHTML = leaderboard.map(row => `
-        <tr>
-          <td class="py-3 px-2 font-bold text-sm">${row.rank}</td>
-          <td class="py-3 px-2 font-bold text-slate-200">${row.name}</td>
-          <td class="py-3 px-2 text-slate-400">${row.streak}</td>
-          <td class="py-3 px-2 text-slate-400">${row.water}</td>
-          <td class="py-3 px-2 font-bold text-emerald-400">${row.score}</td>
-        </tr>
-      `).join('');
+      const validPanel = document.getElementById('lensProResultValid');
+      const invalidPanel = document.getElementById('lensProResultInvalid');
+
+      // Scanner unavailable (no API key, network error)
+      if (result && result.scanner_unavailable) {
+        document.getElementById('lensProInvalidIcon').textContent = '🔌';
+        document.getElementById('lensProInvalidTitle').textContent = 'Scanner Unavailable';
+        document.getElementById('lensProInvalidTitle').className = 'text-xl font-bold text-amber-400';
+        document.getElementById('lensProInvalidMessage').textContent = result.message || 'The AI scanner is temporarily unavailable. Use the manual search to log your food.';
+        document.getElementById('lensProInvalidSearchBtn').textContent = '🔍 Search manually';
+        validPanel.classList.add('hidden');
+        invalidPanel.classList.remove('hidden');
+        document.getElementById('lensProAnalysis').classList.remove('hidden');
+        return;
+      }
+
+      // Not food
+      if (!result || !result.is_food) {
+        const msg = result && result.rejection_message
+          ? result.rejection_message
+          : 'We couldn\'t recognize any food item in this photo. Try capturing your meal directly on a plate or bowl.';
+        document.getElementById('lensProInvalidIcon').textContent = '⚠️';
+        document.getElementById('lensProInvalidTitle').textContent = 'No Food Detected';
+        document.getElementById('lensProInvalidTitle').className = 'text-xl font-bold text-red-400';
+        document.getElementById('lensProInvalidMessage').textContent = msg;
+        document.getElementById('lensProInvalidSearchBtn').textContent = 'Search manually';
+        validPanel.classList.add('hidden');
+        invalidPanel.classList.remove('hidden');
+        document.getElementById('lensProAnalysis').classList.remove('hidden');
+        return;
+      }
+
+      validPanel.classList.remove('hidden');
+      invalidPanel.classList.add('hidden');
+
+      // --- CalAI-style: always trust AI identified name + estimated macros ---
+      // Step 1: Determine display name — prefer specific identified_as over match
+      let foodName = '';
+      if (result.identified_as && result.identified_as.trim()) {
+        // Use the AI's free-form identification (most specific)
+        foodName = result.identified_as.trim()
+          .split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      } else if (result.match && result.match.trim()) {
+        foodName = result.match.trim();
+      } else {
+        foodName = 'Scanned Food';
+      }
+
+      // Step 2: Build foodData — prefer AI estimated_macros over database lookup
+      let foodData;
+      const macros = result.estimated_macros;
+      if (macros && (macros.cal > 0 || macros.protein > 0 || macros.carbs > 0 || macros.fat > 0)) {
+        // AI returned real macro estimates — use them directly (CalAI approach)
+        foodData = {
+          category: 'AI Scanned',
+          cal: parseInt(macros.cal, 10) || 0,
+          protein: parseFloat(macros.protein) || 0,
+          carbs: parseFloat(macros.carbs) || 0,
+          fat: parseFloat(macros.fat) || 0,
+          unit: macros.unit || 'g',
+          per: parseInt(macros.per, 10) || 100
+        };
+      } else if (result.match && foodDatabase[result.match]) {
+        // Fall back to database match only if AI gave no macros
+        foodData = foodDatabase[result.match];
+        foodName = result.match;
+      } else {
+        // Last resort: zero macros with user ability to edit
+        foodData = { category: 'AI Scanned', cal: 0, protein: 0, carbs: 0, fat: 0, unit: 'g', per: 100 };
+      }
+
+      // Register in foodDatabase so serving size changes work correctly
+      foodDatabase[foodName] = foodData;
+
+      lensProSelectedFood = { name: foodName, data: foodData };
+      lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : (foodData.unit || 'g');
+
+      document.getElementById('lensProFoodName').textContent = foodName;
+
+      // Show what the AI actually identified
+      const identifiedAs = result.identified_as || '';
+      const identEl = document.getElementById('lensProIdentifiedAs');
+      identEl.textContent = identifiedAs && identifiedAs.toLowerCase() !== foodName.toLowerCase()
+        ? `AI identified: "${identifiedAs}"` : '';
+
+      const confidence = result.food_confidence || result.confidence || 88;
+      document.getElementById('lensProConfidence').textContent = confidence + '%';
+
+      const lowWarning = document.getElementById('lensProLowConfidenceWarning');
+      if (confidence < 85) {
+        lowWarning.classList.remove('hidden');
+      } else {
+        lowWarning.classList.add('hidden');
+      }
+
+      document.getElementById('lensProServingAmount').value = foodData.per;
+
+      // Build alternatives from same category
+      const sameCategory = Object.entries(foodDatabase)
+        .filter(([name, f]) => f.category === foodData.category && name !== foodName)
+        .map(([name]) => name)
+        .slice(0, 4);
+
+      document.getElementById('lensProAlternatives').innerHTML = sameCategory.map(altName => `
+        <button onclick="selectAlternativeLensPro('${escapeName(altName)}')" class="px-2.5 py-1 text-xs rounded-lg border border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-500/40 hover:text-emerald-300 transition">
+          ${altName}
+        </button>`).join('') || '<span class="text-xs text-slate-500">No alternatives found</span>';
+
+      renderLensProServingButtons();
+      updateLensProPreview();
+
+      document.getElementById('lensProAnalysis').classList.remove('hidden');
     }
 
-    // Food Database Filtering & Adding
-    function filterFoodDatabase() {
-      const q = (document.getElementById('foodSearchInput')?.value || '').toLowerCase();
-      const filtered = baseFoods.filter(f => f[0].toLowerCase().includes(q));
-      const container = document.getElementById('foodGrid');
-      if (!container) return;
-      container.innerHTML = filtered.map(f => `
-        <div class="glass rounded-2xl p-4 flex items-center justify-between">
-          <div>
-            <h4 class="font-bold text-sm text-slate-200">${f[0]}</h4>
-            <p class="text-xs text-slate-400 mt-0.5">${f[2]} cal • ${f[3]}g P • ${f[4]}g C • ${f[5]}g F</p>
-          </div>
-          <button onclick="quickAddFood('${f[0]}', ${f[2]}, ${f[3]}, ${f[4]}, ${f[5]})" class="w-8 h-8 rounded-xl bg-emerald-500 text-slate-950 font-black flex items-center justify-center hover:bg-emerald-400 shadow-md">+</button>
-        </div>
-      `).join('');
+
+    function selectAlternativeLensPro(foodName) {
+      const foodData = foodDatabase[foodName];
+      if (!foodData) return;
+      
+      lensProSelectedFood = { name: foodName, data: foodData };
+      lensProServingType = foodData.unit === 'scoop' || foodData.unit === 'bottle' ? 'piece' : foodData.unit;
+      
+      document.getElementById('lensProFoodName').textContent = foodName;
+      document.getElementById('lensProServingAmount').value = foodData.per;
+      
+      renderLensProServingButtons();
+      updateLensProPreview();
     }
 
-    function quickAddFood(name, cal, protein, carbs, fat) {
-      todayLog.push({ name, cal, protein, carbs, fat, amount: 100, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
-      saveLogState();
-      showToast(`Added ${name}!`);
+    function adjustLensProServing(delta) {
+      const input = document.getElementById('lensProServingAmount');
+      const current = parseFloat(input.value) || 0;
+      const next = Math.max(0, current + delta);
+      input.value = next;
+      updateLensProPreview();
     }
 
-    // AI Lens Scanner
-    function openLensPro() { document.getElementById('lensProModal').classList.remove('hidden'); document.getElementById('lensProModal').classList.add('flex'); }
-    function closeLensPro() { document.getElementById('lensProModal').classList.add('hidden'); document.getElementById('lensProModal').classList.remove('flex'); }
-    function confirmLensProScan() {
-      quickAddFood('Paneer Tikka Grill', 240, 18.0, 6.7, 14.0);
+    function renderLensProServingButtons() {
+      document.getElementById('lensProServingButtons').innerHTML = ['g','oz','cup','piece'].map(u => `
+        <button onclick="setLensProServingType('${u}')" class="lens-pro-serving-btn rounded-xl border border-slate-700 px-3 py-2 text-sm ${u === lensProServingType ? 'serving-active' : ''}">
+          ${u}
+        </button>`).join('');
+    }
+
+    function setLensProServingType(type) {
+      lensProServingType = type;
+      renderLensProServingButtons();
+      updateLensProPreview();
+    }
+
+    function updateLensProPreview() {
+      if (!lensProSelectedFood) return;
+      const amount = +document.getElementById('lensProServingAmount').value || 0;
+      const factor = (amount * conversions[lensProServingType]) / (lensProSelectedFood.data.per * (conversions[lensProSelectedFood.data.unit] || 1));
+      
+      document.getElementById('lensProPreviewCals').textContent = Math.round(lensProSelectedFood.data.cal * factor);
+      document.getElementById('lensProPreviewProtein').textContent = (lensProSelectedFood.data.protein * factor).toFixed(1) + 'g';
+      document.getElementById('lensProPreviewCarbs').textContent = (lensProSelectedFood.data.carbs * factor).toFixed(1) + 'g';
+      document.getElementById('lensProPreviewFats').textContent = (lensProSelectedFood.data.fat * factor).toFixed(1) + 'g';
+    }
+
+    function retryLensPro() {
+      document.getElementById('lensProAnalysis').classList.add('hidden');
+      document.getElementById('lensProCanvas').classList.add('hidden');
+      document.getElementById('lensProControls').classList.remove('hidden');
+      document.getElementById('lensProFileInput').value = '';
+      openLensPro();
+    }
+
+    function confirmLensProAdd() {
+      const amount = +document.getElementById('lensProServingAmount').value;
+      if (!amount || !lensProSelectedFood) return;
+      
+      const factor = (amount * conversions[lensProServingType]) / (lensProSelectedFood.data.per * (conversions[lensProSelectedFood.data.unit] || 1));
+      
+      todayLog.push({
+        name: lensProSelectedFood.name + ' (LensPro)',
+        amount,
+        unit: lensProServingType,
+        cal: Math.round(lensProSelectedFood.data.cal * factor),
+        protein: lensProSelectedFood.data.protein * factor,
+        carbs: lensProSelectedFood.data.carbs * factor,
+        fat: lensProSelectedFood.data.fat * factor,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      
+      saveLocalState();
       closeLensPro();
+      renderFoodLog();
+      updateDashboard();
     }
 
-    // Export User Data
-    function exportUserData() {
-      const data = { profile: userProfile, history: todayLog, weights: weightHistory, water: waterIntake };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'fittrack_export.json'; a.click();
-      showToast('Exported user data!');
+    // --- Authentication & Session Helper Functions ---
+
+    const mockAccounts = [
+      { id: 'google-1011', name: 'Tony Stark', email: 'tony@starkindustries.com', phone: '+1 (212) 555-0143', color: 'rose', picture: '' },
+      { id: 'google-1012', name: 'Bruce Banner', email: 'banner@avengers.org', phone: '+1 (415) 555-0182', color: 'emerald', picture: '' },
+      { id: 'google-1013', name: 'Selina Kyle', email: 'selina@gotham.city', phone: '+1 (609) 555-0199', color: 'purple', picture: '' }
+    ];
+
+    function decodeJwt(token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch(e) {
+        return null;
+      }
     }
 
-    function signOut() { localStorage.clear(); window.location.reload(); }
+    function switchLoginTab(tab) {
+      const panelSignIn = document.getElementById('panelSignIn');
+      const panelSignUp = document.getElementById('panelSignUp');
+      const tabBtnSignIn = document.getElementById('tabBtnSignIn');
+      const tabBtnSignUp = document.getElementById('tabBtnSignUp');
+      
+      if (!panelSignIn || !panelSignUp || !tabBtnSignIn || !tabBtnSignUp) return;
+      
+      if (tab === 'signin') {
+        panelSignIn.classList.remove('hidden');
+        panelSignUp.classList.add('hidden');
+        tabBtnSignIn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 bg-emerald-500 text-slate-950 neon";
+        tabBtnSignUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-300";
+      } else {
+        panelSignIn.classList.add('hidden');
+        panelSignUp.classList.remove('hidden');
+        tabBtnSignIn.className = "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-300";
+        tabBtnSignUp.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-300 bg-emerald-500 text-slate-950 neon";
+      }
+    }
 
-    // Init Theme on boot
-    const savedTheme = localStorage.getItem(store.theme) || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+    let googleAuthInitialized = false;
+    async function initGoogleAuth() {
+      if (googleAuthInitialized) return;
+      let isRealGoogle = false;
+      try {
+        const res = await fetch(`${API_BASE.replace('/api', '')}/api/config`);
+        if (!res.ok) throw new Error('Config load failed');
+        const config = await res.json();
+        
+        if (config.googleClientId && config.googleClientId !== 'YOUR_GOOGLE_CLIENT_ID') {
+          // Real Google OAuth is configured
+          if (typeof google !== 'undefined' && google.accounts) {
+            google.accounts.id.initialize({
+              client_id: config.googleClientId,
+              callback: handleGoogleLogin
+            });
+            
+            const signInBtn = document.getElementById('googleSignInBtn');
+            const signUpBtn = document.getElementById('googleSignUpBtn');
+            if (signInBtn) signInBtn.style.display = '';
+            if (signUpBtn) signUpBtn.style.display = '';
+            
+            // Render Sign In button
+            google.accounts.id.renderButton(
+              signInBtn,
+              { theme: 'outline', size: 'large', width: 280, text: 'signin_with' }
+            );
+            
+            // Render Sign Up button
+            google.accounts.id.renderButton(
+              signUpBtn,
+              { theme: 'outline', size: 'large', width: 280, text: 'signup_with' }
+            );
+            
+            // Hide the fallback simulated buttons
+            const simBtn = document.getElementById('googleSimBtn');
+            if (simBtn) {
+              simBtn.classList.add('hidden');
+              simBtn.classList.remove('flex');
+            }
+            const simSignUpBtn = document.getElementById('googleSimSignUpBtn');
+            if (simSignUpBtn) {
+              simSignUpBtn.classList.add('hidden');
+              simSignUpBtn.classList.remove('flex');
+            }
+            const simInfo = document.getElementById('googleSimInfo');
+            if (simInfo) simInfo.classList.add('hidden');
+            
+            isRealGoogle = true;
+            googleAuthInitialized = true;
+          }
+        }
+      } catch (err) {
+        console.warn('Google Auth config not available:', err.message);
+      }
+      
+      if (!isRealGoogle) {
+        // No real Google — show the fallback/demo buttons
+        const signInBtn = document.getElementById('googleSignInBtn');
+        const signUpBtn = document.getElementById('googleSignUpBtn');
+        if (signInBtn) signInBtn.style.display = 'none';
+        if (signUpBtn) signUpBtn.style.display = 'none';
+        
+        const simBtn = document.getElementById('googleSimBtn');
+        if (simBtn) {
+          simBtn.classList.remove('hidden');
+          simBtn.classList.add('flex');
+        }
+        const simSignUpBtn = document.getElementById('googleSimSignUpBtn');
+        if (simSignUpBtn) {
+          simSignUpBtn.classList.remove('hidden');
+          simSignUpBtn.classList.add('flex');
+        }
+        
+        const simInfo = document.getElementById('googleSimInfo');
+        if (simInfo) simInfo.classList.remove('hidden');
+      }
+    }
 
-    // Auto launch if profile exists
-    if (userProfile && currentUser) {
+    function handleGoogleLogin(response) {
+      const payload = decodeJwt(response.credential);
+      if (!payload) return;
+      
+      const user = {
+        id: 'google-' + payload.sub,
+        name: payload.name,
+        email: payload.email,
+        picture: payload.picture,
+        phone: localStorage.getItem('fittrack_phone') || '',
+        color: 'emerald'
+      };
+      
+      loginUser(user);
+    }
+
+    function openGoogleSimModal() {
+      document.getElementById('googleSimModal').classList.remove('hidden');
+      document.getElementById('googleSimModal').classList.add('flex');
+    }
+    
+    function closeGoogleSimModal() {
+      document.getElementById('googleSimModal').classList.add('hidden');
+      document.getElementById('googleSimModal').classList.remove('flex');
+    }
+
+    function renderSimulatedAccounts() {
+      const list = document.getElementById('simulatedAccountsList');
+      if (!list) return;
+      list.innerHTML = mockAccounts.map(acc => `
+        <button onclick="loginWithSimulatedAccount('${acc.id}')" class="w-full flex items-center gap-3 rounded-xl p-3 text-left account-row transition">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-slate-100 bg-${acc.color === 'rose' ? 'red' : acc.color === 'emerald' ? 'emerald' : acc.color === 'purple' ? 'purple' : 'slate'}-500 flex-shrink-0">
+            ${acc.name.charAt(0)}
+          </div>
+          <div class="flex-grow min-w-0">
+            <p class="font-bold text-sm text-slate-200">${acc.name}</p>
+            <p class="text-xs text-slate-400 truncate">${acc.email}</p>
+          </div>
+          <span class="text-xs text-emerald-400 font-semibold flex-shrink-0">Sign In</span>
+        </button>
+      `).join('');
+    }
+
+    function loginWithSimulatedAccount(id) {
+      const acc = mockAccounts.find(x => x.id === id);
+      if (!acc) return;
+      loginUser({ ...acc });
+      closeGoogleSimModal();
+    }
+
+    function handleCustomSimLogin(event) {
+      event.preventDefault();
+      const name = document.getElementById('simName').value;
+      const email = document.getElementById('simEmail').value;
+      const phone = document.getElementById('simPhone').value;
+      const color = document.getElementById('simColor').value;
+      
+      const user = {
+        id: 'mock-' + Date.now(),
+        name,
+        email,
+        phone,
+        color,
+        picture: ''
+      };
+      
+      loginUser(user);
+      closeGoogleSimModal();
+    }
+
+    function handleCredentialsLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const namePart = email.split('@')[0];
+      const name = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      
+      const user = {
+        id: 'user-' + btoa(email).substring(0, 12),
+        name,
+        email,
+        phone: '',
+        color: 'emerald',
+        picture: ''
+      };
+      
+      loginUser(user);
+    }
+
+    function handleSignUpCredentials(event) {
+      event.preventDefault();
+      const email = document.getElementById('signUpEmail').value;
+      const namePart = email.split('@')[0];
+      const name = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+      
+      const user = {
+        id: 'user-' + btoa(email).substring(0, 12),
+        name,
+        email,
+        phone: '',
+        color: 'emerald',
+        picture: ''
+      };
+      
+      loginUser(user);
+    }
+
+    function guestLogin() {
+      const user = {
+        id: 'guest-' + Math.random().toString(36).substring(2, 11),
+        name: 'Guest User',
+        email: 'guest@domain.com',
+        phone: '',
+        color: 'blue',
+        picture: ''
+      };
+      loginUser(user);
+    }
+
+    function loginUser(user) {
+      localStorage.setItem(store.user, JSON.stringify(user));
+      currentUser = user;
+      USER_ID = user.id;
+      
       document.getElementById('loginPage').classList.add('hidden');
-      initApp();
+      
+      // Load user profile from DB/localStorage if it exists
+      const localProfile = localStorage.getItem(store.profile);
+      if (localProfile) {
+        userProfile = JSON.parse(localProfile);
+      }
+      
+      loadDayFromDatabase().finally(() => {
+        if (userProfile) {
+          updateHeaderProfileWidget(currentUser);
+          fetchHistory(); // Fetch calendar data on login
+          initApp();
+        } else {
+          document.getElementById('onboarding').classList.remove('hidden');
+        }
+      });
     }
+
+    function updateHeaderProfileWidget(user) {
+      const avatarContainer = document.getElementById('headerUserAvatar');
+      if (!avatarContainer) return;
+      if (user.picture) {
+        avatarContainer.innerHTML = `<img src="${user.picture}" class="w-full h-full object-cover" alt="${user.name}" referrerPolicy="no-referrer" />`;
+        avatarContainer.className = "w-10 h-10 rounded-full border border-slate-600 overflow-hidden bg-slate-800 flex-shrink-0 flex items-center justify-center";
+      } else {
+        const initial = (user.name || user.email || 'U').charAt(0).toUpperCase();
+        const colors = {
+          emerald: 'bg-emerald-500 border-emerald-400/40',
+          blue: 'bg-blue-500 border-blue-400/40',
+          purple: 'bg-purple-500 border-purple-400/40',
+          rose: 'bg-red-500 border-red-400/40',
+          amber: 'bg-amber-500 border-amber-400/40'
+        };
+        const bgClass = colors[user.color] || 'bg-slate-700 border-slate-600';
+        avatarContainer.innerHTML = `<span>${initial}</span>`;
+        avatarContainer.className = `w-10 h-10 rounded-full border flex items-center justify-center font-bold text-slate-100 overflow-hidden flex-shrink-0 ${bgClass}`;
+      }
+      document.getElementById('headerUserName').textContent = user.name || 'User';
+      document.getElementById('headerUserEmail').textContent = user.email || '';
+    }
+
+    function savePhone() {
+      const phoneInput = document.getElementById('profilePhone');
+      if (!phoneInput) return;
+      const phone = phoneInput.value;
+      if (currentUser) {
+        currentUser.phone = phone;
+        localStorage.setItem(store.user, JSON.stringify(currentUser));
+        localStorage.setItem('fittrack_phone', phone);
+      }
+      if (userProfile) {
+        userProfile.phone = phone;
+        saveLocalState();
+        saveDailyToDatabase();
+      }
+    }
+
+    function signOut() {
+      if (!confirm('Are you sure you want to sign out?')) return;
+      localStorage.removeItem(store.user);
+      localStorage.removeItem(store.profile);
+      localStorage.removeItem(store.logDate);
+      localStorage.removeItem(store.log);
+      localStorage.removeItem(store.waterDate);
+      localStorage.removeItem(store.water);
+      localStorage.removeItem(store.weekly);
+      location.reload();
+    }
+
+    function checkSessionAndStartup() {
+      document.getElementById('servingAmount').addEventListener('input', updatePreview);
+      document.getElementById('lensProServingAmount').addEventListener('input', updateLensProPreview);
+      renderGoals();
+      
+      initGoogleAuth();
+      
+      currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
+      if (currentUser) {
+        USER_ID = currentUser.id;
+        document.getElementById('loginPage').classList.add('hidden');
+        userProfile = JSON.parse(localStorage.getItem(store.profile)) || null;
+        if (userProfile) {
+          updateHeaderProfileWidget(currentUser);
+          loadDayFromDatabase().finally(() => {
+            fetchHistory(); // Fetch calendar data on start
+            initApp();
+          });
+        } else {
+          document.getElementById('onboarding').classList.remove('hidden');
+        }
+      } else {
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('onboarding').classList.add('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+        renderSimulatedAccounts();
+      }
+    }
+    
+    window.addEventListener('DOMContentLoaded', checkSessionAndStartup);
   </script>
 </body>
 </html>
