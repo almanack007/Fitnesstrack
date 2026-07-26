@@ -256,3 +256,60 @@ IMPORTANT: Output NOTHING except the raw JSON. DO NOT output your reasoning or t
     res.status(500).json({ error: 'AI visual scanning failed', detail: error.message });
   }
 };
+
+exports.chatCoach = async (req, res) => {
+  if (!geminiEnabled) {
+    return res.json({ error: 'Gemini API key not configured on server.', assistant_unavailable: true });
+  }
+  const { messages = [], context = {} } = req.body;
+  
+  const systemPrompt = `You are the AI Fitness Coach for FitTrack, a premium Indian consumer fitness application.
+Your goal is to provide highly contextual, encouraging, and accurate nutrition, hydration, and exercise advice.
+Understand Indian diet items (e.g. Roti, Paneer, Dal, Chicken Tikka, Idli, Dosa) and portions.
+Current User Context:
+- Active Screen/Tab: ${context.activeTab || 'Home'}
+- Profile: ${context.userProfile ? JSON.stringify(context.userProfile) : 'None'}
+- Today's Meals logged: ${context.todayLog ? JSON.stringify(context.todayLog) : '[]'}
+- Today's Water: ${context.waterIntake || 0} mL
+- Today's Totals: ${context.totals ? JSON.stringify(context.totals) : '{}'}
+- Today's Burned Calories: ${context.burnedCal || 0} kcal
+
+Current message history:
+${messages.map(m => `${m.role === 'user' ? 'User' : 'Coach'}: ${m.content}`).join('\n')}
+
+Respond naturally like a real friendly personal trainer. Keep answers relatively concise, structured, and easy to read.`;
+
+  const requestBody = {
+    contents: [
+      {
+        parts: [
+          { text: systemPrompt }
+        ]
+      }
+    ],
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 600
+    }
+  };
+
+  try {
+    const geminiRes = await fetch(GEMINI_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      return res.status(502).json({ error: 'Gemini API failed', detail: errText });
+    }
+
+    const json = await geminiRes.json();
+    const reply = json?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';
+    res.json({ reply });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to connect to AI server', detail: err.message });
+  }
+};
+

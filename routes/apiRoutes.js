@@ -14,6 +14,7 @@ router.get('/config', systemController.getConfig);
 // Gemini AI endpoints
 router.get('/test-gemini', scanController.testGemini);
 router.post('/scan', scanController.scanFood);
+router.post('/coach/chat', scanController.chatCoach);
 
 // Daily Logs (Requires DB)
 router.get('/daily/:userId/:date', db.requireDb, logController.getDailyLog);
