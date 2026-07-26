@@ -155,6 +155,42 @@
       background: rgba(16, 185, 129, 0.15);
       color: #10b981;
     }
+    
+    /* QA Contrast Overrides for Light Theme */
+    body.theme-light .food-tab {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #475569 !important;
+    }
+    body.theme-light .food-tab:hover {
+      border-color: #10b981 !important;
+      color: #10b981 !important;
+    }
+    body.theme-light .tab-active {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: #10b981 !important;
+      color: #047857 !important;
+    }
+    body.theme-light .flex-shrink-0.w-16.h-20 {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #475569 !important;
+    }
+    body.theme-light .flex-shrink-0.w-16.h-20:hover {
+      border-color: #10b981 !important;
+      background: #e2e8f0 !important;
+    }
+    body.theme-light .flex-shrink-0.w-16.h-20.selected-date {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: #10b981 !important;
+      color: #047857 !important;
+    }
+    body.theme-light .nav-item {
+      color: #64748b !important;
+    }
+    body.theme-light .nav-item.text-emerald-400 {
+      color: #10b981 !important;
+    }
     /* Dynamic Water Bottle UI */
     .water-bottle-wrapper {
       display: flex;
@@ -229,6 +265,7 @@
       animation: scanAnimation 2.5s ease-in-out infinite;
     }
   </style>
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="text-slate-100">
   <!-- Login Page -->
@@ -488,31 +525,31 @@
 
     <!-- Floating Navigation Dock (Universal) -->
     <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[500px] glass rounded-2xl border border-slate-800/80 flex justify-around py-3 px-4 z-40 shadow-[0_10px_35px_rgba(0,0,0,0.6)]">
-      <button id="navHome" onclick="switchTab('home')" class="flex flex-col items-center gap-1 text-emerald-400 nav-item">
-        <span class="text-lg">🏠</span>
-        <span class="text-[9px] font-bold">Home</span>
+      <button id="navHome" onclick="switchTab('home')" class="flex flex-col items-center gap-1.5 text-emerald-400 nav-item">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span class="text-[9px] font-bold" data-i18n="nav_home">Home</span>
       </button>
-      <button id="navProgress" onclick="switchTab('progress')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
-        <span class="text-lg">📈</span>
-        <span class="text-[9px] font-bold">Progress</span>
+      <button id="navProgress" onclick="switchTab('progress')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-200 nav-item">
+        <i data-lucide="trending-up" class="w-5 h-5"></i>
+        <span class="text-[9px] font-bold" data-i18n="nav_progress">Progress</span>
       </button>
-      <button id="navAddFood" onclick="switchTab('addfood')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
-        <span class="text-lg">📸</span>
-        <span class="text-[9px] font-bold">Add Food</span>
+      <button id="navAddFood" onclick="switchTab('addfood')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-200 nav-item">
+        <i data-lucide="camera" class="w-5 h-5"></i>
+        <span class="text-[9px] font-bold" data-i18n="nav_lens">Add Food</span>
       </button>
-      <button id="navCommunity" onclick="switchTab('community')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
-        <span class="text-lg">👥</span>
-        <span class="text-[9px] font-bold">Community</span>
+      <button id="navCommunity" onclick="switchTab('community')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-200 nav-item">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span class="text-[9px] font-bold" data-i18n="nav_community">Community</span>
       </button>
-      <button id="navProfile" onclick="switchTab('profile')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
-        <span class="text-lg">👤</span>
-        <span class="text-[9px] font-bold">Profile</span>
+      <button id="navProfile" onclick="switchTab('profile')" class="flex flex-col items-center gap-1.5 text-slate-400 hover:text-slate-200 nav-item">
+        <i data-lucide="user" class="w-5 h-5"></i>
+        <span class="text-[9px] font-bold" data-i18n="nav_profile">Profile</span>
       </button>
     </div>
 
     <!-- Floating AI Assistant Orb -->
-    <button onclick="toggleAIChat()" class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-[0_4px_15px_rgba(16,185,129,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-2xl z-40" title="Ask AI Coach">
-      💬
+    <button onclick="toggleAIChat()" class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-[0_4px_15px_rgba(16,185,129,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-white z-40" title="Ask AI Coach">
+      <i data-lucide="message-square" class="w-6 h-6"></i>
     </button>
 
     <!-- AI Chat Panel Overlay -->
@@ -866,7 +903,7 @@
           </div>
 
           <div class="glass rounded-2xl p-5 space-y-4 flex flex-col justify-center items-center text-center py-10">
-            <span class="text-4xl">🔒</span>
+            <i data-lucide="lock" class="w-8 h-8 text-slate-500 mb-2"></i>
             <div class="space-y-1">
               <h3 class="font-bold text-slate-200 text-sm">Leaderboards & Challenges</h3>
               <p class="text-xs text-slate-500 max-w-xs">Compete in daily challenges with active users. Coming in V2!</p>
@@ -950,9 +987,9 @@
               <div>
                 <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1.5">Theme Preference</label>
                 <div class="grid grid-cols-3 gap-2">
-                  <button id="themeBtnLight" onclick="setAppTheme('light')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition">☀️ Light</button>
-                  <button id="themeBtnDark" onclick="setAppTheme('dark')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition">🌙 Dark</button>
-                  <button id="themeBtnSystem" onclick="setAppTheme('system')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition">🖥️ System</button>
+                  <button id="themeBtnLight" onclick="setAppTheme('light')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition"><i data-lucide="sun" class="w-3.5 h-3.5 inline mr-1"></i> Light</button>
+                  <button id="themeBtnDark" onclick="setAppTheme('dark')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition"><i data-lucide="moon" class="w-3.5 h-3.5 inline mr-1"></i> Dark</button>
+                  <button id="themeBtnSystem" onclick="setAppTheme('system')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition"><i data-lucide="monitor" class="w-3.5 h-3.5 inline mr-1"></i> System</button>
                 </div>
               </div>
               <div>
@@ -1247,6 +1284,18 @@
       <div class="mt-4 pt-4 border-t border-slate-800">
         <button onclick="resetWater()" class="text-sm text-red-400 hover:text-red-300 transition">Reset today's water</button>
       </div>
+  </div>
+
+  <!-- Language Switch Confirmation Modal -->
+  <div id="langConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4">
+    <div class="glass rounded-2xl p-5 w-full max-w-sm slide-up my-auto text-left">
+      <h3 class="text-base font-bold text-slate-200 mb-2" data-i18n="change_language">Change Language</h3>
+      <p id="langConfirmMessage" class="text-xs text-slate-400 mb-5">Switch language to हिन्दी?</p>
+      <div class="flex gap-3">
+        <button onclick="closeLangConfirm()" class="flex-1 rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition">Cancel</button>
+        <button id="langConfirmBtn" class="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-2.5 text-xs font-bold transition neon">Switch</button>
+      </div>
+    </div>
   </div>
 
   <!-- Exercise Modal -->
@@ -2027,6 +2076,7 @@
       }).join('');
       html += '</div>';
       container.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
     }
     function removeFood(index) { todayLog.splice(index, 1); saveLocalState(); renderFoodLog(); updateDashboard(); }
     function clearLog() { todayLog = []; saveLocalState(); renderFoodLog(); updateDashboard(); }
@@ -2428,8 +2478,12 @@
     function closeLensPro() {
       stopLensProStream();
       const modal = document.getElementById('lensProModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      // Return to previous active tab
+      switchTab(previousTab);
     }
 
     function switchLensProCamera() {
@@ -3178,17 +3232,34 @@
 
     /* ── Launch Sprint UI & Navigation State ── */
     let activeTab = 'home';
+    let previousTab = 'home';
+    
     function switchTab(tabId) {
+      if (tabId === 'addfood') {
+        // Open LensPro camera overlay directly
+        openLensPro();
+        return;
+      }
+      
+      previousTab = activeTab;
       activeTab = tabId;
+      
+      // Reset scroll position instantly to fix the QA layout alignment issue!
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      
+      // Hide all panels
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      
+      // Show selected panel
       const targetPanel = document.getElementById('panel' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
       if (targetPanel) targetPanel.classList.remove('hidden');
       
-      // Update nav button selection styles
+      // Update nav button selection styles (Lucide classes)
       document.querySelectorAll('.nav-item').forEach(btn => {
         btn.classList.remove('text-emerald-400');
         btn.classList.add('text-slate-400');
       });
+      
       const activeNav = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
       if (activeNav) {
         activeNav.classList.add('text-emerald-400');
@@ -3197,6 +3268,11 @@
       
       // Contextual AI Greeting
       updateAICoachGreeting();
+      
+      // Render Lucide SVGs
+      if (window.lucide) {
+        lucide.createIcons();
+      }
     }
 
     // Retain backwards compatibility for mobile toggles
@@ -3239,12 +3315,59 @@
       `).join('');
     }
 
+    let pendingLanguageCode = null;
+    
     function setAppLanguage(code) {
-      localStorage.setItem('fittrack_language', code);
-      renderLanguages();
       const lang = indianLanguages.find(l => l.code === code);
-      translateUI(code);
-      showToast(`Language set to ${lang.native}`, 'success');
+      if (!lang) return;
+      
+      pendingLanguageCode = code;
+      const msgEl = document.getElementById('langConfirmMessage');
+      if (msgEl) {
+        if (code === 'en') msgEl.textContent = 'Switch language to English?';
+        else if (code === 'hi') msgEl.textContent = 'भाषा बदलकर हिन्दी करें?';
+        else if (code === 'mr') msgEl.textContent = 'भाषा बदलून मराठी करावी?';
+        else if (code === 'gu') msgEl.textContent = 'ભાષા બદલીને ગુજરાતી કરવી?';
+        else if (code === 'pa') msgEl.textContent = 'ਭਾਸ਼ਾ ਬਦਲ ਕੇ ਪੰਜਾਬੀ ਕਰੀਏ?';
+        else if (code === 'bn') msgEl.textContent = 'ভাষা পরিবর্তন করে বাংলা করবেন?';
+        else if (code === 'ta') msgEl.textContent = 'மொழியை தமிழுக்கு மாற்ற வேண்டுமா?';
+        else if (code === 'te') msgEl.textContent = 'భాషను తెలుగులోకి మార్చాలా?';
+        else if (code === 'kn') msgEl.textContent = 'ಭಾಷೆಯನ್ನು ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಬೇಕೇ?';
+        else if (code === 'ml') msgEl.textContent = 'ഭാഷ മലയാളത്തിലേക്ക് മാറ്റണോ?';
+        else if (code === 'ur') msgEl.textContent = 'زبان تبدیل کر کے اردو کریں؟';
+        else msgEl.textContent = `Switch language to ${lang.native}?`;
+      }
+      
+      const confirmBtn = document.getElementById('langConfirmBtn');
+      if (confirmBtn) {
+        confirmBtn.onclick = confirmAppLanguage;
+      }
+      
+      const modal = document.getElementById('langConfirmModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+    
+    function closeLangConfirm() {
+      const modal = document.getElementById('langConfirmModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      pendingLanguageCode = null;
+    }
+    
+    function confirmAppLanguage() {
+      if (pendingLanguageCode) {
+        localStorage.setItem('fittrack_language', pendingLanguageCode);
+        renderLanguages();
+        translateUI(pendingLanguageCode);
+        const lang = indianLanguages.find(l => l.code === pendingLanguageCode);
+        showToast(`Language set to ${lang.native}`, 'success');
+      }
+      closeLangConfirm();
     }
 
     /* ── App Theme Customization ── */
@@ -3698,6 +3821,7 @@
       }
       
       container.innerHTML = totals.exercises.map(ex => {
+        if (window.lucide) setTimeout(() => { lucide.createIcons(); }, 50);
         const originalIndex = todayLog.findIndex(x => x === ex);
         return `
           <div class="flex items-center justify-between gap-3 bg-slate-900/40 border border-slate-800/80 rounded-xl p-2.5 hover:border-purple-500/20 transition-all">
@@ -3737,7 +3861,18 @@
         calendar_history: "Calendar History",
         log_weight: "Log Weight",
         weight_log: "Weight Log",
-        track_food: "Track Food"
+        track_food: "Track Food",
+        nav_home: "Home",
+        nav_progress: "Progress",
+        nav_lens: "Add Food",
+        nav_community: "Community",
+        nav_profile: "Profile",
+        scan_meal: "Scan Meal",
+        add_food: "Add Food",
+        water: "Water",
+        exercise: "Exercise",
+        clear_all: "Clear all",
+        change_language: "Change Language"
       },
       hi: {
         todays_energy: "आज की ऊर्जा",
@@ -3746,7 +3881,7 @@
         fats: "वसा",
         target: "लक्ष्य",
         food: "भोजन",
-        burned: "व्यायाम",
+        burned: "कसरत",
         remaining: "शेष",
         kcal_remaining: "कैलोरी बची है",
         water_intake: "पानी की मात्रा",
@@ -3756,8 +3891,290 @@
         calendar_history: "इतिहास कैलेंडर",
         log_weight: "वजन दर्ज करें",
         weight_log: "वजन लॉग",
-        track_food: "भोजन जोड़ें"
+        track_food: "भोजन जोड़ें",
+        nav_home: "मुख्य पृष्ठ",
+        nav_progress: "प्रगति",
+        nav_lens: "कैमरा",
+        nav_community: "समुदाय",
+        nav_profile: "प्रोफ़ाइल",
+        scan_meal: "स्कैन भोजन",
+        add_food: "भोजन जोड़ें",
+        water: "पानी जोड़ें",
+        exercise: "कसरत जोड़ें",
+        clear_all: "सब साफ करें",
+        change_language: "भाषा बदलें"
       },
+      mr: {
+        todays_energy: "आजची ऊर्जा",
+        protein: "प्रथिने",
+        carbs: "कर्बोदके",
+        fats: "चरबी",
+        target: "ध्येय",
+        food: "अन्न",
+        burned: "व्यायाम",
+        remaining: "उर्वरित",
+        kcal_remaining: "कॅलरी शिल्लक",
+        water_intake: "पाण्याचे प्रमाण",
+        todays_meals: "आजचे जेवण",
+        logged_exercises: "नोंदणीकृत व्यायाम",
+        log_exercise: "व्यायाम जोडा",
+        calendar_history: "इतिहास कॅलेंडर",
+        log_weight: "वजन नोंदवा",
+        weight_log: "वजन लॉग",
+        track_food: "अन्न जोडा",
+        nav_home: "मुख्य पृष्ठ",
+        nav_progress: "प्रगती",
+        nav_lens: "कॅमेरा",
+        nav_community: "समुदाय",
+        nav_profile: "प्रोफाईल",
+        scan_meal: "स्कॅन करा",
+        add_food: "अन्न जोडा",
+        water: "पाणी जोडा",
+        exercise: "व्यायाम जोडा",
+        clear_all: "सर्व साफ करा",
+        change_language: "भाषा बदला"
+      },
+      ta: {
+        todays_energy: "இன்றைய ஆற்றல்",
+        protein: "புரதம்",
+        carbs: "கார்ப்ஸ்",
+        fats: "கொழுப்பு",
+        target: "இலக்கு",
+        food: "உணவு",
+        burned: "பயிற்சி",
+        remaining: "மீதி",
+        kcal_remaining: "கலோரிகள் மீதம்",
+        water_intake: "நீர் உட்கொள்ளல்",
+        todays_meals: "இன்றைய உணவு",
+        logged_exercises: "உடற்பயிற்சிகள்",
+        log_exercise: "உடற்பயிற்சி சேர்",
+        calendar_history: "நாட்காட்டி வரலாறு",
+        log_weight: "எடை பதிவு செய்",
+        weight_log: "எடை வரலாறு",
+        track_food: "உணவு சேர்",
+        nav_home: "முகப்பு",
+        nav_progress: "வளர்ச்சி",
+        nav_lens: "கேமரா",
+        nav_community: "சமூகம்",
+        nav_profile: "சுயவிவரம்",
+        scan_meal: "உணவு ஸ்கேன்",
+        add_food: "உணவு சேர்",
+        water: "தண்ணீர்",
+        exercise: "உடற்பயிற்சி",
+        clear_all: "அழிக்க",
+        change_language: "மொழி மாற்றம்"
+      },
+      te: {
+        todays_energy: "నేటి శక్తి",
+        protein: "ప్రోటీన్",
+        carbs: "కార్బ్స్",
+        fats: "కొవ్వులు",
+        target: "లక్ష్యం",
+        food: "ఆహారం",
+        burned: "వ్యాయామం",
+        remaining: "మిగిలినవి",
+        kcal_remaining: "క్యాలరీలు మిగిలి ఉన్నాయి",
+        water_intake: "నీటి వినియోగం",
+        todays_meals: "నేటి భోజనం",
+        logged_exercises: "వ్యాయామాల లాగ్",
+        log_exercise: "వ్యాయామం జోడించు",
+        calendar_history: "క్యాలెండర్ చరిత్ర",
+        log_weight: "బరువు నమోదు చేయండి",
+        weight_log: "బరువు లాగ్",
+        track_food: "ఆహారం లాగ్ చేయి",
+        nav_home: "హోమ్",
+        nav_progress: "ప్రగతి",
+        nav_lens: "కెమెరా",
+        nav_community: "కమ్యూనిటీ",
+        nav_profile: "ప్రొఫైల్",
+        scan_meal: "స్కాన్ చేయి",
+        add_food: "ఆహారం జోడించు",
+        water: "నీరు",
+        exercise: "వ్యాయామం",
+        clear_all: "అన్నీ తీసివేయి",
+        change_language: "భాష మార్చండి"
+      },
+      kn: {
+        todays_energy: "ಇಂದಿನ ಶಕ್ತಿ",
+        protein: "ಪ್ರೋಟೀನ್",
+        carbs: "ಕಾರ್ಬ್ಸ್",
+        fats: "ಕೊಬ್ಬು",
+        target: "ಗುರಿ",
+        food: "ಆಹಾರ",
+        burned: "ವ್ಯಾಯಾಮ",
+        remaining: "ಉಳಿದಿರುವುದು",
+        kcal_remaining: "ಕ್ಯಾಲೋರಿಗಳು ಬಾಕಿ",
+        water_intake: "ನೀರಿನ ಸೇವನೆ",
+        todays_meals: "ಇಂದಿನ ಊಟ",
+        logged_exercises: "ವ್ಯಾಯಾಮದ ಪಟ್ಟಿ",
+        log_exercise: "ವ್ಯಾಯಾಮ ದಾಖಲಿಸಿ",
+        calendar_history: "ಕ್ಯಾಲೆಂಡರ್ ಇತಿಹಾಸ",
+        log_weight: "ತೂಕ ದಾಖಲಿಸಿ",
+        weight_log: "ತೂಕದ ಪಟ್ಟಿ",
+        track_food: "ಆಹಾರ ದಾಖಲಿಸಿ",
+        nav_home: "ಮುಖಪುಟ",
+        nav_progress: "ಪ್ರಗತಿ",
+        nav_lens: "ಕ್ಯಾಮೆರಾ",
+        nav_community: "ಸಮುದಾಯ",
+        nav_profile: "ಪ್ರೊಫೈಲ್",
+        scan_meal: "ಊಟ ಸ್ಕ್ಯಾನ್",
+        add_food: "ಆಹಾರ ಸೇರಿಸಿ",
+        water: "ನೀರು",
+        exercise: "ವ್ಯಾಯಾಮ",
+        clear_all: "ಎಲ್ಲ ಅಳಿಸಿ",
+        change_language: "ಭಾಷೆ ಬದಲಿಸಿ"
+      },
+      ml: {
+        todays_energy: "ഇന്നത്തെ ഊർജ്ജം",
+        protein: "പ്രോട്ടീൻ",
+        carbs: "കാർബ്സ്",
+        fats: "കൊഴുപ്പ്",
+        target: "ലക്ഷ്യം",
+        food: "ഭക്ഷണം",
+        burned: "വ്യായാമം",
+        remaining: "ബാക്കി",
+        kcal_remaining: "കലോറി ബാക്കിയുണ്ട്",
+        water_intake: "വെള്ളം കുടിക്കുന്നത്",
+        todays_meals: "ഇന്നത്തെ ഭക്ഷണം",
+        logged_exercises: "വ്യായാമങ്ങൾ",
+        log_exercise: "വ്യായാമം ചേർക്കുക",
+        calendar_history: "കലണ്ടർ ചരിത്രം",
+        log_weight: "തൂക്കം രേഖപ്പെടുത്തുക",
+        weight_log: "തൂക്കത്തിന്റെ ബാക്കി",
+        track_food: "ഭക്ഷണം രേഖപ്പെടുത്തുക",
+        nav_home: "ഹോം",
+        nav_progress: "വളർച്ച",
+        nav_lens: "ക്യാമറ",
+        nav_community: "കൂട്ടായ്മ",
+        nav_profile: "പ്രൊഫൈൽ",
+        scan_meal: "സ്കാൻ ചെയ്യുക",
+        add_food: "ഭക്ഷണം ചേർക്കുക",
+        water: "വെള്ളം",
+        exercise: "വ്യായാമം",
+        clear_all: "എല്ലാം മായ്ക്കുക",
+        change_language: "ഭാഷ മാറ്റുക"
+      },
+      bn: {
+        todays_energy: "আজকের শক্তি",
+        protein: "প্রোটিন",
+        carbs: "কার্বস",
+        fats: "ফ্যাট",
+        target: "লক্ষ্য",
+        food: "খাবার",
+        burned: "ব্যায়াম",
+        remaining: "অবশিষ্ট",
+        kcal_remaining: "ক্যালোরি অবশিষ্ট",
+        water_intake: "জল গ্রহণ",
+        todays_meals: "আজকের খাবার",
+        logged_exercises: "ব্যায়াম তালিকা",
+        log_exercise: "ব্যায়াম যোগ করুন",
+        calendar_history: "ক্যালেন্ডার ইতিহাস",
+        log_weight: "ওজন লগ করুন",
+        weight_log: "ওজন তালিকা",
+        track_food: "খাবার যোগ করুন",
+        nav_home: "হোম",
+        nav_progress: "অগ্রগতি",
+        nav_lens: "ক্যামেরা",
+        nav_community: "কমিউনিটি",
+        nav_profile: "প্রোফাইল",
+        scan_meal: "স্ক্যান করুন",
+        add_food: "খাবার যোগ করুন",
+        water: "জল",
+        exercise: "ব্যায়াম",
+        clear_all: "সব মুছুন",
+        change_language: "ভাষা পরিবর্তন"
+      },
+      gu: {
+        todays_energy: "આજની ઉર્જા",
+        protein: "પ્રોટીન",
+        carbs: "કાર્બ્સ",
+        fats: "ચરબી",
+        target: "લક્ષ્ય",
+        food: "ખોરાक",
+        burned: "વ્યાયામ",
+        remaining: "બાકી",
+        kcal_remaining: "કેલરી બાકી છે",
+        water_intake: "પાણીનો વપરાશ",
+        todays_meals: "આજનો ખોરાક",
+        logged_exercises: "વ્યાયામ નોંધ",
+        log_exercise: "વ્યાયામ ઉમેરો",
+        calendar_history: "કેલેન્ડર ઇતિહાસ",
+        log_weight: "વજન નોંધો",
+        weight_log: "વજન યાદી",
+        track_food: "ખોરાક ઉમેરો",
+        nav_home: "હોમ",
+        nav_progress: "પ્રગતિ",
+        nav_lens: "કેમેરા",
+        nav_community: "સમુદાય",
+        nav_profile: "પ્રોફાઇલ",
+        scan_meal: "ખોરાક સ્કેન",
+        add_food: "ખોરાક ઉમેરો",
+        water: "પાણી",
+        exercise: "વ્યાયામ",
+        clear_all: "બધું ભૂંસી નાખો",
+        change_language: "ભાષા બદલો"
+      },
+      pa: {
+        todays_energy: "ਅੱਜ ਦੀ ਊਰਜਾ",
+        protein: "ਪ੍ਰੋਟੀਨ",
+        carbs: "ਕਾਰਬਸ",
+        fats: "ਚਰਬੀ",
+        target: "ਟੀਚਾ",
+        food: "ਭੋਜਨ",
+        burned: "ਕਸਰਤ",
+        remaining: "ਬਾਕੀ",
+        kcal_remaining: "ਕੈਲੋਰੀ ਬਾਕੀ ਹੈ",
+        water_intake: "ਪਾਣੀ ਦੀ ਮਾਤਰਾ",
+        todays_meals: "ਅੱਜ ਦਾ ਭੋਜਨ",
+        logged_exercises: "ਕਸਰਤ ਸੂਚੀ",
+        log_exercise: "ਕਸਰਤ ਦਰਜ ਕਰੋ",
+        calendar_history: "ਕੈਲੰਡਰ ਇਤਿਹਾਸ",
+        log_weight: "ਭਾਰ ਦਰਜ ਕਰੋ",
+        weight_log: "ਭਾਰ ਸੂਚੀ",
+        track_food: "ਭੋਜਨ ਦਰਜ ਕਰੋ",
+        nav_home: "ਹੋਮ",
+        nav_progress: "ਤਰੱਕੀ",
+        nav_lens: "ਕੈਮਰਾ",
+        nav_community: "ਭਾਈਚਾਰਾ",
+        nav_profile: "ਪ੍ਰੋਫਾਈਲ",
+        scan_meal: "ਭੋਜਨ ਸਕੈਨ",
+        add_food: "ਭੋਜਨ ਦਰਜ ਕਰੋ",
+        water: "ਪਾਣੀ",
+        exercise: "ਕਸਰਤ",
+        clear_all: "ਸਭ ਸਾਫ਼ ਕਰੋ",
+        change_language: "ਭਾਸ਼ਾ ਬਦਲੋ"
+      },
+      ur: {
+        todays_energy: "آج کی توانائی",
+        protein: "پروٹین",
+        carbs: "کاربس",
+        fats: "چربی",
+        target: "ہدف",
+        food: "خوراک",
+        burned: "ورزش",
+        remaining: "باقی",
+        kcal_remaining: "کیلوریز باقی ہیں",
+        water_intake: "پانی کی مقدار",
+        todays_meals: "آج کا کھانا",
+        logged_exercises: "ورزش کی فہرست",
+        log_exercise: "ورزش شامل کریں",
+        calendar_history: "کیلنڈر کی تاریخ",
+        log_weight: "وزن درج کریں",
+        weight_log: "وزن کی فہرست",
+        track_food: "کھانا شامل کریں",
+        nav_home: "ہوم",
+        nav_progress: "ترقی",
+        nav_lens: "کیمرہ",
+        nav_community: "کمیونٹی",
+        nav_profile: "پروفائل",
+        scan_meal: "کھانا اسکین",
+        add_food: "کھانا شامل کریں",
+        water: "پانی",
+        exercise: "ورزش",
+        clear_all: "سب صاف کریں",
+        change_language: "زبان تبدیل کریں"
+      }
+    };
       mr: {
         todays_energy: "आजची ऊर्जा",
         protein: "प्रथिने",
