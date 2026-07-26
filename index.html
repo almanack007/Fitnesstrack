@@ -11,137 +11,164 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      color-scheme: dark;
-      --color-bg:#030712; --color-surface-2:rgba(17,24,39,0.72); --color-surface-3:rgba(31,41,55,0.8);
-      --color-border:rgba(148,163,184,0.12); --color-border-hover:rgba(16,185,129,0.28);
-      --color-accent:#10b981; --color-accent-glow:rgba(16,185,129,0.35); --color-accent-dim:rgba(16,185,129,0.12);
-      --color-text-1:#f3f4f6; --color-text-2:#94a3b8; --color-text-3:#475569;
-      --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px;
-      --shadow-card:0 8px 32px rgba(0,0,0,0.4); --shadow-modal:0 24px 60px rgba(0,0,0,0.6);
-      --shadow-neon:0 0 24px rgba(16,185,129,0.35);
-      --ease-spring:cubic-bezier(0.16,1,0.3,1); --ease-smooth:cubic-bezier(0.4,0,0.2,1);
-      --dur-fast:180ms; --dur-base:300ms; --dur-slow:500ms;
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 6%, rgba(16, 185, 129, 0.12), transparent 30rem),
+        radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.1), transparent 28rem),
+        #030712;
+      min-height: 100vh;
+      color: #f3f4f6;
     }
-    *,*::before,*::after{box-sizing:border-box}
-    body{font-family:Inter,system-ui,sans-serif;font-feature-settings:'ss01','cv01';
-      background:radial-gradient(circle at 18% 6%,rgba(16,185,129,.10),transparent 30rem),
-        radial-gradient(circle at 82% 18%,rgba(59,130,246,.08),transparent 28rem),
-        radial-gradient(circle at 50% 90%,rgba(16,185,129,.05),transparent 24rem),
-        var(--color-bg);
-      min-height:100vh;color:var(--color-text-1);-webkit-font-smoothing:antialiased}
-    .glass{background:var(--color-surface-2);border:1px solid var(--color-border);
-      box-shadow:var(--shadow-card);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-      transition:border-color var(--dur-base) var(--ease-smooth),box-shadow var(--dur-base) var(--ease-smooth)}
-    .glass:hover{border-color:var(--color-border-hover)}
-    .neon{box-shadow:var(--shadow-neon)}
-    .slide-up{animation:slideUp var(--dur-slow) var(--ease-spring) both}
-    .fade-in{animation:fadeIn var(--dur-base) var(--ease-smooth) both}
-    @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-    @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
-    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    @keyframes scanAnimation{0%{top:0%}50%{top:100%}100%{top:0%}}
-    @keyframes toastIn{from{opacity:0;transform:translateX(24px) scale(.96)}to{opacity:1;transform:translateX(0) scale(1)}}
-    @keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(24px)}}
-    .skeleton{background:linear-gradient(90deg,rgba(30,40,56,.8) 25%,rgba(50,65,82,.7) 50%,rgba(30,40,56,.8) 75%);
-      background-size:400px 100%;animation:shimmer 1.4s ease-in-out infinite;border-radius:var(--r-md)}
-    .goal-card.selected,.tab-active,.serving-active{border-color:var(--color-accent)!important;
-      background:var(--color-accent-dim)!important;box-shadow:0 0 18px rgba(16,185,129,.22);color:#a7f3d0}
-    .goal-card{transition:transform var(--dur-base) var(--ease-smooth),border-color var(--dur-base) var(--ease-smooth)}
-    .goal-card:hover{transform:translateY(-3px)}
-    .ring{stroke-dasharray:226;stroke-dashoffset:226;transform:rotate(-90deg);transform-origin:50% 50%;
-      transition:stroke-dashoffset .7s var(--ease-spring)}
-    .ring-glow{filter:drop-shadow(0 0 5px var(--ring-glow-color,rgba(16,185,129,.6)))}
-    input:focus,select:focus{outline:none;border-color:rgba(16,185,129,.5)!important;
-      box-shadow:0 0 0 3px rgba(16,185,129,.12)}
-    .thin-scroll::-webkit-scrollbar{width:5px;height:5px}
-    .thin-scroll::-webkit-scrollbar-thumb{background:rgba(75,85,99,.5);border-radius:999px}
-    .thin-scroll::-webkit-scrollbar-track{background:transparent}
-    .avatar-glow{box-shadow:0 0 16px rgba(16,185,129,.45)}
-    .btn-qty{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
-      border-radius:50%;background:var(--color-surface-3);border:1px solid rgba(156,163,175,.2);
-      color:var(--color-text-1);font-weight:700;transition:all var(--dur-fast) var(--ease-spring)}
-    .btn-qty:hover{background:rgba(16,185,129,.22);border-color:var(--color-accent);
-      color:var(--color-accent);transform:scale(1.15)}
-    .btn-qty:active{transform:scale(.92)}
-    .account-row{background:rgba(17,24,39,.6);border:1px solid rgba(148,163,184,.09);
-      transition:all var(--dur-base) var(--ease-smooth)}
-    .account-row:hover{transform:translateY(-2px);border-color:rgba(16,185,129,.35);
-      background:rgba(17,24,39,.85);box-shadow:0 4px 20px rgba(16,185,129,.12)}
-    @media(max-width:767.98px){.hidden-mobile{display:none!important}}
-    .log-row{animation:slideUp .35s var(--ease-spring) both;
-      transition:border-color var(--dur-fast) var(--ease-smooth)}
-    .log-row:hover{border-color:rgba(16,185,129,.18)!important}
-    #calendarContainer button{transition:all var(--dur-base) var(--ease-spring)}
-    #calendarContainer button:hover{transform:translateY(-2px) scale(1.04)}
-    #calendarContainer button:active{transform:scale(.96)}
-    #foodGrid button{transition:transform var(--dur-base) var(--ease-spring),
-      border-color var(--dur-base) var(--ease-smooth)}
-    #foodGrid button:hover{transform:translateY(-3px)}
-    #foodGrid button:active{transform:scale(.97)}
-    #ringGrid>div{transition:transform var(--dur-base) var(--ease-spring)}
-    #ringGrid>div:hover{transform:translateY(-2px)}
-    .fab{position:fixed;bottom:88px;right:20px;z-index:35;width:56px;height:56px;
-      border-radius:50%;background:var(--color-accent);
-      box-shadow:0 4px 20px rgba(16,185,129,.5);
-      display:flex;align-items:center;justify-content:center;
-      color:#030712;font-size:1.5rem;font-weight:700;cursor:pointer;
-      transition:transform var(--dur-fast) var(--ease-spring),box-shadow var(--dur-fast) var(--ease-smooth);
-      animation:float 3s ease-in-out infinite}
-    .fab:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(16,185,129,.65),0 0 0 6px rgba(16,185,129,.15)}
-    .fab:active{transform:scale(.93);animation:none}
-    @media(min-width:768px){.fab{bottom:24px}}
-    #toastContainer{position:fixed;top:16px;right:16px;z-index:9999;
-      display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:300px;width:100%}
-    .toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 16px;
-      border-radius:var(--r-lg);background:rgba(15,23,42,.96);border:1px solid rgba(148,163,184,.15);
-      backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.5);
-      font-size:.8125rem;font-weight:600;animation:toastIn .35s var(--ease-spring) both}
-    .toast.toast-exit{animation:toastOut .3s var(--ease-smooth) forwards}
-    .toast-success{border-color:rgba(16,185,129,.35)}.toast-success .toast-icon{color:var(--color-accent)}
-    .toast-error{border-color:rgba(239,68,68,.35)}.toast-error .toast-icon{color:#ef4444}
-    .toast-info{border-color:rgba(56,189,248,.35)}.toast-info .toast-icon{color:#38bdf8}
-    .toast-icon{font-size:1rem;flex-shrink:0}.toast-msg{flex:1;color:var(--color-text-1)}
-    #syncStatus{display:inline-flex;align-items:center;gap:5px;transition:color .4s ease}
-    #syncStatus::before{content:'';display:inline-block;width:5px;height:5px;border-radius:50%;
-      background:currentColor;opacity:.7;flex-shrink:0}
-    #motivationalSummary{transition:opacity .4s ease;
-      background:rgba(16,185,129,.06)!important;
-      border-left:3px solid rgba(16,185,129,.55)!important;
-      border-radius:0 var(--r-md) var(--r-md) 0;padding:10px 14px!important}
-    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
-      gap:10px;padding:40px 24px;text-align:center}
-    .empty-state-icon{font-size:2.5rem;opacity:.4;animation:float 3s ease-in-out infinite}
-    button{cursor:pointer}
-    #loginPage .glass{box-shadow:var(--shadow-modal)}
-    .water-bottle-wrapper{display:flex;flex-direction:column;align-items:center;
-      transition:all var(--dur-base) var(--ease-smooth);cursor:pointer}
-    .water-bottle-wrapper:hover{transform:translateY(-3px) scale(1.04)}
-    .water-bottle-wrapper:hover .water-bottle-container{border-color:#e2e8f0;
-      box-shadow:0 0 18px rgba(56,189,248,.3)}
-    .water-bottle-cap{width:24px;height:12px;background:#cbd5e1;border-radius:4px 4px 0 0;z-index:10}
-    .water-bottle-container{position:relative;width:56px;height:140px;border:3px solid #cbd5e1;
-      border-radius:12px 12px 8px 8px;overflow:hidden;background:rgba(15,23,42,.4);
-      transition:all var(--dur-base) var(--ease-smooth)}
-    .water-bottle-fill{position:absolute;bottom:0;left:0;right:0;
-      background:linear-gradient(180deg,rgba(186,230,253,.9) 0%,#38bdf8 100%);
-      transition:height .7s var(--ease-spring);z-index:5}
-    .water-bottle-fill::before{content:'';position:absolute;top:-2px;left:0;right:0;height:4px;
-      background:rgba(255,255,255,.25);border-radius:50%}
-    .bottle-groove{position:absolute;left:-2px;right:-2px;height:8px;
-      border-top:2px solid rgba(15,23,42,.25);border-bottom:2px solid rgba(15,23,42,.25);
-      z-index:6;border-radius:50%}
-    .scanner-line{position:absolute;left:0;right:0;height:2px;
-      background:linear-gradient(90deg,transparent,#10b981,transparent);
-      box-shadow:0 0 12px #10b981,0 0 24px rgba(16,185,129,.5);
-      animation:scanAnimation 2.2s ease-in-out infinite}
+    .glass {
+      background: rgba(17, 24, 39, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .glass:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .neon { box-shadow: 0 0 25px rgba(16, 185, 129, 0.35); }
+    .slide-up { animation: slideUp .45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .goal-card.selected, .tab-active, .serving-active {
+      border-color: #10b981 !important;
+      background: rgba(16, 185, 129, 0.12) !important;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+      color: #a7f3d0;
+    }
+    .ring {
+      stroke-dasharray: 226;
+      stroke-dashoffset: 226;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ring-glow {
+      filter: drop-shadow(0 0 4px var(--ring-glow-color, rgba(16, 185, 129, 0.5)));
+    }
+    .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(75, 85, 99, 0.6); border-radius: 999px; }
+    .thin-scroll::-webkit-scrollbar-track { background: transparent; }
+    input, select { outline: none; }
+    .avatar-glow { box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+    .btn-qty {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(31, 41, 55, 0.8);
+      border: 1px solid rgba(156, 163, 175, 0.25);
+      color: #f3f4f6;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: bold;
+    }
+    .btn-qty:hover {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #10b981;
+      transform: scale(1.1);
+    }
+    .account-row {
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      transition: all 0.25s ease;
+    }
+    .account-row:hover {
+      transform: translateY(-2px);
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(17, 24, 39, 0.85);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+    }
+    /* Mobile-first tab layout hidden helper */
+    @media (max-width: 767.98px) {
+      .hidden-mobile {
+        display: none !important;
+      }
+    }
+    /* Dynamic Water Bottle UI */
+    .water-bottle-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .water-bottle-wrapper:hover .water-bottle-container {
+      border-color: #f1f5f9;
+      box-shadow: 0 0 15px rgba(241, 245, 249, 0.2);
+    }
+    .water-bottle-cap {
+      width: 24px;
+      height: 12px;
+      background: #cbd5e1;
+      border-radius: 4px 4px 0 0;
+      z-index: 10;
+    }
+    .water-bottle-container {
+      position: relative;
+      width: 56px;
+      height: 140px;
+      border: 3px solid #cbd5e1;
+      border-radius: 12px 12px 8px 8px;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.4);
+      transition: all 0.3s ease;
+    }
+    .water-bottle-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #f8fafc;
+      transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 5;
+    }
+    .water-bottle-fill::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(15, 23, 42, 0.15);
+      border-radius: 50%;
+    }
+    /* Bottle grooves for aesthetic */
+    .bottle-groove {
+      position: absolute;
+      left: -2px;
+      right: -2px;
+      height: 8px;
+      border-top: 2px solid rgba(15, 23, 42, 0.3);
+      border-bottom: 2px solid rgba(15, 23, 42, 0.3);
+      z-index: 6;
+      border-radius: 50%;
+    }
+    @keyframes scanAnimation {
+      0% { top: 0%; }
+      50% { top: 100%; }
+      100% { top: 0%; }
+    }
+    .scanner-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #10b981, transparent);
+      box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+      animation: scanAnimation 2.5s ease-in-out infinite;
+    }
   </style>
 </head>
 <body class="text-slate-100">
-  <!-- Toast Container -->
-  <div id="toastContainer"></div>
   <!-- Login Page -->
   <section id="loginPage" class="min-h-screen flex items-center justify-center px-4 py-8">
     <div class="w-full max-w-md glass rounded-2xl p-6 sm:p-8 slide-up text-center">
@@ -444,59 +471,176 @@
         
         <!-- Dashboard Left: Stats, Macros, Water -->
         <div class="space-y-6">
-          <!-- Stats Dashboard -->
-          <div class="glass rounded-2xl p-5">
+          <!-- Hero Calorie Dashboard -->
+          <div class="glass rounded-2xl p-5 slide-up">
             <div class="flex items-center justify-between gap-3 mb-3">
-              <h2 class="text-xl font-bold">Dashboard <span id="dashDateLabel" class="text-sm text-slate-400 font-normal ml-2"></span></h2>
-              <span class="text-xs text-slate-400">Targets update from your profile</span>
+              <h2 class="text-xl font-bold flex items-center gap-2">
+                <span>Today's Energy</span>
+                <span id="dashDateLabel" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-normal"></span>
+              </h2>
+              <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Today</span>
             </div>
-            <div id="motivationalSummary" class="text-emerald-400 font-medium text-xs sm:text-sm mb-4 border-l-2 border-emerald-500/50 pl-3 py-1.5 italic bg-emerald-500/5 rounded-r-lg text-left">
+
+            <!-- Dynamic context-aware AI Coach Banner -->
+            <div id="motivationalSummary" class="text-emerald-400 font-medium text-xs sm:text-sm mb-5 border-l-2 border-emerald-500/50 pl-3 py-1.5 italic bg-emerald-500/5 rounded-r-lg text-left">
               Start your engine! Add your first meal to fuel your muscles today. 🚀
             </div>
-            <div class="grid grid-cols-2 gap-4" id="ringGrid"></div>
-            <div class="grid grid-cols-2 gap-3 mt-5 text-center">
-              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">BMI</p><p id="bmiValue" class="text-xl font-bold"></p><p id="bmiCategory" class="text-xs text-slate-500"></p></div>
-              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">BMR</p><p id="bmrValue" class="text-xl font-bold"></p><p class="text-xs text-slate-500">cal/day</p></div>
-              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">TDEE</p><p id="tdeeValue" class="text-xl font-bold"></p><p class="text-xs text-slate-500">cal/day</p></div>
-              <div class="rounded-xl bg-slate-900/55 border border-slate-800 p-3"><p class="text-xs text-slate-400">Protein/kg</p><p id="proteinPerKg" class="text-xl font-bold"></p><p class="text-xs text-slate-500">g/kg</p></div>
+
+            <!-- Hero Ring Display & Calculations -->
+            <div class="flex flex-col sm:flex-row items-center gap-6 py-2">
+              <!-- Central Calorie Ring -->
+              <div class="relative w-36 h-36 flex-shrink-0 mx-auto sm:mx-0">
+                <svg viewBox="0 0 90 90" class="w-full h-full">
+                  <circle cx="45" cy="45" r="38" stroke="#1f2937" stroke-width="6" fill="none"/>
+                  <circle id="calRing" class="ring ring-glow" cx="45" cy="45" r="38" stroke="#10b981" stroke-width="6" stroke-linecap="round" fill="none" style="--ring-glow-color: #10b98180"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span id="remainingCalsText" class="text-2xl font-black tracking-tight text-white">0</span>
+                  <span class="text-[8px] text-slate-400 uppercase tracking-wider font-bold">kcal remaining</span>
+                </div>
+              </div>
+
+              <!-- Math Breakdowns & Macro Linear Bars -->
+              <div class="flex-grow w-full space-y-4">
+                <div class="grid grid-cols-3 gap-2 text-center bg-slate-950/40 p-2.5 rounded-xl border border-slate-800">
+                  <div>
+                    <span class="text-[8px] text-slate-500 uppercase tracking-wider font-bold">Target</span>
+                    <p id="targetCals" class="text-sm font-extrabold text-slate-200 mt-0.5">0</p>
+                  </div>
+                  <div class="border-x border-slate-800/80">
+                    <span class="text-[8px] text-slate-500 uppercase tracking-wider font-bold">Food</span>
+                    <p id="currentCals" class="text-sm font-extrabold text-slate-200 mt-0.5">0</p>
+                  </div>
+                  <div>
+                    <span class="text-[8px] text-slate-500 uppercase tracking-wider font-bold">Remaining</span>
+                    <p id="remainingCals" class="text-sm font-extrabold text-emerald-400 mt-0.5">0</p>
+                  </div>
+                </div>
+
+                <!-- Unified Macro representation -->
+                <div class="space-y-2.5">
+                  <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                      <span class="text-blue-300 font-semibold flex items-center gap-1">Protein</span>
+                      <span id="proteinBarText" class="text-slate-400 font-medium">0g / 0g</span>
+                    </div>
+                    <div class="h-2 bg-slate-800/60 rounded-full overflow-hidden">
+                      <div id="proteinBar" class="h-full rounded-full bg-blue-500 transition-all" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                      <span class="text-amber-300 font-semibold flex items-center gap-1">Carbs</span>
+                      <span id="carbBarText" class="text-slate-400 font-medium">0g / 0g</span>
+                    </div>
+                    <div class="h-2 bg-slate-800/60 rounded-full overflow-hidden">
+                      <div id="carbBar" class="h-full rounded-full bg-amber-400 transition-all" style="width: 0%"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between text-[11px] mb-1">
+                      <span class="text-red-300 font-semibold flex items-center gap-1">Fats</span>
+                      <span id="fatBarText" class="text-slate-400 font-medium">0g / 0g</span>
+                    </div>
+                    <div class="h-2 bg-slate-800/60 rounded-full overflow-hidden">
+                      <div id="fatBar" class="h-full rounded-full bg-red-500 transition-all" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
 
-          <!-- Macro Breakdown -->
-          <div class="glass rounded-2xl p-5">
-            <h2 class="text-xl font-bold mb-4">Macro Breakdown</h2>
-            <div class="space-y-4">
-              <div>
-                <div class="flex justify-between text-sm mb-2"><span class="text-blue-300 font-medium">Protein</span><span id="proteinBarText" class="text-slate-400 text-xs"></span></div>
-                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="proteinBar" class="h-full rounded-full bg-blue-500 transition-all"></div></div>
-              </div>
-              <div>
-                <div class="flex justify-between text-sm mb-2"><span class="text-amber-300 font-medium font-medium">Carbs</span><span id="carbBarText" class="text-slate-400 text-xs"></span></div>
-                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="carbBar" class="h-full rounded-full bg-amber-400 transition-all"></div></div>
-              </div>
-              <div>
-                <div class="flex justify-between text-sm mb-2"><span class="text-red-300 font-medium font-medium">Fats</span><span id="fatBarText" class="text-slate-400 text-xs"></span></div>
-                <div class="h-3 bg-slate-800 rounded-full overflow-hidden"><div id="fatBar" class="h-full rounded-full bg-red-500 transition-all"></div></div>
-              </div>
-            </div>
+          <!-- Quick Actions Row -->
+          <div class="grid grid-cols-4 gap-2.5">
+            <button onclick="openLensPro()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/40 hover:bg-emerald-500/15 text-emerald-300 transition-all">
+              <span class="text-xl mb-1">📸</span>
+              <span class="text-[10px] font-bold tracking-tight">Scan Meal</span>
+            </button>
+            <button onclick="switchMobileTab('tracker'); setTimeout(() => document.getElementById('foodSearch').focus(), 150);" class="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:border-blue-500/40 hover:bg-blue-500/15 text-blue-300 transition-all">
+              <span class="text-xl mb-1">🔍</span>
+              <span class="text-[10px] font-bold tracking-tight">Add Food</span>
+            </button>
+            <button onclick="openWaterModal()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 hover:border-sky-500/40 hover:bg-sky-500/15 text-sky-300 transition-all">
+              <span class="text-xl mb-1">💧</span>
+              <span class="text-[10px] font-bold tracking-tight">Water</span>
+            </button>
+            <button onclick="showToast('Exercise tracking coming soon!', 'info')" class="flex flex-col items-center justify-center p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:border-purple-500/40 hover:bg-purple-500/15 text-purple-300 transition-all">
+              <span class="text-xl mb-1">🏋️‍♂️</span>
+              <span class="text-[10px] font-bold tracking-tight">Exercise</span>
+            </button>
           </div>
 
           <!-- Water Tracker -->
           <div class="glass rounded-2xl p-5 sm:p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-bold">Water Tracker</h2>
+              <div>
+                <h2 class="text-xl font-bold">Water Tracker</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Quick add or click bottles for custom entry</p>
+              </div>
               <span class="text-slate-300 font-bold"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2000</span> ml</span>
             </div>
+            
+            <!-- Quick Add Water buttons -->
+            <div class="grid grid-cols-3 gap-2.5 mb-4">
+              <button onclick="addWater(250)" class="rounded-xl bg-sky-500/10 border border-sky-500/25 p-2 hover:bg-sky-500/20 transition text-sky-300 font-bold text-xs">
+                + 250ml
+              </button>
+              <button onclick="addWater(500)" class="rounded-xl bg-sky-500/10 border border-sky-500/25 p-2 hover:bg-sky-500/20 transition text-sky-300 font-bold text-xs">
+                + 500ml
+              </button>
+              <button onclick="addWater(1000)" class="rounded-xl bg-sky-500/10 border border-sky-500/25 p-2 hover:bg-sky-500/20 transition text-sky-300 font-bold text-xs">
+                + 1L
+              </button>
+            </div>
+
             <div id="waterBottles" class="flex flex-wrap justify-center gap-6 pt-2" onclick="openWaterModal()"></div>
           </div>
+
+          <!-- Collapsible Body Targets Accordion -->
+          <details class="glass rounded-2xl p-4 group select-none transition-all duration-300 border border-slate-800">
+            <summary class="flex items-center justify-between font-bold text-sm text-slate-300 cursor-pointer list-none">
+              <span>Body Targets & Calculations</span>
+              <span class="transition-transform group-open:rotate-180 text-slate-500">▼</span>
+            </summary>
+            <div class="grid grid-cols-2 gap-3 mt-4 text-center">
+              <div class="rounded-xl bg-slate-950/40 border border-slate-800/80 p-3">
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">BMI</p>
+                <p id="bmiValue" class="text-lg font-extrabold mt-1 text-slate-200"></p>
+                <p id="bmiCategory" class="text-[10px] text-slate-500 mt-0.5"></p>
+              </div>
+              <div class="rounded-xl bg-slate-950/40 border border-slate-800/80 p-3">
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">BMR</p>
+                <p id="bmrValue" class="text-lg font-extrabold mt-1 text-slate-200"></p>
+                <p class="text-[10px] text-slate-500 mt-0.5">cal/day</p>
+              </div>
+              <div class="rounded-xl bg-slate-950/40 border border-slate-800/80 p-3">
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">TDEE</p>
+                <p id="tdeeValue" class="text-lg font-extrabold mt-1 text-slate-200"></p>
+                <p class="text-[10px] text-slate-500 mt-0.5">cal/day</p>
+              </div>
+              <div class="rounded-xl bg-slate-950/40 border border-slate-800/80 p-3">
+                <p class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Protein Ratio</p>
+                <p id="proteinPerKg" class="text-lg font-extrabold mt-1 text-slate-200"></p>
+                <p class="text-[10px] text-slate-500 mt-0.5">g/kg weight</p>
+              </div>
+            </div>
+          </details>
         </div>
 
         <!-- Dashboard Right: Weekly Chart, Today's Log -->
         <div class="space-y-6">
-          <!-- Weekly Chart -->
-          <div class="glass rounded-2xl p-5">
-            <h2 class="text-xl font-bold mb-4">Weekly Protein Progress</h2>
-            <div class="h-64"><canvas id="weeklyChart"></canvas></div>
+          <!-- Weekly Calorie & Protein Progress (Side-by-Side) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="glass rounded-2xl p-4 flex flex-col">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Weekly Calories</h3>
+              <div class="h-44"><canvas id="weeklyCalChart"></canvas></div>
+            </div>
+            <div class="glass rounded-2xl p-4 flex flex-col">
+              <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Weekly Protein</h3>
+              <div class="h-44"><canvas id="weeklyProteinChart"></canvas></div>
+            </div>
           </div>
 
           <!-- Food Log -->
@@ -540,11 +684,6 @@
 
     </div>
   </main>
-
-  <!-- Floating Action Button (mobile) -->
-  <button class="fab md:hidden" onclick="switchMobileTab('tracker')" title="Add Food" aria-label="Add food">
-    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-  </button>
 
   <!-- LensPro Camera & Image Scanner Modal -->
   <div id="lensProModal" class="fixed inset-0 z-50 hidden bg-black flex-col">
@@ -832,6 +971,7 @@
     let waterIntake = localStorage.getItem(store.waterDate) === viewDateKey ? parseInt(localStorage.getItem(store.water) || '0', 10) : 0;
     if (waterIntake > 0 && waterIntake <= 20) waterIntake *= 250; // Legacy migration (glasses -> ml)
     let weeklyData = JSON.parse(localStorage.getItem(store.weekly) || '{}');
+    let weeklyCalsData = JSON.parse(localStorage.getItem('fittrack_weekly_cals') || '{}');
     let selectedGoal = null;
     let selectedFood = null;
     let currentCategory = 'all';
@@ -982,6 +1122,7 @@
       localStorage.setItem(store.log, JSON.stringify(todayLog));
       localStorage.setItem(store.water, waterIntake);
       localStorage.setItem(store.weekly, JSON.stringify(weeklyData));
+      localStorage.setItem('fittrack_weekly_cals', JSON.stringify(weeklyCalsData));
     }
     async function loadDayFromDatabase() {
       try {
@@ -1230,11 +1371,6 @@
       document.getElementById('onboarding').classList.add('hidden');
       document.getElementById('mainApp').classList.remove('hidden');
       document.getElementById('userGoalDisplay').textContent = userProfile.goalName;
-      document.getElementById('ringGrid').innerHTML =
-        ring('Calories','currentCals','targetCals','calRing','calPercent','#10b981') +
-        ring('Protein','currentProtein','targetProtein','proteinRing','proteinPercent','#3b82f6') +
-        ring('Carbs','currentCarbs','targetCarbs','carbRing','carbPercent','#f59e0b') +
-        ring('Fats','currentFat','targetFat','fatRing','fatPercent','#ef4444');
       document.getElementById('targetCals').textContent = userProfile.targetCalories;
       document.getElementById('targetProtein').textContent = userProfile.targetProtein;
       document.getElementById('targetCarbs').textContent = userProfile.targetCarbs;
@@ -1357,10 +1493,7 @@
     }
     function renderFoodLog() {
       const container = document.getElementById('foodLog');
-      if (!todayLog.length) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽️</div><p class="font-semibold text-slate-400">No food logged yet</p><p class="text-xs text-slate-500">Search for a food or use AI Camera to scan your meal.</p></div>';
-        return;
-      }
+      if (!todayLog.length) { container.innerHTML = '<p class="text-slate-500 text-center py-8">No food logged yet today</p>'; return; }
       container.innerHTML = todayLog.map((item, i) => `<div class="flex items-center justify-between gap-3 bg-slate-900/55 rounded-xl p-3 border border-slate-800">
         <div class="flex-grow min-w-0">
           <p class="font-semibold text-sm truncate">${item.name}</p>
@@ -1391,18 +1524,17 @@
       if (dashLabelEl) dashLabelEl.textContent = dateLabel;
       if (logLabelEl) logLabelEl.textContent = dateLabel;
 
+      const targetCals = userProfile ? userProfile.targetCalories : 2000;
+      const remainingCals = Math.max(0, targetCals - totals.cal);
       document.getElementById('currentCals').textContent = Math.round(totals.cal);
-      document.getElementById('currentProtein').textContent = totals.protein.toFixed(1);
-      document.getElementById('currentCarbs').textContent = totals.carbs.toFixed(1);
-      document.getElementById('currentFat').textContent = totals.fat.toFixed(1);
-      updateRing('calRing', 'calPercent', totals.cal, userProfile.targetCalories);
-      updateRing('proteinRing', 'proteinPercent', totals.protein, userProfile.targetProtein);
-      updateRing('carbRing', 'carbPercent', totals.carbs, userProfile.targetCarbs);
-      updateRing('fatRing', 'fatPercent', totals.fat, userProfile.targetFat);
-      updateBar('proteinBar', 'proteinBarText', totals.protein, userProfile.targetProtein, 'g');
-      updateBar('carbBar', 'carbBarText', totals.carbs, userProfile.targetCarbs, 'g');
-      updateBar('fatBar', 'fatBarText', totals.fat, userProfile.targetFat, 'g');
+      document.getElementById('remainingCals').textContent = Math.round(remainingCals);
+      document.getElementById('remainingCalsText').textContent = Math.round(remainingCals);
+      updateRing('calRing', 'calPercent', totals.cal, targetCals);
+      updateBar('proteinBar', 'proteinBarText', totals.protein, userProfile ? userProfile.targetProtein : 150, 'g');
+      updateBar('carbBar', 'carbBarText', totals.carbs, userProfile ? userProfile.targetCarbs : 200, 'g');
+      updateBar('fatBar', 'fatBarText', totals.fat, userProfile ? userProfile.targetFat : 70, 'g');
       weeklyData[todayKey] = +totals.protein.toFixed(1);
+      weeklyCalsData[todayKey] = Math.round(totals.cal);
       saveLocalState();
       updateChart();
       updateMotivationalMessage(totals);
@@ -1416,20 +1548,29 @@
       
       const calPct = Math.round((totals.cal / userProfile.targetCalories) * 100);
       const proteinPct = Math.round((totals.protein / userProfile.targetProtein) * 100);
+      const currentHour = new Date().getHours();
       
       let message = "";
       if (totals.cal === 0) {
-        message = "Start your engine! Add your first meal to fuel your muscles today. 🚀";
-      } else if (proteinPct < 40) {
-        message = `Keep pushing! You've hit ${proteinPct}% of your protein goal. Let's get those gains! 💪`;
-      } else if (proteinPct < 75) {
-        message = `Looking solid! Protein is at ${proteinPct}%. You're building solid muscle! 🍗🔥`;
-      } else if (proteinPct < 100) {
-        message = `Almost there! You're at ${proteinPct}% of your protein goal. Finish strong! ⚡🏋️`;
-      } else if (proteinPct >= 100 && proteinPct <= 120) {
-        message = "Superb! Protein target unlocked. Muscle recovery mode: ACTIVE! 🛡️💪";
+        if (currentHour < 11) {
+          message = "Good morning! Time to fuel up. Grab a high-protein breakfast like eggs or oats to kickstart your day! 🍳";
+        } else if (currentHour < 16) {
+          message = "Afternoon check-in! Time for a nutritious lunch. Try a balanced chicken or dal meal. 🍲";
+        } else {
+          message = "Ready to log your first meal? Fuel your recovery and keep your streak alive! 🚀";
+        }
+      } else if (calPct > 100) {
+        message = "You've exceeded your daily calorie target. Focus on lean proteins, water, and fiber-rich greens! 🥗";
+      } else if (proteinPct < 45) {
+        message = `Protein is at ${proteinPct}%. Focus on paneer, soy chunks, chicken, or dals for your next meal! 🍗💪`;
+      } else if (waterIntake < (userProfile.water_goal * 0.5)) {
+        message = "Hydration alert: You are below 50% of your water target. Drink a glass of water now! 💧";
+      } else if (proteinPct >= 100) {
+        message = "Fantastic! Daily protein goal achieved. Muscle recovery mode is fully ACTIVE! 🏋️‍♂️🔥";
+      } else if (calPct > 80) {
+        message = "Caloric intake is optimal. Keep protein high to satisfy your remaining targets! 🛡️";
       } else {
-        message = "Protein surplus achieved! You are a beast today! 🦍⚡";
+        message = `Looking solid! Calorie balance: ${Math.round(userProfile.targetCalories - totals.cal)} kcal remaining. Let's finish strong!`;
       }
       el.textContent = message;
     }
@@ -1498,20 +1639,83 @@
       if(!isNaN(wg) && wg >= 500) { userProfile.water_goal = wg; saveLocalState(); initWaterTracker(); saveDailyToDatabase(); }
     }
 
+    let weeklyCalChart = null;
+    let weeklyProteinChart = null;
+
     function initChart() {
-      const ctx = document.getElementById('weeklyChart').getContext('2d');
-      weeklyChart = new Chart(ctx, {
+      const calCtx = document.getElementById('weeklyCalChart').getContext('2d');
+      weeklyCalChart = new Chart(calCtx, {
         type: 'bar',
-        data: { labels: lastSeven().labels, datasets: [{ data: lastSeven().data, backgroundColor: 'rgba(16, 185, 129, 0.25)', borderColor: '#10b981', borderWidth: 1.5, borderRadius: 6 }] },
-        options: { maintainAspectRatio: false, responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+        data: { 
+          labels: lastSeven().labels, 
+          datasets: [{ 
+            data: lastSeven().cals, 
+            backgroundColor: 'rgba(16, 185, 129, 0.25)', 
+            borderColor: '#10b981', 
+            borderWidth: 1.5, 
+            borderRadius: 6 
+          }] 
+        },
+        options: { 
+          maintainAspectRatio: false, 
+          responsive: true, 
+          plugins: { legend: { display: false } }, 
+          scales: { 
+            y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, 
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
+          } 
+        }
+      });
+
+      const proteinCtx = document.getElementById('weeklyProteinChart').getContext('2d');
+      weeklyProteinChart = new Chart(proteinCtx, {
+        type: 'bar',
+        data: { 
+          labels: lastSeven().labels, 
+          datasets: [{ 
+            data: lastSeven().proteins, 
+            backgroundColor: 'rgba(59, 130, 246, 0.25)', 
+            borderColor: '#3b82f6', 
+            borderWidth: 1.5, 
+            borderRadius: 6 
+          }] 
+        },
+        options: { 
+          maintainAspectRatio: false, 
+          responsive: true, 
+          plugins: { legend: { display: false } }, 
+          scales: { 
+            y: { beginAtZero: true, grid: { color: 'rgba(148,163,184,.09)' }, ticks: { color: '#94a3b8' } }, 
+            x: { grid: { display: false }, ticks: { color: '#94a3b8' } } 
+          } 
+        }
       });
     }
+
     function lastSeven() {
-      const labels = [], data = [];
-      for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().slice(0, 10); labels.push(d.toLocaleDateString('en', { weekday: 'short' })); data.push(weeklyData[key] || 0); }
-      return { labels, data };
+      const labels = [], proteins = [], cals = [];
+      for (let i = 6; i >= 0; i--) { 
+        const d = new Date(); 
+        d.setDate(d.getDate() - i); 
+        const key = d.toISOString().slice(0, 10); 
+        labels.push(d.toLocaleDateString('en', { weekday: 'short' })); 
+        proteins.push(weeklyData[key] || 0); 
+        cals.push(weeklyCalsData[key] || 0);
+      }
+      return { labels, proteins, cals };
     }
-    function updateChart() { if (!weeklyChart) return; weeklyChart.data.datasets[0].data = lastSeven().data; weeklyChart.update(); }
+
+    function updateChart() { 
+      const data = lastSeven();
+      if (weeklyCalChart) {
+        weeklyCalChart.data.datasets[0].data = data.cals;
+        weeklyCalChart.update();
+      }
+      if (weeklyProteinChart) {
+        weeklyProteinChart.data.datasets[0].data = data.proteins;
+        weeklyProteinChart.update();
+      }
+    }
     function showProfile() {
       document.getElementById('profileHeight').textContent = userProfile.height + ' cm';
       document.getElementById('profileWeight').textContent = userProfile.weight + ' kg';
@@ -2406,46 +2610,6 @@
     }
     
     window.addEventListener('DOMContentLoaded', checkSessionAndStartup);
-
-    /* === PREMIUM JS: Toast & Micro-interactions === */
-    function showToast(msg, type, dur) {
-      type = type || 'success'; dur = dur || 3000;
-      var c = document.getElementById('toastContainer');
-      if (!c) return;
-      var icons = {success:'&#10003;', error:'&#10007;', info:'&#128167;'};
-      var t = document.createElement('div');
-      t.className = 'toast toast-' + type;
-      t.innerHTML = '<span class="toast-icon">' + (icons[type] || icons.success) + '</span>'
-                  + '<span class="toast-msg">' + msg + '</span>';
-      c.appendChild(t);
-      setTimeout(function() {
-        t.classList.add('toast-exit');
-        setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 350);
-      }, dur);
-    }
-    /* Patch confirmAddFood for toast */
-    var _ft_caf = confirmAddFood;
-    confirmAddFood = function() {
-      var prevLen = todayLog.length;
-      _ft_caf();
-      if (todayLog.length > prevLen) {
-        var item = todayLog[todayLog.length - 1];
-        showToast('Added ' + item.name + ' \u2014 ' + item.cal + ' cal', 'success');
-      }
-    };
-    /* Patch addWater for toast (non-destructive, using event listener pattern) */
-    var _ft_aw = addWater;
-    addWater = function(amount) { _ft_aw(amount); showToast('+' + amount + ' ml water \ud83d\udca7', 'info'); };
-    /* Welcome toast */
-    setTimeout(function() {
-      try {
-        var u = JSON.parse(localStorage.getItem('fittrack_user') || 'null');
-        if (u && u.name && document.getElementById('mainApp') && !document.getElementById('mainApp').classList.contains('hidden')) {
-          showToast('Welcome back, ' + u.name.split(' ')[0] + '! \ud83d\udcaa', 'success', 4000);
-        }
-      } catch(e) {}
-    }, 1600);
-
   </script>
 </body>
 </html>
