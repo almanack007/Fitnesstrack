@@ -1398,21 +1398,31 @@
         }
       }
     }
+    function safeSetText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+
     function initApp() {
       saveLocalState();
-      document.getElementById('onboarding').classList.add('hidden');
-      document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('userGoalDisplay').textContent = userProfile.goalName;
-      document.getElementById('targetCals').textContent = userProfile.targetCalories;
-      document.getElementById('targetProtein').textContent = userProfile.targetProtein;
-      document.getElementById('targetCarbs').textContent = userProfile.targetCarbs;
-      document.getElementById('targetFat').textContent = userProfile.targetFat;
+      const onboardingEl = document.getElementById('onboarding');
+      if (onboardingEl) onboardingEl.classList.add('hidden');
+      const mainAppEl = document.getElementById('mainApp');
+      if (mainAppEl) mainAppEl.classList.remove('hidden');
+      
+      safeSetText('userGoalDisplay', userProfile.goalName);
+      safeSetText('targetCals', userProfile.targetCalories);
+      safeSetText('targetProtein', userProfile.targetProtein);
+      safeSetText('targetCarbs', userProfile.targetCarbs);
+      safeSetText('targetFat', userProfile.targetFat);
+      
       const bmi = userProfile.weight / Math.pow(userProfile.height / 100, 2);
-      document.getElementById('bmiValue').textContent = bmi.toFixed(1);
-      document.getElementById('bmiCategory').textContent = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
-      document.getElementById('bmrValue').textContent = userProfile.bmr;
-      document.getElementById('tdeeValue').textContent = userProfile.tdee;
-      document.getElementById('proteinPerKg').textContent = (userProfile.targetProtein / userProfile.weight).toFixed(1);
+      safeSetText('bmiValue', bmi.toFixed(1));
+      safeSetText('bmiCategory', bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese');
+      safeSetText('bmrValue', userProfile.bmr);
+      safeSetText('tdeeValue', userProfile.tdee);
+      safeSetText('proteinPerKg', (userProfile.targetProtein / userProfile.weight).toFixed(1));
+      
       renderCategories();
       initWaterTracker();
       renderFoodGrid();
@@ -1651,7 +1661,7 @@
       document.getElementById('currentCals').textContent = Math.round(totals.cal);
       document.getElementById('remainingCals').textContent = Math.round(remainingCals);
       document.getElementById('remainingCalsText').textContent = Math.round(remainingCals);
-      updateRing('calRing', 'calPercent', totals.cal, targetCals);
+      updateRing('calRing', 'remainingCalsText', totals.cal, targetCals);
       updateBar('proteinBar', 'proteinBarText', totals.protein, userProfile ? userProfile.targetProtein : 150, 'g');
       updateBar('carbBar', 'carbBarText', totals.carbs, userProfile ? userProfile.targetCarbs : 200, 'g');
       updateBar('fatBar', 'fatBarText', totals.fat, userProfile ? userProfile.targetFat : 70, 'g');
@@ -1696,10 +1706,20 @@
       }
       el.textContent = message;
     }
-    function updateRing(ringId, percentId, current, target) {
+    function updateRing(ringId, textId, current, target) {
       const percent = Math.min((current / target) * 100, 100);
-      document.getElementById(ringId).style.strokeDashoffset = 226 - (226 * percent / 100);
-      document.getElementById(percentId).textContent = Math.round(percent) + '%';
+      const ringEl = document.getElementById(ringId);
+      if (ringEl) {
+        ringEl.style.strokeDashoffset = 226 - (226 * percent / 100);
+      }
+      const textEl = document.getElementById(textId);
+      if (textEl) {
+        if (textId === 'remainingCalsText') {
+          textEl.textContent = Math.max(0, Math.round(target - current));
+        } else {
+          textEl.textContent = Math.round(percent) + '%';
+        }
+      }
     }
     function updateBar(barId, textId, current, target, unit) {
       document.getElementById(barId).style.width = Math.min((current / target) * 100, 100) + '%';
