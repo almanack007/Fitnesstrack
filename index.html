@@ -1133,18 +1133,31 @@
         // Only overwrite local data if the database actually has content
         if (data.profile) userProfile = data.profile;
         
-        // Only load log from DB if it explicitly has records, otherwise upload local log
+        // Only overwrite local log if the server has records, or if the client is empty
+        let localNeedsUpload = false;
         if (data.log !== null && Array.isArray(data.log)) {
-          todayLog = data.log;
-        } else {
-          // No record on the server yet for this date, write local state to server
-          if (todayLog.length > 0 || waterIntake > 0) {
-            saveDailyToDatabase();
+          if (data.log.length > 0 || todayLog.length === 0) {
+            todayLog = data.log;
+          } else {
+            localNeedsUpload = true;
           }
+        } else {
+          localNeedsUpload = todayLog.length > 0;
         }
         
         if (data.waterIntake !== null && Number.isInteger(data.waterIntake)) {
-          waterIntake = (data.waterIntake <= 20 && data.waterIntake > 0) ? data.waterIntake * 250 : data.waterIntake;
+          const incomingWater = (data.waterIntake <= 20 && data.waterIntake > 0) ? data.waterIntake * 250 : data.waterIntake;
+          if (incomingWater > 0 || waterIntake === 0) {
+            waterIntake = incomingWater;
+          } else {
+            localNeedsUpload = true;
+          }
+        } else {
+          if (waterIntake > 0) localNeedsUpload = true;
+        }
+
+        if (localNeedsUpload) {
+          saveDailyToDatabase();
         }
         
         if (data.weeklyData && typeof data.weeklyData === 'object') {
