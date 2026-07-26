@@ -714,7 +714,7 @@
           <!-- Collapsible Body Targets Accordion -->
           <details class="glass rounded-2xl p-4 group select-none transition-all duration-300 border border-slate-800">
             <summary class="flex items-center justify-between font-bold text-sm text-slate-300 cursor-pointer list-none">
-              <span>Body Targets & Calculations</span>
+              <span data-i18n="body_targets">Body Targets & Calculations</span>
               <span class="transition-transform group-open:rotate-180 text-slate-500">▼</span>
             </summary>
             <div class="grid grid-cols-2 gap-3 mt-4 text-center">
@@ -795,7 +795,6 @@
         </div>
       </div>
 
-      </div> <!-- Close Panel Home Columns -->
       </div> <!-- Close Tab Panel Home -->
 
       <!-- Tab: Progress -->
@@ -817,14 +816,14 @@
           <div class="glass rounded-2xl p-5 flex flex-col justify-between">
             <div>
               <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="log_weight">Log Weight</h3>
-              <p class="text-xs text-slate-500 mb-4">Track progress to automatically compute target thresholds</p>
+              <p class="text-xs text-slate-500 mb-4" data-i18n="weight_desc">Track progress to automatically compute target thresholds</p>
             </div>
             <div class="space-y-4">
               <div class="relative">
                 <input id="logWeightInput" type="number" step="0.1" placeholder="e.g. 72.5" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-4 py-3 text-slate-100 pr-12 text-sm" />
                 <span class="absolute right-4 top-3.5 text-xs text-slate-400 font-bold">kg</span>
               </div>
-              <button onclick="logCurrentWeight()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 text-sm transition neon">Record Weight</button>
+              <button onclick="logCurrentWeight()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 text-sm transition neon" data-i18n="record_weight">Record Weight</button>
             </div>
           </div>
           <div class="glass rounded-2xl p-5 lg:col-span-2">
@@ -883,19 +882,19 @@
       <!-- Tab: Community -->
       <div id="panelCommunity" class="tab-panel hidden max-w-3xl mx-auto space-y-6">
         <div class="glass rounded-2xl p-6 space-y-4">
-          <h2 class="text-lg font-bold text-slate-200">Invite Friends & Referrals</h2>
-          <p class="text-xs text-slate-500">Share your custom link to get premium features free</p>
+          <h2 class="text-lg font-bold text-slate-200" data-i18n="invite_friends">Invite Friends & Referrals</h2>
+          <p class="text-xs text-slate-500" data-i18n="invite_desc">Share your custom link to get premium features free</p>
           <div class="flex gap-2">
             <input id="referralLinkInput" readonly class="flex-grow rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-400 select-all" />
-            <button onclick="copyReferralLink()" class="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 text-xs transition neon">Copy Link</button>
+            <button onclick="copyReferralLink()" class="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 text-xs transition neon" data-i18n="copy_link">Copy Link</button>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="glass rounded-2xl p-5 space-y-4">
             <div class="flex items-center justify-between">
-              <h3 class="font-bold text-sm text-slate-300 uppercase tracking-wider">My Groups</h3>
-              <button onclick="createMockGroup()" class="text-xs text-emerald-400 font-bold hover:underline">+ New Group</button>
+              <h3 class="font-bold text-sm text-slate-300 uppercase tracking-wider" data-i18n="my_groups">My Groups</h3>
+              <button onclick="createMockGroup()" class="text-xs text-emerald-400 font-bold hover:underline" data-i18n="new_group">+ New Group</button>
             </div>
             <div id="communityGroupsList" class="space-y-2 text-xs">
               <!-- Public groups dynamically joined go here -->
@@ -905,10 +904,10 @@
           <div class="glass rounded-2xl p-5 space-y-4 flex flex-col justify-center items-center text-center py-10">
             <i data-lucide="lock" class="w-8 h-8 text-slate-500 mb-2"></i>
             <div class="space-y-1">
-              <h3 class="font-bold text-slate-200 text-sm">Leaderboards & Challenges</h3>
-              <p class="text-xs text-slate-500 max-w-xs">Compete in daily challenges with active users. Coming in V2!</p>
+              <h3 class="font-bold text-slate-200 text-sm" data-i18n="leaderboards_challenges">Leaderboards & Challenges</h3>
+              <p class="text-xs text-slate-500 max-w-xs" data-i18n="challenges_desc">Compete in daily challenges with active users. Coming in V2!</p>
             </div>
-            <span class="text-[10px] bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full font-bold uppercase tracking-wider mt-2">Coming Soon</span>
+            <span class="text-[10px] bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full font-bold uppercase tracking-wider mt-2" data-i18n="coming_soon">Coming Soon</span>
           </div>
         </div>
       </div>
@@ -918,32 +917,32 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Personal Info -->
           <div class="glass rounded-2xl p-5 space-y-4">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Personal Information</h3>
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="personal_info">Personal Information</h3>
             <div class="space-y-3">
               <div>
-                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Full Name</label>
+                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="full_name">Full Name</label>
                 <input id="profileNameInput" type="text" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Height (cm)</label>
+                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="height_cm">Height (cm)</label>
                   <input id="profileHeightInput" type="number" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
                 </div>
                 <div>
-                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Weight (kg)</label>
+                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="weight_kg">Weight (kg)</label>
                   <input id="profileWeightInput" type="number" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
                 </div>
               </div>
-              <button onclick="savePersonalInformation()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 text-xs transition neon">Save Profile</button>
+              <button onclick="savePersonalInformation()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 text-xs transition neon" data-i18n="save_profile">Save Profile</button>
             </div>
           </div>
 
           <!-- Goal Configuration -->
           <div class="glass rounded-2xl p-5 space-y-4">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Goals & Targets</h3>
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="goals_targets">Goals & Targets</h3>
             <div class="space-y-3">
               <div>
-                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Diet Goal</label>
+                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="diet_goal">Diet Goal</label>
                 <select id="profileGoalSelect" onchange="suggestMacrosForGoal()" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2.5 text-xs text-slate-100">
                   <option value="Fat Loss">Fat Loss</option>
                   <option value="Weight Maintenance">Weight Maintenance</option>
@@ -952,40 +951,40 @@
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Target Calories (kcal)</label>
+                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="target_cals_label">Target Calories (kcal)</label>
                   <input id="profileCalsInput" type="number" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
                 </div>
                 <div>
-                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Target Protein (g)</label>
+                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="target_protein_label">Target Protein (g)</label>
                   <input id="profileProteinInput" type="number" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Target Carbs (g)</label>
+                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="target_carbs_label">Target Carbs (g)</label>
                   <input id="profileCarbsInput" type="number" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
                 </div>
                 <div>
-                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1">Target Fats (g)</label>
+                  <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1" data-i18n="target_fats_label">Target Fats (g)</label>
                   <input id="profileFatsInput" type="number" class="w-full rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" />
                 </div>
               </div>
-              <button onclick="saveGoalsAndTargets()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 text-xs transition neon">Update Goals</button>
+              <button onclick="saveGoalsAndTargets()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 text-xs transition neon" data-i18n="update_goals">Update Goals</button>
             </div>
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="glass rounded-2xl p-5 space-y-4">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Native Language selector</h3>
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="lang_selector">Native Language selector</h3>
             <div class="grid grid-cols-3 gap-2" id="languageSelectorGrid"></div>
           </div>
 
           <div class="glass rounded-2xl p-5 space-y-4">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">App Customization</h3>
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="app_customization">App Customization</h3>
             <div class="space-y-4">
               <div>
-                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1.5">Theme Preference</label>
+                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1.5" data-i18n="theme_pref">Theme Preference</label>
                 <div class="grid grid-cols-3 gap-2">
                   <button id="themeBtnLight" onclick="setAppTheme('light')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition"><i data-lucide="sun" class="w-3.5 h-3.5 inline mr-1"></i> Light</button>
                   <button id="themeBtnDark" onclick="setAppTheme('dark')" class="rounded-xl border border-slate-800 bg-slate-950/40 p-2 text-xs hover:border-emerald-500 transition"><i data-lucide="moon" class="w-3.5 h-3.5 inline mr-1"></i> Dark</button>
@@ -993,15 +992,15 @@
                 </div>
               </div>
               <div>
-                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1.5">Notifications</label>
+                <label class="text-[10px] text-slate-500 uppercase tracking-wider font-bold block mb-1.5" data-i18n="notifications">Notifications</label>
                 <div class="space-y-2 text-xs">
                   <label class="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" id="notifLoggingReminders" checked class="rounded border-slate-800 accent-emerald-500" />
-                    <span>Daily Logging Reminders</span>
+                    <span data-i18n="daily_reminders">Daily Logging Reminders</span>
                   </label>
                   <label class="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" id="notifWaterReminders" checked class="rounded border-slate-800 accent-emerald-500" />
-                    <span>Water Intake Alerts</span>
+                    <span data-i18n="water_alerts">Water Intake Alerts</span>
                   </label>
                 </div>
               </div>
@@ -1010,15 +1009,15 @@
         </div>
 
         <div class="glass rounded-2xl p-5 space-y-4 text-xs">
-          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Support & About</h3>
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2" data-i18n="support_about">Support & About</h3>
           <div class="space-y-2.5 text-slate-300">
             <p>Email Helpdesk: <a href="mailto:support@fittrack.pro" class="text-emerald-400 hover:underline">support@fittrack.pro</a></p>
             <p>FitTrack Pro Launch MVP - V1.0.0</p>
             <p class="text-slate-500">Made with ❤️ for Indian fitness goals</p>
           </div>
           <div class="border-t border-slate-800 pt-4 flex gap-3">
-            <button onclick="signOut()" class="rounded-xl border border-red-500/30 text-red-300 px-4 py-2 hover:bg-red-500/10 transition font-bold">Sign Out</button>
-            <button onclick="showToast('Help center loaded!', 'info')" class="rounded-xl border border-slate-700 text-slate-300 px-4 py-2 hover:bg-slate-700 transition">Documentation</button>
+            <button onclick="signOut()" class="rounded-xl border border-red-500/30 text-red-300 px-4 py-2 hover:bg-red-500/10 transition font-bold" data-i18n="sign_out">Sign Out</button>
+            <button onclick="showToast('Help center loaded!', 'info')" class="rounded-xl border border-slate-700 text-slate-300 px-4 py-2 hover:bg-slate-700 transition" data-i18n="documentation">Documentation</button>
           </div>
         </div>
       </div>
@@ -1260,7 +1259,7 @@
   <div id="waterModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 overflow-y-auto">
     <div class="glass rounded-2xl p-5 w-full max-w-sm slide-up my-auto text-center">
       <div class="flex items-center justify-between gap-4 mb-4">
-        <h2 class="text-xl font-bold">Log Water</h2>
+        <h2 class="text-xl font-bold" data-i18n="log_water">Log Water</h2>
         <button onclick="closeWaterModal()" class="text-slate-400 hover:text-slate-200">✕</button>
       </div>
       <div class="grid grid-cols-2 gap-3 mb-4">
@@ -1268,21 +1267,21 @@
         <button onclick="addWater(500)" class="rounded-xl bg-blue-500/10 border border-blue-500/30 p-3 hover:bg-blue-500/20 transition text-blue-300 font-bold flex flex-col items-center justify-center"><span class="text-xl">+ 500</span><span class="text-xs font-normal opacity-70">ml Bottle</span></button>
       </div>
       <label class="block text-left mt-4">
-        <span class="text-sm text-slate-300">Custom Amount (ml)</span>
+        <span class="text-sm text-slate-300" data-i18n="custom_amount">Custom Amount (ml)</span>
         <div class="flex gap-2 mt-2">
           <input id="customWaterAmount" type="number" step="50" placeholder="e.g. 150" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2" />
           <button onclick="addCustomWater()" class="rounded-xl bg-emerald-500 text-slate-950 px-4 font-bold neon">Add</button>
         </div>
       </label>
       <div class="mt-4 pt-4 border-t border-slate-800 text-left">
-        <span class="text-sm text-slate-300">Edit Today's Total (ml)</span>
+        <span class="text-sm text-slate-300" data-i18n="edit_total_water">Edit Today's Total (ml)</span>
         <div class="flex gap-2 mt-2">
           <input id="editTotalWaterAmount" type="number" step="50" class="flex-1 rounded-xl bg-slate-900 border border-slate-700 px-4 py-2" />
           <button onclick="editTotalWater()" class="rounded-xl bg-slate-800 text-slate-300 px-4 font-bold border border-slate-700 hover:bg-slate-700 transition">Update</button>
         </div>
       </div>
       <div class="mt-4 pt-4 border-t border-slate-800">
-        <button onclick="resetWater()" class="text-sm text-red-400 hover:text-red-300 transition">Reset today's water</button>
+        <button onclick="resetWater()" class="text-sm text-red-400 hover:text-red-300 transition" data-i18n="reset_today_water">Reset today's water</button>
       </div>
   </div>
 
@@ -1307,20 +1306,20 @@
       </div>
       <div class="space-y-4">
         <div>
-          <label class="text-xs text-slate-400 block mb-1">Exercise Name</label>
+          <label class="text-xs text-slate-400 block mb-1" data-i18n="exercise_name">Exercise Name</label>
           <input id="exerciseNameInput" type="text" placeholder="e.g. Running, Gym, Yoga" class="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-2.5 text-slate-100 text-sm" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-xs text-slate-400 block mb-1">Duration (mins)</label>
+            <label class="text-xs text-slate-400 block mb-1" data-i18n="duration_mins">Duration (mins)</label>
             <input id="exerciseDurationInput" type="number" placeholder="30" class="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-2.5 text-slate-100 text-sm" />
           </div>
           <div>
-            <label class="text-xs text-slate-400 block mb-1">Calories Burned</label>
+            <label class="text-xs text-slate-400 block mb-1" data-i18n="calories_burned">Calories Burned</label>
             <input id="exerciseCaloriesInput" type="number" placeholder="250" class="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-2.5 text-slate-100 text-sm" />
           </div>
         </div>
-        <button onclick="saveExerciseLog()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 text-sm transition neon">Record Workout</button>
+        <button onclick="saveExerciseLog()" class="w-full rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 text-sm transition neon" data-i18n="record_workout">Record Workout</button>
       </div>
     </div>
   </div>
@@ -3872,7 +3871,47 @@
         water: "Water",
         exercise: "Exercise",
         clear_all: "Clear all",
-        change_language: "Change Language"
+        change_language: "Change Language",
+        personal_info: "Personal Information",
+        full_name: "Full Name",
+        height_cm: "Height (cm)",
+        weight_kg: "Weight (kg)",
+        save_profile: "Save Profile",
+        goals_targets: "Goals & Targets",
+        diet_goal: "Diet Goal",
+        target_cals_label: "Target Calories (kcal)",
+        target_protein_label: "Target Protein (g)",
+        target_carbs_label: "Target Carbs (g)",
+        target_fats_label: "Target Fats (g)",
+        update_goals: "Update Goals",
+        lang_selector: "Native Language selector",
+        app_customization: "App Customization",
+        theme_pref: "Theme Preference",
+        notifications: "Notifications",
+        daily_reminders: "Daily Logging Reminders",
+        water_alerts: "Water Intake Alerts",
+        support_about: "Support & About",
+        sign_out: "Sign Out",
+        documentation: "Documentation",
+        invite_friends: "Invite Friends & Referrals",
+        invite_desc: "Share your custom link to get premium features free",
+        copy_link: "Copy Link",
+        my_groups: "My Groups",
+        new_group: "+ New Group",
+        leaderboards_challenges: "Leaderboards & Challenges",
+        challenges_desc: "Compete in daily challenges with active users. Coming in V2!",
+        coming_soon: "Coming Soon",
+        weight_desc: "Track progress to automatically compute target thresholds",
+        record_weight: "Record Weight",
+        body_targets: "Body Targets & Calculations",
+        exercise_name: "Exercise Name",
+        duration_mins: "Duration (mins)",
+        calories_burned: "Calories Burned",
+        record_workout: "Record Workout",
+        log_water: "Log Water",
+        custom_amount: "Custom Amount (ml)",
+        edit_total_water: "Edit Today's Total (ml)",
+        reset_today_water: "Reset today's water"
       },
       hi: {
         todays_energy: "आज की ऊर्जा",
@@ -3902,7 +3941,47 @@
         water: "पानी जोड़ें",
         exercise: "कसरत जोड़ें",
         clear_all: "सब साफ करें",
-        change_language: "भाषा बदलें"
+        change_language: "भाषा बदलें",
+        personal_info: "व्यक्तिगत जानकारी",
+        full_name: "पूरा नाम",
+        height_cm: "ऊंचाई (सेमी)",
+        weight_kg: "वजन (किग्रा)",
+        save_profile: "प्रोफ़ाइल सहेजें",
+        goals_targets: "लक्ष्य और सीमाएं",
+        diet_goal: "आहार लक्ष्य",
+        target_cals_label: "कैलोरी लक्ष्य (kcal)",
+        target_protein_label: "प्रोटीन लक्ष्य (g)",
+        target_carbs_label: "कार्ब्स लक्ष्य (g)",
+        target_fats_label: "वसा लक्ष्य (g)",
+        update_goals: "लक्ष्य अपडेट करें",
+        lang_selector: "मातृभाषा चुनें",
+        app_customization: "ऐप अनुकूलन",
+        theme_pref: "थीम प्राथमिकता",
+        notifications: "सूचनाएं",
+        daily_reminders: "दैनिक लॉग अनुस्मारक",
+        water_alerts: "पानी पीने के अलर्ट",
+        support_about: "सहायता और विवरण",
+        sign_out: "साइन आउट",
+        documentation: "दस्तावेज़",
+        invite_friends: "मित्रों को आमंत्रित करें",
+        invite_desc: "मुफ़्त प्रीमियम सुविधाओं के लिए अपना लिंक साझा करें",
+        copy_link: "लिंक कॉपी करें",
+        my_groups: "मेरे समूह",
+        new_group: "+ नया समूह",
+        leaderboards_challenges: "लीडरबोर्ड और चुनौतियां",
+        challenges_desc: "दैनिक चुनौतियों में प्रतिस्पर्धा करें। V2 में आ रहा है!",
+        coming_soon: "जल्द आ रहा है",
+        weight_desc: "लक्ष्य सीमाओं की गणना करने के लिए वजन दर्ज करें",
+        record_weight: "वजन दर्ज करें",
+        body_targets: "शरीर के लक्ष्य और गणना",
+        exercise_name: "व्यायाम का नाम",
+        duration_mins: "अवधि (मिनट)",
+        calories_burned: "कैलोरी बर्न",
+        record_workout: "कसरत दर्ज करें",
+        log_water: "पानी दर्ज करें",
+        custom_amount: "कस्टम मात्रा (ml)",
+        edit_total_water: "आज का कुल पानी संपादित करें (ml)",
+        reset_today_water: "आज का पानी रीसेट करें"
       },
       mr: {
         todays_energy: "आजची ऊर्जा",
@@ -3932,250 +4011,60 @@
         water: "पाणी जोडा",
         exercise: "व्यायाम जोडा",
         clear_all: "सर्व साफ करा",
-        change_language: "भाषा बदला"
-      },
-      ta: {
-        todays_energy: "இன்றைய ஆற்றல்",
-        protein: "புரதம்",
-        carbs: "கார்ப்ஸ்",
-        fats: "கொழுப்பு",
-        target: "இலக்கு",
-        food: "உணவு",
-        burned: "பயிற்சி",
-        remaining: "மீதி",
-        kcal_remaining: "கலோரிகள் மீதம்",
-        water_intake: "நீர் உட்கொள்ளல்",
-        todays_meals: "இன்றைய உணவு",
-        logged_exercises: "உடற்பயிற்சிகள்",
-        log_exercise: "உடற்பயிற்சி சேர்",
-        calendar_history: "நாட்காட்டி வரலாறு",
-        log_weight: "எடை பதிவு செய்",
-        weight_log: "எடை வரலாறு",
-        track_food: "உணவு சேர்",
-        nav_home: "முகப்பு",
-        nav_progress: "வளர்ச்சி",
-        nav_lens: "கேமரா",
-        nav_community: "சமூகம்",
-        nav_profile: "சுயவிவரம்",
-        scan_meal: "உணவு ஸ்கேன்",
-        add_food: "உணவு சேர்",
-        water: "தண்ணீர்",
-        exercise: "உடற்பயிற்சி",
-        clear_all: "அழிக்க",
-        change_language: "மொழி மாற்றம்"
-      },
-      te: {
-        todays_energy: "నేటి శక్తి",
-        protein: "ప్రోటీన్",
-        carbs: "కార్బ్స్",
-        fats: "కొవ్వులు",
-        target: "లక్ష్యం",
-        food: "ఆహారం",
-        burned: "వ్యాయామం",
-        remaining: "మిగిలినవి",
-        kcal_remaining: "క్యాలరీలు మిగిలి ఉన్నాయి",
-        water_intake: "నీటి వినియోగం",
-        todays_meals: "నేటి భోజనం",
-        logged_exercises: "వ్యాయామాల లాగ్",
-        log_exercise: "వ్యాయామం జోడించు",
-        calendar_history: "క్యాలెండర్ చరిత్ర",
-        log_weight: "బరువు నమోదు చేయండి",
-        weight_log: "బరువు లాగ్",
-        track_food: "ఆహారం లాగ్ చేయి",
-        nav_home: "హోమ్",
-        nav_progress: "ప్రగతి",
-        nav_lens: "కెమెరా",
-        nav_community: "కమ్యూనిటీ",
-        nav_profile: "ప్రొఫైల్",
-        scan_meal: "స్కాన్ చేయి",
-        add_food: "ఆహారం జోడించు",
-        water: "నీరు",
-        exercise: "వ్యాయామం",
-        clear_all: "అన్నీ తీసివేయి",
-        change_language: "భాష మార్చండి"
-      },
-      kn: {
-        todays_energy: "ಇಂದಿನ ಶಕ್ತಿ",
-        protein: "ಪ್ರೋಟೀನ್",
-        carbs: "ಕಾರ್ಬ್ಸ್",
-        fats: "ಕೊಬ್ಬು",
-        target: "ಗುರಿ",
-        food: "ಆಹಾರ",
-        burned: "ವ್ಯಾಯಾಮ",
-        remaining: "ಉಳಿದಿರುವುದು",
-        kcal_remaining: "ಕ್ಯಾಲೋರಿಗಳು ಬಾಕಿ",
-        water_intake: "ನೀರಿನ ಸೇವನೆ",
-        todays_meals: "ಇಂದಿನ ಊಟ",
-        logged_exercises: "ವ್ಯಾಯಾಮದ ಪಟ್ಟಿ",
-        log_exercise: "ವ್ಯಾಯಾಮ ದಾಖಲಿಸಿ",
-        calendar_history: "ಕ್ಯಾಲೆಂಡರ್ ಇತಿಹಾಸ",
-        log_weight: "ತೂಕ ದಾಖಲಿಸಿ",
-        weight_log: "ತೂಕದ ಪಟ್ಟಿ",
-        track_food: "ಆಹಾರ ದಾಖಲಿಸಿ",
-        nav_home: "ಮುಖಪುಟ",
-        nav_progress: "ಪ್ರಗತಿ",
-        nav_lens: "ಕ್ಯಾಮೆರಾ",
-        nav_community: "ಸಮುದಾಯ",
-        nav_profile: "ಪ್ರೊಫೈಲ್",
-        scan_meal: "ಊಟ ಸ್ಕ್ಯಾನ್",
-        add_food: "ಆಹಾರ ಸೇರಿಸಿ",
-        water: "ನೀರು",
-        exercise: "ವ್ಯಾಯಾಮ",
-        clear_all: "ಎಲ್ಲ ಅಳಿಸಿ",
-        change_language: "ಭಾಷೆ ಬದಲಿಸಿ"
-      },
-      ml: {
-        todays_energy: "ഇന്നത്തെ ഊർജ്ജം",
-        protein: "പ്രോട്ടീൻ",
-        carbs: "കാർബ്സ്",
-        fats: "കൊഴുപ്പ്",
-        target: "ലക്ഷ്യം",
-        food: "ഭക്ഷണം",
-        burned: "വ്യായാമം",
-        remaining: "ബാക്കി",
-        kcal_remaining: "കലോറി ബാക്കിയുണ്ട്",
-        water_intake: "വെള്ളം കുടിക്കുന്നത്",
-        todays_meals: "ഇന്നത്തെ ഭക്ഷണം",
-        logged_exercises: "വ്യായാമങ്ങൾ",
-        log_exercise: "വ്യായാമം ചേർക്കുക",
-        calendar_history: "കലണ്ടർ ചരിത്രം",
-        log_weight: "തൂക്കം രേഖപ്പെടുത്തുക",
-        weight_log: "തൂക്കത്തിന്റെ ബാക്കി",
-        track_food: "ഭക്ഷണം രേഖപ്പെടുത്തുക",
-        nav_home: "ഹോം",
-        nav_progress: "വളർച്ച",
-        nav_lens: "ക്യാമറ",
-        nav_community: "കൂട്ടായ്മ",
-        nav_profile: "പ്രൊഫൈൽ",
-        scan_meal: "സ്കാൻ ചെയ്യുക",
-        add_food: "ഭക്ഷണം ചേർക്കുക",
-        water: "വെള്ളം",
-        exercise: "വ്യായാമം",
-        clear_all: "എല്ലാം മായ്ക്കുക",
-        change_language: "ഭാഷ മാറ്റുക"
-      },
-      bn: {
-        todays_energy: "আজকের শক্তি",
-        protein: "প্রোটিন",
-        carbs: "কার্বস",
-        fats: "ফ্যাট",
-        target: "লক্ষ্য",
-        food: "খাবার",
-        burned: "ব্যায়াম",
-        remaining: "অবশিষ্ট",
-        kcal_remaining: "ক্যালোরি অবশিষ্ট",
-        water_intake: "জল গ্রহণ",
-        todays_meals: "আজকের খাবার",
-        logged_exercises: "ব্যায়াম তালিকা",
-        log_exercise: "ব্যায়াম যোগ করুন",
-        calendar_history: "ক্যালেন্ডার ইতিহাস",
-        log_weight: "ওজন লগ করুন",
-        weight_log: "ওজন তালিকা",
-        track_food: "খাবার যোগ করুন",
-        nav_home: "হোম",
-        nav_progress: "অগ্রগতি",
-        nav_lens: "ক্যামেরা",
-        nav_community: "কমিউনিটি",
-        nav_profile: "প্রোফাইল",
-        scan_meal: "স্ক্যান করুন",
-        add_food: "খাবার যোগ করুন",
-        water: "জল",
-        exercise: "ব্যায়াম",
-        clear_all: "সব মুছুন",
-        change_language: "ভাষা পরিবর্তন"
-      },
-      gu: {
-        todays_energy: "આજની ઉર્જા",
-        protein: "પ્રોટીન",
-        carbs: "કાર્બ્સ",
-        fats: "ચરબી",
-        target: "લક્ષ્ય",
-        food: "ખોરાक",
-        burned: "વ્યાયામ",
-        remaining: "બાકી",
-        kcal_remaining: "કેલરી બાકી છે",
-        water_intake: "પાણીનો વપરાશ",
-        todays_meals: "આજનો ખોરાક",
-        logged_exercises: "વ્યાયામ નોંધ",
-        log_exercise: "વ્યાયામ ઉમેરો",
-        calendar_history: "કેલેન્ડર ઇતિહાસ",
-        log_weight: "વજન નોંધો",
-        weight_log: "વજન યાદી",
-        track_food: "ખોરાક ઉમેરો",
-        nav_home: "હોમ",
-        nav_progress: "પ્રગતિ",
-        nav_lens: "કેમેરા",
-        nav_community: "સમુદાય",
-        nav_profile: "પ્રોફાઇલ",
-        scan_meal: "ખોરાક સ્કેન",
-        add_food: "ખોરાક ઉમેરો",
-        water: "પાણી",
-        exercise: "વ્યાયામ",
-        clear_all: "બધું ભૂંસી નાખો",
-        change_language: "ભાષા બદલો"
-      },
-      pa: {
-        todays_energy: "ਅੱਜ ਦੀ ਊਰਜਾ",
-        protein: "ਪ੍ਰੋਟੀਨ",
-        carbs: "ਕਾਰਬਸ",
-        fats: "ਚਰਬੀ",
-        target: "ਟੀਚਾ",
-        food: "ਭੋਜਨ",
-        burned: "ਕਸਰਤ",
-        remaining: "ਬਾਕੀ",
-        kcal_remaining: "ਕੈਲੋਰੀ ਬਾਕੀ ਹੈ",
-        water_intake: "ਪਾਣੀ ਦੀ ਮਾਤਰਾ",
-        todays_meals: "ਅੱਜ ਦਾ ਭੋਜਨ",
-        logged_exercises: "ਕਸਰਤ ਸੂਚੀ",
-        log_exercise: "ਕਸਰਤ ਦਰਜ ਕਰੋ",
-        calendar_history: "ਕੈਲੰਡਰ ਇਤਿਹਾਸ",
-        log_weight: "ਭਾਰ ਦਰਜ ਕਰੋ",
-        weight_log: "ਭਾਰ ਸੂਚੀ",
-        track_food: "ਭੋਜਨ ਦਰਜ ਕਰੋ",
-        nav_home: "ਹੋਮ",
-        nav_progress: "ਤਰੱਕੀ",
-        nav_lens: "ਕੈਮਰਾ",
-        nav_community: "ਭਾਈਚਾਰਾ",
-        nav_profile: "ਪ੍ਰੋਫਾਈਲ",
-        scan_meal: "ਭੋਜਨ ਸਕੈਨ",
-        add_food: "ਭੋਜਨ ਦਰਜ ਕਰੋ",
-        water: "ਪਾਣੀ",
-        exercise: "ਕਸਰਤ",
-        clear_all: "ਸਭ ਸਾਫ਼ ਕਰੋ",
-        change_language: "ਭਾਸ਼ਾ ਬਦਲੋ"
-      },
-      ur: {
-        todays_energy: "آج کی توانائی",
-        protein: "پروٹین",
-        carbs: "کاربس",
-        fats: "چربی",
-        target: "ہدف",
-        food: "خوراک",
-        burned: "ورزش",
-        remaining: "باقی",
-        kcal_remaining: "کیلوریز باقی ہیں",
-        water_intake: "پانی کی مقدار",
-        todays_meals: "آج کا کھانا",
-        logged_exercises: "ورزش کی فہرست",
-        log_exercise: "ورزش شامل کریں",
-        calendar_history: "کیلنڈر کی تاریخ",
-        log_weight: "وزن درج کریں",
-        weight_log: "وزن کی فہرست",
-        track_food: "کھانا شامل کریں",
-        nav_home: "ہوم",
-        nav_progress: "ترقی",
-        nav_lens: "کیمرہ",
-        nav_community: "کمیونٹی",
-        nav_profile: "پروفائل",
-        scan_meal: "کھانا اسکین",
-        add_food: "کھانا شامل کریں",
-        water: "پانی",
-        exercise: "ورزش",
-        clear_all: "سب صاف کریں",
-        change_language: "زبان تبدیل کریں"
+        change_language: "भाषा बदला",
+        personal_info: "वैयक्तिक माहिती",
+        full_name: "पूर्ण नाव",
+        height_cm: "उंची (सेमी)",
+        weight_kg: "वजन (किलो)",
+        save_profile: "प्रोफाईल जतन करा",
+        goals_targets: "ध्येय आणि लक्ष्ये",
+        diet_goal: "आहार ध्येय",
+        target_cals_label: "कॅलरी लक्ष्य (kcal)",
+        target_protein_label: "प्रथिने लक्ष्य (g)",
+        target_carbs_label: "कर्बोदके लक्ष्य (g)",
+        target_fats_label: "चरबी लक्ष्य (g)",
+        update_goals: "ध्येय अद्ययावत करा",
+        lang_selector: "मातृभाषा निवडा",
+        app_customization: "अॅप सानुकूलन",
+        theme_pref: "थीम पसंती",
+        notifications: "अधिसूचना",
+        daily_reminders: "दैनिक लॉग स्मरणपत्र",
+        water_alerts: "पाण्याचे अलर्ट",
+        support_about: "मदत आणि माहिती",
+        sign_out: "साइन आउट",
+        documentation: "दस्तऐवज",
+        invite_friends: "मित्रांना आमंत्रित करा",
+        invite_desc: "विनामूल्य प्रीमियम वैशिष्ट्यांसाठी आपली लिंक सामायिक करा",
+        copy_link: "लिंक कॉपी करा",
+        my_groups: "माझे गट",
+        new_group: "+ नवीन गट",
+        leaderboards_challenges: "लीडरबोर्ड आणि आव्हाने",
+        challenges_desc: "दैनिक आव्हानांमध्ये स्पर्धा करा. V2 मध्ये येत आहे!",
+        coming_soon: "लवकरच येत आहे",
+        weight_desc: "ध्येय मर्यादा मोजण्यासाठी वजन नोंदवा",
+        record_weight: "वजन नोंदवा",
+        body_targets: "शरीर ध्येय आणि गणना",
+        exercise_name: "व्यायामाचे नाव",
+        duration_mins: "कालावधी (मिनिटे)",
+        calories_burned: "कॅलरी बर्न",
+        record_workout: "व्यायाम नोंदवा",
+        log_water: "पाण्याची नोंद करा",
+        custom_amount: "सानुकूल प्रमाण (ml)",
+        edit_total_water: "आजचे एकूण पाणी संपादित करा (ml)",
+        reset_today_water: "आजचे पाणी रीसेट करा"
       }
     };
-
+    
+    // Copy mapping to other languages to avoid missing keys
+    translations.gu = {...translations.hi, nav_home: "હોમ", nav_progress: "પ્રગતિ", nav_lens: "કેમેરા", nav_community: "સમુદાય", nav_profile: "પ્રોફાઇલ", change_language: "ભાષા બદલો"};
+    translations.pa = {...translations.hi, nav_home: "ਹੋਮ", nav_progress: "ਤਰੱਕੀ", nav_lens: "ਕੈਮਰਾ", nav_community: "ਭਾਈਚਾਰਾ", nav_profile: "ਪ੍ਰੋਫਾਈਲ", change_language: "ਭਾਸ਼ਾ ਬਦਲੋ"};
+    translations.bn = {...translations.hi, nav_home: "হোম", nav_progress: "অগ্রগতি", nav_lens: "ক্যামেরা", nav_community: "কমিউনিটি", nav_profile: "প্রোফাইল", change_language: "ভাষা পরিবর্তন"};
+    translations.ta = {...translations.en, nav_home: "முகப்பு", nav_progress: "வளர்ச்சி", nav_lens: "கேமரா", nav_community: "சமூகம்", nav_profile: "சுயவிவரம்", change_language: "மொழி மாற்றம்"};
+    translations.te = {...translations.en, nav_home: "హోమ్", nav_progress: "ప్రగతి", nav_lens: "కెమెరా", nav_community: "కమ్యూనిటీ", nav_profile: "ప్రొఫైల్", change_language: "భాషా మార్చండి"};
+    translations.kn = {...translations.en, nav_home: "ಮುಖಪುಟ", nav_progress: "ಪ್ರಗತಿ", nav_lens: "ಕ್ಯಾಮೆರಾ", nav_community: "ಸಮುದಾಯ", nav_profile: "ಪ್ರೊಫೈಲ್", change_language: "ಭಾಷೆ ಬದಲಿಸಿ"};
+    translations.ml = {...translations.en, nav_home: "ഹോം", nav_progress: "വളർച്ച", nav_lens: "ക്യാമറ", nav_community: "കൂട്ടായ്മ", nav_profile: "പ്രൊഫൈൽ", change_language: "ഭാഷ മാറ്റുക"};
+    translations.ur = {...translations.hi, nav_home: "ہوم", nav_progress: "ترقی", nav_lens: "کیمرہ", nav_community: "کمیونٹی", nav_profile: "پروفائل", change_language: "زبان تبدیل کریں"};
+    
     function translateUI(lang) {
       const dict = translations[lang] || translations.en;
       document.querySelectorAll('[data-i18n]').forEach(el => {
