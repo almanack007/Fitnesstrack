@@ -1132,10 +1132,21 @@
         const data = await res.json();
         // Only overwrite local data if the database actually has content
         if (data.profile) userProfile = data.profile;
-        if (Array.isArray(data.log)) todayLog = data.log;
-        if (Number.isInteger(data.waterIntake)) {
+        
+        // Only load log from DB if it explicitly has records, otherwise upload local log
+        if (data.log !== null && Array.isArray(data.log)) {
+          todayLog = data.log;
+        } else {
+          // No record on the server yet for this date, write local state to server
+          if (todayLog.length > 0 || waterIntake > 0) {
+            saveDailyToDatabase();
+          }
+        }
+        
+        if (data.waterIntake !== null && Number.isInteger(data.waterIntake)) {
           waterIntake = (data.waterIntake <= 20 && data.waterIntake > 0) ? data.waterIntake * 250 : data.waterIntake;
         }
+        
         if (data.weeklyData && typeof data.weeklyData === 'object') {
           if (data.weeklyData.proteins) {
             weeklyData = data.weeklyData.proteins;
@@ -1533,6 +1544,20 @@
       return '🍽️';
     }
 
+    function timeStringToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+      if (!match) return 0;
+      let hour = parseInt(match[1], 10);
+      const min = parseInt(match[2], 10);
+      const ampm = match[3];
+      if (ampm) {
+        if (ampm.toUpperCase() === 'PM' && hour < 12) hour += 12;
+        if (ampm.toUpperCase() === 'AM' && hour === 12) hour = 0;
+      }
+      return hour * 60 + min;
+    }
+
     function renderFoodLog() {
       const container = document.getElementById('foodLog');
       if (!todayLog.length) {
@@ -1544,74 +1569,54 @@
         return;
       }
 
-      const groups = { breakfast: [], lunch: [], dinner: [], snacks: [] };
-      todayLog.forEach((item, i) => {
+      const sortedLog = [...todayLog].map((item, originalIndex) => ({ item, index: originalIndex }));
+      sortedLog.sort((a, b) => timeStringToMinutes(a.item.time) - timeStringToMinutes(b.item.time));
+
+      let html = '<div class="relative pl-6 border-l border-slate-800 space-y-4 pt-1">';
+      html += sortedLog.map(({ item, index }) => {
+        const category = item.category || (foodDatabase[item.name.replace(' (LensPro)', '')] ? foodDatabase[item.name.replace(' (LensPro)', '')].category : 'AI Scanned');
+        const emoji = getFoodEmoji(item.name, category);
         const period = getMealPeriod(item.time);
-        groups[period].push({ item, index: i });
-      });
+        
+        const periodNames = {
+          breakfast: 'Breakfast',
+          lunch: 'Lunch',
+          dinner: 'Dinner',
+          snacks: 'Snack'
+        };
+        const periodName = periodNames[period] || 'Snack';
 
-      const titles = {
-        breakfast: { name: 'Breakfast', icon: '🍳' },
-        lunch: { name: 'Lunch', icon: '🍲' },
-        snacks: { name: 'Snacks', icon: '🍿' },
-        dinner: { name: 'Dinner', icon: '🥗' }
-      };
+        const visual = item.image
+          ? `<img src="${item.image}" class="w-10 h-10 rounded-xl object-cover border border-slate-700/50 flex-shrink-0" alt="${item.name}" />`
+          : `<div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-lg flex-shrink-0 border border-slate-700/30">${emoji}</div>`;
 
-      let html = '<div class="space-y-4">';
-      for (const [key, group] of Object.entries(groups)) {
-        const info = titles[key];
-        html += `
-          <div class="border-l-2 border-slate-800/80 pl-3 py-0.5">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <span>${info.icon}</span> ${info.name}
-              </span>
-              <span class="text-[9px] text-slate-500 font-semibold">${group.length} items</span>
-            </div>
-            <div class="space-y-2">
-        `;
-
-        if (group.length === 0) {
-          html += `<p class="text-[10px] text-slate-600 italic pl-1">No ${info.name.toLowerCase()} logged</p>`;
-        } else {
-          html += group.map(({ item, index }) => {
-            const category = item.category || (foodDatabase[item.name.replace(' (LensPro)', '')] ? foodDatabase[item.name.replace(' (LensPro)', '')].category : 'AI Scanned');
-            const emoji = getFoodEmoji(item.name, category);
+        return `
+          <div class="log-row relative flex items-center justify-between gap-3 bg-slate-900/40 rounded-xl p-2.5 border border-slate-800/80 hover:border-emerald-500/20 transition-all">
+            <div class="absolute -left-[29px] top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-slate-950"></div>
             
-            // Image tag or emoji wrapper
-            const visual = item.image
-              ? `<img src="${item.image}" class="w-10 h-10 rounded-xl object-cover border border-slate-700/50 flex-shrink-0" alt="${item.name}" />`
-              : `<div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-lg flex-shrink-0 border border-slate-700/30">${emoji}</div>`;
-              
-            return `
-              <div class="log-row flex items-center justify-between gap-3 bg-slate-900/40 rounded-xl p-2.5 border border-slate-800/80 hover:border-emerald-500/20 transition-all">
-                <div class="flex items-center gap-2.5 min-w-0 flex-grow">
-                  ${visual}
-                  <div class="min-w-0">
-                    <p class="font-semibold text-xs text-slate-200 truncate">${item.name}</p>
-                    <p class="text-[10px] text-slate-500 mt-0.5">${item.cal} cal &bull; ${item.protein.toFixed(1)}g P &bull; ${item.time}</p>
-                  </div>
+            <div class="flex items-center gap-2.5 min-w-0 flex-grow">
+              ${visual}
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <p class="font-semibold text-xs text-slate-200 truncate">${item.name}</p>
+                  <span class="text-[8px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">${periodName}</span>
                 </div>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                  <button onclick="decrementFood(${index})" class="btn-qty" style="width:22px; height:22px; font-size:10px;">-</button>
-                  <span class="text-[10px] font-bold text-slate-300 min-w-[32px] text-center">${item.amount}${item.unit}</span>
-                  <button onclick="incrementFood(${index})" class="btn-qty" style="width:22px; height:22px; font-size:10px;">+</button>
-                  <button onclick="removeFood(${index})" class="ml-1 text-slate-600 hover:text-red-400 p-1 transition" title="Delete">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+                <p class="text-[10px] text-slate-500 mt-0.5">${item.cal} cal &bull; ${item.protein.toFixed(1)}g P &bull; ${item.time}</p>
               </div>
-            `;
-          }).join('');
-        }
-
-        html += `
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button onclick="decrementFood(${index})" class="btn-qty" style="width:22px; height:22px; font-size:10px;">-</button>
+              <span class="text-[10px] font-bold text-slate-300 min-w-[32px] text-center">${item.amount}${item.unit}</span>
+              <button onclick="incrementFood(${index})" class="btn-qty" style="width:22px; height:22px; font-size:10px;">+</button>
+              <button onclick="removeFood(${index})" class="ml-1 text-slate-600 hover:text-red-400 p-1 transition" title="Delete">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
             </div>
           </div>
         `;
-      }
+      }).join('');
       html += '</div>';
       container.innerHTML = html;
     }

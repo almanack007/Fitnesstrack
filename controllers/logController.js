@@ -33,9 +33,9 @@ exports.getDailyLog = async (req, res) => {
     const logRow = logResult.rows[0];
     res.json({
       profile: profileResult.rows[0]?.profile || null,
-      log: logRow?.food_log || [],
-      waterIntake: logRow?.water_intake ?? 0,
-      totals: logRow?.totals || {},
+      log: logRow ? logRow.food_log : null,
+      waterIntake: logRow ? logRow.water_intake : null,
+      totals: logRow ? logRow.totals : null,
       weeklyData: toWeeklyData(weeklyResult.rows)
     });
   } finally {
