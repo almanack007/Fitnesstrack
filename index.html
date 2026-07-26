@@ -11,27 +11,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    :root {
-      color-scheme: dark;
-      --bg-primary: #030712;
-      --bg-surface: rgba(17, 24, 39, 0.72);
-      --border-color: rgba(148, 163, 184, 0.12);
-      --text-primary: #f3f4f6;
-    }
-    [data-theme="light"] {
-      color-scheme: light;
-      --bg-primary: #f8fafc;
-      --bg-surface: rgba(255, 255, 255, 0.9);
-      --border-color: rgba(226, 232, 240, 0.9);
-      --text-primary: #0f172a;
-    }
+    :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     body {
       font-family: Inter, system-ui, sans-serif;
-      background-color: var(--bg-primary);
+      background:
+        radial-gradient(circle at 18% 6%, rgba(16, 185, 129, 0.12), transparent 30rem),
+        radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.1), transparent 28rem),
+        #030712;
       min-height: 100vh;
-      color: var(--text-primary);
-      transition: background-color 0.3s ease, color 0.3s ease;
+      color: #f3f4f6;
     }
     .glass {
       background: rgba(17, 24, 39, 0.72);
@@ -199,7 +188,7 @@
         <div id="googleSignInBtn" class="flex justify-center min-h-[44px] mb-4"></div>
         
         <!-- Fallback Google Login (visible when SDK not configured) -->
-        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
+        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="hidden w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -289,13 +278,10 @@
       <!-- Account list -->
       <div class="space-y-2.5" id="simulatedAccountsList"></div>
       
-      <!-- Direct User ID Restore Section -->
-      <div class="mt-4 pt-4 border-t border-slate-800 text-left">
-        <p class="text-xs text-slate-400 font-semibold mb-2">Restore by User ID or Email</p>
-        <form onsubmit="loginWithCustomUserId(event)" class="flex gap-2">
-          <input id="customUserIdInput" type="text" required placeholder="e.g. google-113083830486257342554" class="flex-1 text-xs rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-slate-100" />
-          <button type="submit" class="rounded-xl bg-emerald-500 text-slate-950 px-3 py-2 text-xs font-bold neon">Load Data</button>
-        </form>
+      <div class="relative flex py-4 items-center">
+        <div class="flex-grow border-t border-slate-800"></div>
+        <span class="flex-shrink mx-3 text-slate-500 text-xs">or create a custom profile</span>
+        <div class="flex-grow border-t border-slate-800"></div>
       </div>
       
       <!-- Custom User Login -->
@@ -420,25 +406,6 @@
         <p id="syncStatus" class="text-xs text-slate-500 mt-1">Database sync ready</p>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Language Switcher Dropdown -->
-        <select id="langSelect" onchange="setLanguage(this.value)" class="bg-slate-900/80 border border-slate-700 rounded-xl text-xs px-2.5 py-2 text-slate-200 focus:border-emerald-500">
-          <option value="en">🌐 EN</option>
-          <option value="hi">🇮🇳 HI</option>
-          <option value="mr">🇮🇳 MR</option>
-          <option value="gu">🇮🇳 GU</option>
-          <option value="pa">🇮🇳 PA</option>
-          <option value="bn">🇮🇳 BN</option>
-          <option value="ta">🇮🇳 TA</option>
-          <option value="te">🇮🇳 TE</option>
-          <option value="kn">🇮🇳 KN</option>
-          <option value="ml">🇮🇳 ML</option>
-        </select>
-
-        <!-- Theme Switcher Button -->
-        <button onclick="toggleTheme()" class="rounded-xl border border-slate-700 bg-slate-900/55 p-2.5 hover:border-emerald-400/50 text-slate-300 transition flex items-center justify-center" title="Toggle Light/Dark Theme">
-          <span id="themeIcon">🌙</span>
-        </button>
-
         <button onclick="showProfile()" class="flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/55 p-2 hover:border-emerald-400/50 transition">
           <div id="headerUserAvatar" class="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center font-bold text-slate-100 overflow-hidden bg-emerald-500 flex-shrink-0">
             U
@@ -863,39 +830,17 @@
   </div>
 
   <script>
-    // i18n Translation Engine (10 Languages)
-    const i18n = {
-      en: { tagline: "Smart macro tracking, AI food scanning & community goals", dashboard: "Dashboard", progress: "Progress", groups: "Groups", foodLog: "Food Log", lensPro: "LensPro AI", settings: "Settings", history: "History", today: "Today", waterTracker: "Water Tracker", recentMeals: "Logged Meals & Foods", weightHistory: "Weight & Goal History", achievements: "Achievements & Milestones", leaderboard: "Weekly Community Leaderboard", goal: "Goal" },
-      hi: { tagline: "स्मार्ट मैक्रो ट्रैकिंग और एआई भोजन स्कैनर", dashboard: "डैशबोर्ड", progress: "प्रगति", groups: "समूह", foodLog: "भोजन लॉग", lensPro: "एआई स्कैनर", settings: "सेटिंग्स", history: "इतिहास", today: "आज", waterTracker: "पानी ट्रैकर", recentMeals: "हाल का भोजन", weightHistory: "वजन इतिहास", achievements: "उपलब्धियां", leaderboard: "लीडरबोर्ड", goal: "लक्ष्य" },
-      mr: { tagline: "स्मार्ट मॅक्रो ट्रॅकिंग आणि एआय फूड स्कॅनर", dashboard: "डॅशबोर्ड", progress: "प्रगती", groups: "गट", foodLog: "अन्न लॉग", lensPro: "एआय स्कॅनर", settings: "सेटिंग्ज", history: "इतिहास", today: "आज", waterTracker: "पाणी ट्रॅकर", recentMeals: "अलीकडील जेवण", weightHistory: "वजन इतिहास", achievements: "यश", leaderboard: "लीडरबोर्ड", goal: "ध्येय" },
-      gu: { tagline: "સ્માર્ટ મેક્રો ટ્રેકિંગ અને એઆઈ ફૂડ સ્કેનર", dashboard: "ડૅશબોર્ડ", progress: "પ્રગતિ", groups: "જૂથો", foodLog: "ખોરાક લોગ", lensPro: "એઆઈ સ્કેનર", settings: "સેટિંગ્સ", history: "ઇતિહાસ", today: "આજે", waterTracker: "પાણી ટ્રેકર", recentMeals: "તાજેતરનું ભોજન", weightHistory: "વજન ઇતિહાસ", achievements: "સિદ્ધિઓ", leaderboard: "લીડરબોર્ડ", goal: "લક્ષ્ય" },
-      pa: { tagline: "ਸਮਾਰਟ ਮੈਕਰੋ ਟ੍ਰੈਕਿੰਗ ਅਤੇ ਏਆਈ ਫੂਡ ਸਕੈਨਰ", dashboard: "ਡੈਸ਼ਬੋਰਡ", progress: "ਤਰੱਕੀ", groups: "ਗਰੁੱਪ", foodLog: "ਖੁਰਾਕ ਲੌਗ", lensPro: "ਏਆਈ ਸਕੈਨਰ", settings: "ਸੈਟਿੰਗਾਂ", history: "ਇਤਿਹਾਸ", today: "ਅੱਜ", waterTracker: "ਪਾਣੀ ਟ੍ਰੈਕਰ", recentMeals: "ਹਾਲ ਹੀ ਦੇ ਖਾਣੇ", weightHistory: "ਵਜ਼ਨ ਇਤਿਹਾਸ", achievements: "ਪ੍ਰਾਪਤੀਆਂ", leaderboard: "ਲੀਡਰਬੋਰਡ", goal: "ਨਿਸ਼ਾਨਾ" },
-      bn: { tagline: "স্মার্ট ম্যাক্রো ট্র্যাকিং এবং এআই ফুড স্ক্যানার", dashboard: "ড্যাশবোর্ড", progress: "অগ্রগতি", groups: "গ্রুপ", foodLog: "খাবার লগ", lensPro: "এআই স্ক্যানার", settings: "সেটিংস", history: "ইতিহাস", today: "আজ", waterTracker: "পানি ট্র্যাকার", recentMeals: "সাম্প্রতিক খাবার", weightHistory: "ওজন ইতিহাস", achievements: "অর্জনসমূহ", leaderboard: "লিডারবোর্ড", goal: "লক্ষ্য" },
-      ta: { tagline: "ஸ்மார்ட் மேக்ரோ கண்காணிப்பு & ஏஐ உணவு ஸ்கேனர்", dashboard: "டேஷ்போர்டு", progress: "முன்னேற்றம்", groups: "குழுக்கள்", foodLog: "உணவு பதிவு", lensPro: "ஏஐ ஸ்கேனர்", settings: "அமைப்புகள்", history: "வரலாறு", today: "இன்று", waterTracker: "நீர் டிராக்கர்", recentMeals: "சமீபத்திய உணவு", weightHistory: "எடை வரலாறு", achievements: "சாதனைகள்", leaderboard: "முன்னணி பட்டியல்", goal: "இலக்கு" },
-      te: { tagline: "స్మార్ట్ మాక్రో ట్రాకింగ్ మరియు ఏఐ ఫుడ్ స్కానర్", dashboard: "డాష్‌బోర్డ్", progress: "పురోగతి", groups: "గ్రూప్‌లు", foodLog: "ఆహార లాగ్", lensPro: "ఏఐ స్కానర్", settings: "సెట్టింగ్‌లు", history: "చరిత్ర", today: "ఈ రోజు", waterTracker: "వాటర్ ట్రాకర్", recentMeals: "ఇటీవలి భోజനം", weightHistory: "బరువు చరిత్ర", achievements: "సాధనలు", leaderboard: "లీడర్‌బోర్డ్", goal: "లక్ష్యం" },
-      kn: { tagline: "ಸ್ಮಾರ್ಟ್ ಮ್ಯಾಕ್ರೋ ಟ್ರ್ಯಾಕಿಂಗ್ ಮತ್ತು ಎಐ ಫುಡ್ ಸ್ಕ್ಯಾನರ್", dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್", progress: "ಪ್ರಗತಿ", groups: "ಗುಂಪುಗಳು", foodLog: "ಆಹಾರ ಲಾಗ್", lensPro: "ಎಐ ಸ್ಕ್ಯಾನರ್", settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು", history: "ಇತಿಹಾಸ", today: "ಇಂದು", waterTracker: "ವಾಟರ್ ಟ್ರ್ಯಾಕರ್", recentMeals: "ಇತ್ತೀಚಿನ ಊಟ", weightHistory: "ತೂಕದ ಇತಿಹಾಸ", achievements: "ಸಾಧನೆಗಳು", leaderboard: "ಲೀಡರ್‌ಬೋರ್ಡ್", goal: "ಗುರಿ" },
-      ml: { tagline: "സ്മാർട്ട് മാക്രോ ട്രെയ്ക്കിംഗും എഐ ഫുഡ് സ്കാനറും", dashboard: "ഡാഷ്‌ബോർഡ്", progress: "പുരോഗതി", groups: "ഗ്രൂപ്പുകൾ", foodLog: "ഭക്ഷണ ലോഗ്", lensPro: "എഐ സ്കാനർ", settings: "ക്രമീകരണങ്ങൾ", history: "ചരിത്രം", today: "ഇന്ന്", waterTracker: "വാട്ടർ ട്രാക്കർ", recentMeals: "സമീപകാല ഭക്ഷണം", weightHistory: "ഭാരം ചരിത്രം", achievements: "നേട്ടങ്ങൾ", leaderboard: "ലീഡർബോർഡ്", goal: "ലക്ഷ്യം" }
+    const store = {
+      profile: 'fittrack_profile',
+      logDate: 'fittrack_log_date',
+      log: 'fittrack_log',
+      waterDate: 'fittrack_water_date',
+      water: 'fittrack_water',
+      weekly: 'fittrack_weekly',
+      userId: 'fittrack_user_id',
+      apiBase: 'fittrack_api_base',
+      user: 'fittrack_user'
     };
-
-    function setLanguage(lang) {
-      localStorage.setItem('fittrack_lang', lang);
-      const dict = i18n[lang] || i18n.en;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.textContent = dict[key];
-      });
-      const selectEl = document.getElementById('langSelect');
-      if (selectEl) selectEl.value = lang;
-    }
-
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('fittrack_theme', next);
-      const icon = document.getElementById('themeIcon');
-      if (icon) icon.textContent = next === 'dark' ? '🌙' : '☀️';
-    }
     const _localD = new Date();
     const todayKey = _localD.getFullYear() + '-' + String(_localD.getMonth() + 1).padStart(2, '0') + '-' + String(_localD.getDate()).padStart(2, '0');
     let viewDateKey = todayKey;
@@ -2139,26 +2084,10 @@
     // --- Authentication & Session Helper Functions ---
 
     const mockAccounts = [
-      { id: 'google-113083830486257342554', name: 'Google Account (Primary Data)', email: 'user@google.com', phone: '', color: 'emerald', picture: '' },
       { id: 'google-1011', name: 'Tony Stark', email: 'tony@starkindustries.com', phone: '+1 (212) 555-0143', color: 'rose', picture: '' },
-      { id: 'google-1012', name: 'Bruce Banner', email: 'banner@avengers.org', phone: '+1 (415) 555-0182', color: 'emerald', picture: '' }
+      { id: 'google-1012', name: 'Bruce Banner', email: 'banner@avengers.org', phone: '+1 (415) 555-0182', color: 'emerald', picture: '' },
+      { id: 'google-1013', name: 'Selina Kyle', email: 'selina@gotham.city', phone: '+1 (609) 555-0199', color: 'purple', picture: '' }
     ];
-
-    function loginWithCustomUserId(event) {
-      event.preventDefault();
-      const customId = document.getElementById('customUserIdInput').value.trim();
-      if (!customId) return;
-      const user = {
-        id: customId,
-        name: 'Google User',
-        email: customId.includes('@') ? customId : 'user@google.com',
-        phone: '',
-        color: 'emerald',
-        picture: ''
-      };
-      loginUser(user);
-      closeGoogleSimModal();
-    }
 
     function decodeJwt(token) {
       try {
