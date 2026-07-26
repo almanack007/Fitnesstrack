@@ -199,7 +199,7 @@
         <div id="googleSignInBtn" class="flex justify-center min-h-[44px] mb-4"></div>
         
         <!-- Fallback Google Login (visible when SDK not configured) -->
-        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="hidden w-full flex items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
+        <button id="googleSimBtn" onclick="openGoogleSimModal()" class="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-700 bg-white/5 hover:bg-white/10 px-5 py-3 transition mb-4">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -289,10 +289,13 @@
       <!-- Account list -->
       <div class="space-y-2.5" id="simulatedAccountsList"></div>
       
-      <div class="relative flex py-4 items-center">
-        <div class="flex-grow border-t border-slate-800"></div>
-        <span class="flex-shrink mx-3 text-slate-500 text-xs">or create a custom profile</span>
-        <div class="flex-grow border-t border-slate-800"></div>
+      <!-- Direct User ID Restore Section -->
+      <div class="mt-4 pt-4 border-t border-slate-800 text-left">
+        <p class="text-xs text-slate-400 font-semibold mb-2">Restore by User ID or Email</p>
+        <form onsubmit="loginWithCustomUserId(event)" class="flex gap-2">
+          <input id="customUserIdInput" type="text" required placeholder="e.g. google-113083830486257342554" class="flex-1 text-xs rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-slate-100" />
+          <button type="submit" class="rounded-xl bg-emerald-500 text-slate-950 px-3 py-2 text-xs font-bold neon">Load Data</button>
+        </form>
       </div>
       
       <!-- Custom User Login -->
@@ -2135,10 +2138,26 @@
     // --- Authentication & Session Helper Functions ---
 
     const mockAccounts = [
+      { id: 'google-113083830486257342554', name: 'Google Account (Primary Data)', email: 'user@google.com', phone: '', color: 'emerald', picture: '' },
       { id: 'google-1011', name: 'Tony Stark', email: 'tony@starkindustries.com', phone: '+1 (212) 555-0143', color: 'rose', picture: '' },
-      { id: 'google-1012', name: 'Bruce Banner', email: 'banner@avengers.org', phone: '+1 (415) 555-0182', color: 'emerald', picture: '' },
-      { id: 'google-1013', name: 'Selina Kyle', email: 'selina@gotham.city', phone: '+1 (609) 555-0199', color: 'purple', picture: '' }
+      { id: 'google-1012', name: 'Bruce Banner', email: 'banner@avengers.org', phone: '+1 (415) 555-0182', color: 'emerald', picture: '' }
     ];
+
+    function loginWithCustomUserId(event) {
+      event.preventDefault();
+      const customId = document.getElementById('customUserIdInput').value.trim();
+      if (!customId) return;
+      const user = {
+        id: customId,
+        name: 'Google User',
+        email: customId.includes('@') ? customId : 'user@google.com',
+        phone: '',
+        color: 'emerald',
+        picture: ''
+      };
+      loginUser(user);
+      closeGoogleSimModal();
+    }
 
     function decodeJwt(token) {
       try {
