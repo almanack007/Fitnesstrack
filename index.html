@@ -1292,7 +1292,7 @@
       <p id="langConfirmMessage" class="text-xs text-slate-400 mb-5">Switch language to हिन्दी?</p>
       <div class="flex gap-3">
         <button onclick="closeLangConfirm()" class="flex-1 rounded-xl border border-slate-700 bg-slate-900/55 py-2.5 text-xs text-slate-300 font-bold hover:bg-slate-800 transition">Cancel</button>
-        <button id="langConfirmBtn" class="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-2.5 text-xs font-bold transition neon">Switch</button>
+        <button onclick="confirmAppLanguage()" class="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 py-2.5 text-xs font-bold transition neon">Switch</button>
       </div>
     </div>
   </div>
@@ -1542,7 +1542,15 @@
         if (!res.ok) throw new Error('Database read failed');
         const data = await res.json();
         // Only overwrite local data if the database actually has content
-        if (data.profile) userProfile = data.profile;
+        if (data.profile) {
+          userProfile = data.profile;
+          // Apply database language preference if available, keeping mobile and desktop in sync!
+          if (userProfile.language) {
+            localStorage.setItem('fittrack_language', userProfile.language);
+            translateUI(userProfile.language);
+            renderLanguages();
+          }
+        }
         
         // Only overwrite local log if the server has records, or if the client is empty
         let localNeedsUpload = false;
@@ -3361,10 +3369,19 @@
     function confirmAppLanguage() {
       if (pendingLanguageCode) {
         localStorage.setItem('fittrack_language', pendingLanguageCode);
+        
+        // Save language preference directly inside userProfile for real-time cross-device database syncing!
+        if (userProfile) {
+          userProfile.language = pendingLanguageCode;
+        }
+        
         renderLanguages();
         translateUI(pendingLanguageCode);
         const lang = indianLanguages.find(l => l.code === pendingLanguageCode);
         showToast(`Language set to ${lang.native}`, 'success');
+        
+        saveLocalState();
+        saveDailyToDatabase();
       }
       closeLangConfirm();
     }
