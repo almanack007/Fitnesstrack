@@ -93,6 +93,68 @@
         display: none !important;
       }
     }
+
+    /* Light Theme Overrides */
+    body.theme-light {
+      background:
+        radial-gradient(circle at 18% 6%, rgba(16, 185, 129, 0.08), transparent 30rem),
+        radial-gradient(circle at 82% 18%, rgba(59, 130, 246, 0.06), transparent 28rem),
+        #f8fafc;
+      color: #0f172a;
+    }
+    body.theme-light .glass {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+      color: #0f172a;
+    }
+    body.theme-light .glass:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    body.theme-light input, 
+    body.theme-light select, 
+    body.theme-light textarea {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    body.theme-light p, 
+    body.theme-light span, 
+    body.theme-light h2, 
+    body.theme-light h3, 
+    body.theme-light h1,
+    body.theme-light summary {
+      color: #0f172a !important;
+    }
+    body.theme-light .text-slate-400, 
+    body.theme-light .text-slate-500, 
+    body.theme-light .text-slate-600 {
+      color: #475569 !important;
+    }
+    body.theme-light .text-slate-300 {
+      color: #334155 !important;
+    }
+    body.theme-light .bg-slate-900\/55, 
+    body.theme-light .bg-slate-900\/40, 
+    body.theme-light .bg-slate-950\/40,
+    body.theme-light .bg-slate-950\/80 {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    body.theme-light .border-slate-800,
+    body.theme-light .border-slate-800\/80,
+    body.theme-light .border-slate-700 {
+      border-color: #e2e8f0 !important;
+    }
+    body.theme-light .btn-qty {
+      background: #e2e8f0;
+      color: #334155;
+      border-color: #cbd5e1;
+    }
+    body.theme-light .btn-qty:hover {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+    }
     /* Dynamic Water Bottle UI */
     .water-bottle-wrapper {
       display: flex;
@@ -424,50 +486,60 @@
       </div>
     </header>
 
-    <!-- Mobile Navigation Switcher (Only visible on screens < 768px) -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 flex justify-around py-3 z-40">
-      <button id="navBtnDashboard" onclick="switchMobileTab('dashboard')" class="flex flex-col items-center gap-1 text-emerald-400">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
-        </svg>
-        <span class="text-[10px] font-semibold">Dashboard</span>
+    <!-- Floating Navigation Dock (Universal) -->
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-[500px] glass rounded-2xl border border-slate-800/80 flex justify-around py-3 px-4 z-40 shadow-[0_10px_35px_rgba(0,0,0,0.6)]">
+      <button id="navHome" onclick="switchTab('home')" class="flex flex-col items-center gap-1 text-emerald-400 nav-item">
+        <span class="text-lg">🏠</span>
+        <span class="text-[9px] font-bold">Home</span>
       </button>
-      <button id="navBtnLensPro" onclick="openLensPro()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <span class="text-[10px] font-semibold">LensPro</span>
+      <button id="navProgress" onclick="switchTab('progress')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
+        <span class="text-lg">📈</span>
+        <span class="text-[9px] font-bold">Progress</span>
       </button>
-      <button id="navBtnTracker" onclick="switchMobileTab('tracker')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <span class="text-[10px] font-semibold">Add Food</span>
+      <button id="navAddFood" onclick="switchTab('addfood')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
+        <span class="text-lg">📸</span>
+        <span class="text-[9px] font-bold">Add Food</span>
+      </button>
+      <button id="navCommunity" onclick="switchTab('community')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
+        <span class="text-lg">👥</span>
+        <span class="text-[9px] font-bold">Community</span>
+      </button>
+      <button id="navProfile" onclick="switchTab('profile')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-200 nav-item">
+        <span class="text-lg">👤</span>
+        <span class="text-[9px] font-bold">Profile</span>
       </button>
     </div>
 
-    <!-- Calendar & Streak Section -->
-    <div id="calendarSection" class="max-w-[1600px] mx-auto mb-6">
-      <div class="glass rounded-2xl p-4 sm:p-5">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-bold flex items-center gap-2">
-            History <span id="streakBadge" class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30 font-semibold shadow-[0_0_10px_rgba(16,185,129,0.2)]">🔥 0 Day Streak</span>
-          </h2>
-          <button onclick="selectDate(new Date().toISOString().slice(0, 10))" class="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700">Today</button>
+    <!-- Floating AI Assistant Orb -->
+    <button onclick="toggleAIChat()" class="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-[0_4px_15px_rgba(16,185,129,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center text-2xl z-40" title="Ask AI Coach">
+      💬
+    </button>
+
+    <!-- AI Chat Panel Overlay -->
+    <div id="aiChatPanel" class="fixed bottom-40 right-6 w-[90%] max-w-[360px] h-[400px] glass rounded-2xl border border-slate-800/80 hidden flex-col z-50 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+      <div class="flex items-center justify-between p-4 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <h3 class="font-bold text-sm text-slate-200">AI Coach</h3>
         </div>
-        <div id="calendarContainer" class="flex gap-3 overflow-x-auto thin-scroll pb-2 snap-x">
-          <!-- Calendar items injected here -->
-        </div>
+        <button onclick="toggleAIChat()" class="text-slate-400 hover:text-slate-200">✕</button>
+      </div>
+      <div id="aiChatMessages" class="flex-grow p-4 overflow-y-auto space-y-3 thin-scroll text-xs">
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">Hi! I am your AI coach. Ask me anything about your current nutrition goals!</div>
+      </div>
+      <div class="p-3 border-t border-slate-800 flex gap-2">
+        <input id="aiChatInput" type="text" placeholder="Ask anything about today's log..." class="flex-grow rounded-xl bg-slate-950/80 border border-slate-800 px-3 py-2 text-xs text-slate-100" onkeydown="if(event.key==='Enter') sendAIChatMessage()" />
+        <button onclick="sendAIChatMessage()" class="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-3 py-2 text-xs font-bold transition">Send</button>
       </div>
     </div>
 
-    <!-- Responsive Grid -->
-    <div class="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-6">
+    <!-- Responsive Grid Workspace -->
+    <div class="max-w-[1600px] mx-auto min-h-[80vh]">
       
-      <!-- Panel A: Dashboard & Log (dashboardPanel) -->
-      <!-- Spans 8 columns on desktop (lg), 6 columns on tablet (md), full width on mobile -->
-      <div id="dashboardPanel" class="md:col-span-6 lg:col-span-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Panel 1: Home Tab Panel -->
+      <div id="panelHome" class="tab-panel grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Dashboard Left (Home Tab cols 1-7) -->
+        <div class="lg:col-span-7 space-y-6">
         
         <!-- Dashboard Left: Stats, Macros, Water -->
         <div class="space-y-6">
@@ -1429,7 +1501,18 @@
       renderFoodLog();
       initChart();
       updateDashboard();
-      switchMobileTab('dashboard');
+      
+      // Initialize Launch Sprint components
+      populateProfileFields();
+      initReferralLink();
+      renderLanguages();
+      renderWeightHistory();
+      
+      // Load preference theme button states
+      const savedTheme = localStorage.getItem('fittrack_theme') || 'system';
+      setAppTheme(savedTheme);
+      
+      switchTab('home');
     }
 
     function renderCategories() {
@@ -2724,11 +2807,310 @@
       location.reload();
     }
 
+    /* ── Launch Sprint UI & Navigation State ── */
+    let activeTab = 'home';
+    function switchTab(tabId) {
+      activeTab = tabId;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      const targetPanel = document.getElementById('panel' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      if (targetPanel) targetPanel.classList.remove('hidden');
+      
+      // Update nav button selection styles
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('text-emerald-400');
+        btn.classList.add('text-slate-400');
+      });
+      const activeNav = document.getElementById('nav' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+      if (activeNav) {
+        activeNav.classList.add('text-emerald-400');
+        activeNav.classList.remove('text-slate-400');
+      }
+      
+      // Contextual AI Greeting
+      updateAICoachGreeting();
+    }
+
+    // Retain backwards compatibility for mobile toggles
+    function switchMobileTab(tab) {
+      if (tab === 'dashboard') switchTab('home');
+      else if (tab === 'tracker') {
+        switchTab('home');
+        setTimeout(() => {
+          const searchEl = document.getElementById('foodSearch');
+          if (searchEl) searchEl.focus();
+        }, 150);
+      }
+    }
+
+    /* ── Indian Languages support ── */
+    const indianLanguages = [
+      { code: 'en', name: 'English', native: 'English', flag: '🇬🇧' },
+      { code: 'hi', name: 'Hindi', native: 'हिन्दी', flag: '🇮🇳' },
+      { code: 'mr', name: 'Marathi', native: 'मराठी', flag: '🇮🇳' },
+      { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી', flag: '🇮🇳' },
+      { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ', flag: '🇮🇳' },
+      { code: 'bn', name: 'Bengali', native: 'বাংলা', flag: '🇮🇳' },
+      { code: 'ta', name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳' },
+      { code: 'te', name: 'Telugu', native: 'తెలుగు', flag: '🇮🇳' },
+      { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ', flag: '🇮🇳' },
+      { code: 'ml', name: 'Malayalam', native: 'മലയാളം', flag: '🇮🇳' },
+      { code: 'ur', name: 'Urdu', native: 'اُردُو', flag: '🇮🇳' }
+    ];
+
+    function renderLanguages() {
+      const container = document.getElementById('languageSelectorGrid');
+      if (!container) return;
+      const selected = localStorage.getItem('fittrack_language') || 'en';
+      
+      container.innerHTML = indianLanguages.map(l => `
+        <button onclick="setAppLanguage('${l.code}')" class="rounded-xl border p-2.5 text-xs text-center flex flex-col items-center justify-center transition-all bg-slate-950/40 ${l.code === selected ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400 font-bold' : 'border-slate-800 hover:border-slate-700'}">
+          <span class="text-lg mb-1">${l.flag}</span>
+          <span class="font-semibold">${l.native}</span>
+        </button>
+      `).join('');
+    }
+
+    function setAppLanguage(code) {
+      localStorage.setItem('fittrack_language', code);
+      renderLanguages();
+      const lang = indianLanguages.find(l => l.code === code);
+      showToast(`Language set to ${lang.native}`, 'success');
+    }
+
+    /* ── App Theme Customization ── */
+    function setAppTheme(theme) {
+      localStorage.setItem('fittrack_theme', theme);
+      
+      ['light', 'dark', 'system'].forEach(t => {
+        const btn = document.getElementById('themeBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) {
+          if (t === theme) {
+            btn.classList.add('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-400', 'font-bold');
+            btn.classList.remove('border-slate-800');
+          } else {
+            btn.classList.remove('border-emerald-500', 'bg-emerald-500/10', 'text-emerald-400', 'font-bold');
+            btn.classList.add('border-slate-800');
+          }
+        }
+      });
+      
+      applyTheme();
+    }
+
+    function applyTheme() {
+      const theme = localStorage.getItem('fittrack_theme') || 'system';
+      if (theme === 'light') {
+        document.body.classList.add('theme-light');
+      } else if (theme === 'dark') {
+        document.body.classList.remove('theme-light');
+      } else {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) {
+          document.body.classList.remove('theme-light');
+        } else {
+          document.body.classList.add('theme-light');
+        }
+      }
+    }
+
+    /* ── Weight History Logging ── */
+    let weightHistory = JSON.parse(localStorage.getItem('fittrack_weight_history') || '[]');
+    
+    function logCurrentWeight() {
+      const input = document.getElementById('logWeightInput');
+      if (!input) return;
+      const weight = parseFloat(input.value);
+      if (isNaN(weight) || weight <= 0) {
+        showToast('Please enter a valid weight value', 'error');
+        return;
+      }
+      
+      const newEntry = {
+        weight: weight,
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        timestamp: Date.now()
+      };
+      
+      weightHistory.unshift(newEntry);
+      localStorage.setItem('fittrack_weight_history', JSON.stringify(weightHistory));
+      input.value = '';
+      
+      renderWeightHistory();
+      showToast(`Weight recorded: ${weight} kg`, 'success');
+      
+      // Update profile weight and save
+      if (userProfile) {
+        userProfile.weight = weight;
+        saveLocalState();
+        saveDailyToDatabase();
+        
+        const weightInput = document.getElementById('profileWeightInput');
+        if (weightInput) weightInput.value = weight;
+      }
+    }
+
+    function renderWeightHistory() {
+      const container = document.getElementById('weightLogHistory');
+      if (!container) return;
+      
+      if (weightHistory.length === 0) {
+        container.innerHTML = '<p class="text-slate-500 italic py-4 text-center">No weight entries logged yet</p>';
+        return;
+      }
+      
+      container.innerHTML = weightHistory.map(entry => `
+        <div class="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 flex items-center justify-between">
+          <span class="font-bold text-slate-200">${entry.weight} kg</span>
+          <span class="text-slate-500 text-[10px]">${entry.date}</span>
+        </div>
+      `).join('');
+    }
+
+    /* ── Invite Friends & Referrals ── */
+    function initReferralLink() {
+      const input = document.getElementById('referralLinkInput');
+      if (input) {
+        input.value = `https://fittrack.pro/invite/${USER_ID}`;
+      }
+    }
+    function copyReferralLink() {
+      const input = document.getElementById('referralLinkInput');
+      if (!input) return;
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      showToast('Referral link copied to clipboard!', 'success');
+    }
+
+    /* ── Profile management ── */
+    function populateProfileFields() {
+      if (!userProfile) return;
+      const nameInput = document.getElementById('profileNameInput');
+      const heightInput = document.getElementById('profileHeightInput');
+      const weightInput = document.getElementById('profileWeightInput');
+      
+      if (nameInput) nameInput.value = currentUser ? (currentUser.name || '') : '';
+      if (heightInput) heightInput.value = userProfile.height || 170;
+      if (weightInput) weightInput.value = userProfile.weight || 70;
+    }
+
+    function savePersonalInformation() {
+      const nameInput = document.getElementById('profileNameInput');
+      const heightInput = document.getElementById('profileHeightInput');
+      const weightInput = document.getElementById('profileWeightInput');
+      
+      if (!userProfile) return;
+      
+      const newHeight = parseFloat(heightInput.value);
+      const newWeight = parseFloat(weightInput.value);
+      
+      if (isNaN(newHeight) || isNaN(newWeight) || newHeight <= 0 || newWeight <= 0) {
+        showToast('Please check your profile values', 'error');
+        return;
+      }
+      
+      userProfile.height = newHeight;
+      userProfile.weight = newWeight;
+      
+      if (currentUser && nameInput) {
+        currentUser.name = nameInput.value;
+        localStorage.setItem(store.user, JSON.stringify(currentUser));
+        updateHeaderProfileWidget(currentUser);
+      }
+      
+      saveLocalState();
+      saveDailyToDatabase();
+      showToast('Profile information successfully saved!', 'success');
+    }
+
+    /* ── Floating AI Assistant Chat Panel ── */
+    function toggleAIChat() {
+      const panel = document.getElementById('aiChatPanel');
+      if (!panel) return;
+      panel.classList.toggle('hidden');
+      panel.classList.toggle('flex');
+      
+      if (panel.classList.contains('flex')) {
+        updateAICoachGreeting();
+      }
+    }
+
+    function updateAICoachGreeting() {
+      const messagesContainer = document.getElementById('aiChatMessages');
+      if (!messagesContainer) return;
+      
+      let greeting = "";
+      if (activeTab === 'home') {
+        greeting = "Hi! I am your AI Coach. I see your daily calorie target is **" + (userProfile ? userProfile.targetCalories : 2000) + " cal**. Ask me about meal recommendations, protein suggestions, or how to hit your targets today! 🍳";
+      } else if (activeTab === 'progress') {
+        greeting = "Welcome to your progress log. I can analyze your weekly calorie charts or weight trends. Ask me how to accelerate your fitness journey! 📈";
+      } else if (activeTab === 'addfood') {
+        greeting = "Logging food? You can scan your meal with the AI camera or perform a manual search. Ask me how to log a meal! 📸";
+      } else if (activeTab === 'community') {
+        greeting = "Let's build healthy habits together! You can join local fitness groups or invite friends. Ask me how to refer new users! 👥";
+      } else if (activeTab === 'profile') {
+        greeting = "Ready to optimize your target goals? Ask me how to calculate your BMR, TDEE, or set the ideal protein targets for muscle gain! 👤";
+      }
+      
+      messagesContainer.innerHTML = `<div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">${greeting}</div>`;
+    }
+
+    function sendAIChatMessage() {
+      const input = document.getElementById('aiChatInput');
+      const messagesContainer = document.getElementById('aiChatMessages');
+      if (!input || !messagesContainer || !input.value.trim()) return;
+      
+      const query = input.value.trim();
+      input.value = '';
+      
+      messagesContainer.innerHTML += `<div class="bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 text-emerald-300 self-end text-right ml-8">${query}</div>`;
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      
+      setTimeout(() => {
+        let answer = "I'm analyzing your profile and logged meals. ";
+        const q = query.toLowerCase();
+        
+        if (q.includes('protein') || q.includes('gain') || q.includes('muscle')) {
+          answer += "To hit your protein goals, prioritize chicken breast, raw paneer, eggs, soy chunks, and whey protein. Let's aim to get at least 25g of protein in your next meal! 🍗";
+        } else if (q.includes('calorie') || q.includes('weight') || q.includes('loss')) {
+          answer += "For calorie deficit and fat loss, focus on high-volume low-calorie foods. Drink water before meals and include green salads (cucumbers, spinach) to stay full. 🥗";
+        } else if (q.includes('water') || q.includes('hydration')) {
+          answer += "Hydration supports fat loss and muscle recovery. Keep adding water in 250ml intervals whenever you feel tired or before meals! 💧";
+        } else {
+          answer += "Your daily metrics look solid. Focus on logging every meal consistently to maintain your Day Streak! 🚀";
+        }
+        
+        messagesContainer.innerHTML += `<div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 mr-8">${answer}</div>`;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }, 600);
+    }
+
+    function createMockGroup() {
+      const name = prompt("Enter Group Name:");
+      if (!name) return;
+      
+      const container = document.getElementById('communityGroupsList');
+      if (!container) return;
+      
+      const html = `
+        <div class="bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <p class="font-bold text-slate-200">${name}</p>
+            <p class="text-[10px] text-slate-500">1 member &bull; Created just now</p>
+          </div>
+          <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full">Owner</span>
+        </div>
+      `;
+      
+      container.insertAdjacentHTML('beforeend', html);
+      showToast(`Group "${name}" successfully created!`, 'success');
+    }
+
     function checkSessionAndStartup() {
       document.getElementById('servingAmount').addEventListener('input', updatePreview);
       document.getElementById('lensProServingAmount').addEventListener('input', updateLensProPreview);
       renderGoals();
       
+      applyTheme();
       initGoogleAuth();
       
       currentUser = JSON.parse(localStorage.getItem(store.user)) || null;
